@@ -1,0 +1,75 @@
+/// Plain JSON models for the v1 API. Enum values travel as their C# names (e.g. "Pending").
+library;
+
+class Crop {
+  Crop.fromJson(Map<String, dynamic> j)
+      : code = j['code'] as String,
+        nameEn = j['nameEn'] as String,
+        nameTe = j['nameTe'] as String,
+        nameHi = j['nameHi'] as String;
+
+  final String code, nameEn, nameTe, nameHi;
+
+  String name(String lang) => switch (lang) { 'te' => nameTe, 'hi' => nameHi, _ => nameEn };
+}
+
+/// Verification status: NotStarted, Pending, Verified or Rejected.
+/// produceSource: OwnFarm, OwnAndOtherFarmers or OtherFarmers.
+/// evidenceType: AgriStackFarmerId, LandRecord, FpoMembership or OfficerReference.
+class Farmer {
+  Farmer.fromJson(Map<String, dynamic> j)
+      : name = j['name'] as String?,
+        village = j['village'] as String?,
+        district = j['district'] as String?,
+        cropCodes = (j['cropCodes'] as List).cast<String>(),
+        farmSizeAcres = (j['farmSizeAcres'] as num?)?.toDouble(),
+        produceSource = j['produceSource'] as String?,
+        evidenceType = j['evidenceType'] as String?,
+        evidenceDetails = j['evidenceDetails'] as String?,
+        hasEvidencePhoto = j['hasEvidencePhoto'] as bool,
+        status = j['status'] as String,
+        level = j['level'] as int,
+        rejectionReason = j['rejectionReason'] as String?,
+        missing = (j['missing'] as List).cast<String>();
+
+  final String? name, village, district, produceSource, evidenceType, evidenceDetails, rejectionReason;
+  final List<String> cropCodes;
+  final double? farmSizeAcres;
+  final bool hasEvidencePhoto;
+  final String status;
+  final int level;
+  final List<String> missing;
+
+  bool get canEdit => status == 'NotStarted' || status == 'Rejected';
+  /// True once any verification step was saved (the name alone may come from sign-up).
+  bool get hasStarted => village != null || evidenceType != null || hasEvidencePhoto;
+}
+
+/// Space status: Draft, PendingReview, Live or Rejected.
+class Space {
+  Space.fromJson(Map<String, dynamic> j)
+      : id = j['id'] as String,
+        title = j['title'] as String,
+        type = j['type'] as String,
+        address = j['address'] as String,
+        locality = j['locality'] as String,
+        areaSqFt = j['areaSqFt'] as int,
+        isFree = j['isFree'] as bool,
+        fee = (j['fee'] as num).toDouble(),
+        availableDays = (j['availableDays'] as List).cast<String>(),
+        openFrom = j['openFrom'] as String,
+        openTo = j['openTo'] as String,
+        status = j['status'] as String,
+        rejectionReason = j['rejectionReason'] as String?,
+        photoUrls = (j['photoUrls'] as List).cast<String>(),
+        hasProof = j['hasProof'] as bool;
+
+  final String id, title, type, address, locality, openFrom, openTo, status;
+  final String? rejectionReason;
+  final int areaSqFt;
+  final bool isFree, hasProof;
+  final double fee;
+  final List<String> availableDays, photoUrls;
+
+  bool get canSubmit => status == 'Draft' || status == 'Rejected';
+}

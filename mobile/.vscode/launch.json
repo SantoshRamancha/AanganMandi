@@ -1,0 +1,19 @@
+{
+  // For when only the mobile folder is open. Opening C:\Aangan_Mandi gives the API configs too.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Flutter app (Chrome)",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "deviceId": "chrome"
+    },
+    {
+      "name": "Flutter app (selected device)",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart"
+    }
+  ]
+}

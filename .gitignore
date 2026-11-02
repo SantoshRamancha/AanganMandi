@@ -1,0 +1,26 @@
+# Secrets and machine-local settings — never commit these
+.env
+.env.*
+*.pfx
+*.p12
+*.pem
+*.key
+*.keystore
+*.jks
+key.properties
+local.properties
+google-services.json
+GoogleService-Info.plist
+appsettings.*.local.json
+secrets.json
+
+# IDE / OS
+.vs/
+.idea/
+*.user
+*.suo
+Thumbs.db
+.DS_Store
+
+# Claude Code local state
+.claude/settings.local.json

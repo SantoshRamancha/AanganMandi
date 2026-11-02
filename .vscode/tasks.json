@@ -1,0 +1,12 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build-api",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["build", "${workspaceFolder}/backend/src/AanganMandi.Api", "/property:GenerateFullPaths=true"],
+      "problemMatcher": "$msCompile"
+    }
+  ]
+}

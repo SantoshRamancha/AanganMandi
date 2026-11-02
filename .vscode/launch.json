@@ -1,0 +1,52 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "API (Swagger)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-api",
+      "program": "${workspaceFolder}/backend/src/AanganMandi.Api/bin/Debug/net8.0/AanganMandi.Api.dll",
+      "cwd": "${workspaceFolder}/backend/src/AanganMandi.Api",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        // 0.0.0.0 so the emulator / a phone on Wi-Fi can reach it; the browser opens localhost.
+        "ASPNETCORE_URLS": "http://0.0.0.0:5080"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "Now listening on:",
+        "uriFormat": "http://localhost:5080/swagger"
+      },
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Flutter app (Chrome)",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/mobile",
+      "program": "lib/main.dart",
+      "deviceId": "chrome"
+    },
+    {
+      "name": "Flutter app",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/mobile",
+      "program": "lib/main.dart"
+    }
+  ],
+  "compounds": [
+    {
+      // Farmers, hosts, buyers, verifiers and admins all use the one Flutter app.
+      "name": "Everything: API + Flutter (Chrome)",
+      "configurations": ["API (Swagger)", "Flutter app (Chrome)"],
+      "stopAll": true
+    },
+    {
+      "name": "API + Flutter app (phone / emulator)",
+      "configurations": ["API (Swagger)", "Flutter app"],
+      "stopAll": true
+    }
+  ]
+}
