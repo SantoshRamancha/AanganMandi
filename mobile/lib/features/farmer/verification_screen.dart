@@ -7,7 +7,7 @@ import '../../core/api/api_client.dart';
 import '../../core/api/app_api.dart';
 import '../../core/api/models.dart';
 import '../../core/storage/prefs.dart';
-import '../../core/widgets/photo_tile.dart';
+import '../../core/widgets/document_tile.dart';
 import '../../core/widgets/responsive.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -44,6 +44,7 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
   final Set<String> _crops = {};
   String? _evidenceType;
   bool _hasPhoto = false;
+  String? _photoAt;
 
   @override
   void dispose() {
@@ -65,6 +66,7 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
     _evidenceType = f.evidenceType;
     _evidenceDetails.text = f.evidenceDetails ?? '';
     _hasPhoto = f.hasEvidencePhoto;
+    _photoAt = f.evidencePhotoAt;
   }
 
   void _error(Object e) {
@@ -86,13 +88,21 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
   }
 
   Future<void> _uploadPhoto(XFile photo) async {
-    try {
-      await ref.read(farmerApiProvider).uploadEvidencePhoto(photo);
-      setState(() => _hasPhoto = true);
-    } catch (e) {
-      _error(e);
-      rethrow;
+    final api = ref.read(farmerApiProvider);
+    await api.uploadEvidencePhoto(photo);
+    // The new upload time is the photo's cache key, so the tile shows the replacement.
+    final f = await api.me();
+    if (mounted) {
+      setState(() {
+        _hasPhoto = f.hasEvidencePhoto;
+        _photoAt = f.evidencePhotoAt;
+      });
     }
+  }
+
+  Future<void> _deletePhoto() async {
+    await ref.read(farmerApiProvider).deleteEvidencePhoto();
+    if (mounted) setState(() => _hasPhoto = false);
   }
 
   // Step actions --------------------------------------------------------------
@@ -335,12 +345,15 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
               maxLength: 200,
               validator: (v) => detailsRequired && (v == null || v.trim().isEmpty) ? l10n.required : null,
             ),
-            PhotoTile(
+            DocumentTile(
               label: l10n.evidencePhoto,
               hint: l10n.evidencePhotoHint,
               icon: Icons.photo_camera_outlined,
-              alreadyUploaded: _hasPhoto,
-              onPicked: _uploadPhoto,
+              filePath: _hasPhoto ? evidencePhotoPath(_photoAt) : null,
+              fileName: 'evidence',
+              canChange: true,
+              onUpload: _uploadPhoto,
+              onDelete: _deletePhoto,
             ),
           ]),
       ]),

@@ -27,12 +27,16 @@ class Farmer {
         evidenceType = j['evidenceType'] as String?,
         evidenceDetails = j['evidenceDetails'] as String?,
         hasEvidencePhoto = j['hasEvidencePhoto'] as bool,
+        evidencePhotoAt = j['evidencePhotoAt'] as String?,
         status = j['status'] as String,
         level = j['level'] as int,
         rejectionReason = j['rejectionReason'] as String?,
         missing = (j['missing'] as List).cast<String>();
 
   final String? name, village, district, produceSource, evidenceType, evidenceDetails, rejectionReason;
+
+  /// When the evidence photo was uploaded (also its cache key).
+  final String? evidencePhotoAt;
   final List<String> cropCodes;
   final double? farmSizeAcres;
   final bool hasEvidencePhoto;
@@ -62,7 +66,9 @@ class Space {
         status = j['status'] as String,
         rejectionReason = j['rejectionReason'] as String?,
         photoUrls = (j['photoUrls'] as List).cast<String>(),
-        hasProof = j['hasProof'] as bool;
+        hasProof = j['hasProof'] as bool,
+        photos = [for (final p in j['photos'] as List) SpaceFile.fromJson(p as Map<String, dynamic>)],
+        proof = j['proof'] == null ? null : SpaceFile.fromJson(j['proof'] as Map<String, dynamic>);
 
   final String id, title, type, address, locality, openFrom, openTo, status;
   final String? rejectionReason;
@@ -70,6 +76,36 @@ class Space {
   final bool isFree, hasProof;
   final double fee;
   final List<String> availableDays, photoUrls;
+  final List<SpaceFile> photos;
+  final SpaceFile? proof;
 
   bool get canSubmit => status == 'Draft' || status == 'Rejected';
+
+  /// Photos and proof can be replaced or deleted until the space is approved (live).
+  bool get canChangeFiles => status != 'Live';
+}
+
+/// One stored space photo or the proof; uploadedAt doubles as its cache key.
+class SpaceFile {
+  SpaceFile.fromJson(Map<String, dynamic> j)
+      : id = j['id'] as String,
+        uploadedAt = j['uploadedAt'] as String;
+
+  final String id, uploadedAt;
+}
+
+/// The signed-in user's own account (GET /users/me). roles: Farmer, Host, Buyer, Verifier, Admin.
+class Profile {
+  Profile.fromJson(Map<String, dynamic> j)
+      : name = j['name'] as String?,
+        phone = j['phone'] as String,
+        language = j['language'] as String,
+        roles = (j['roles'] as List).cast<String>(),
+        // The API stores UTC without a "Z".
+        memberSince = DateTime.parse('${(j['memberSince'] as String).replaceAll('Z', '')}Z').toLocal();
+
+  final String? name;
+  final String phone, language;
+  final List<String> roles;
+  final DateTime memberSince;
 }

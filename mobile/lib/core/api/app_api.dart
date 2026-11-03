@@ -47,8 +47,15 @@ class FarmerApi {
     await _dio.post('/farmers/me/evidence/photo', data: FormData.fromMap({'file': await _photoPart(photo)}));
   }
 
+  /// True when this withdrew a waiting submission (the farmer must submit again).
+  Future<bool> deleteEvidencePhoto() async =>
+      ((await _dio.delete('/farmers/me/evidence/photo')).data as Map)['withdrawn'] as bool;
+
   Future<void> submit() => _dio.post('/farmers/me/submit');
 }
+
+/// API path of the farmer's own evidence photo; [version] (upload time) makes a replaced photo refetch.
+String evidencePhotoPath(String? version) => '/farmers/me/evidence/photo?v=$version';
 
 class HostApi {
   HostApi(this._dio);
@@ -69,8 +76,19 @@ class HostApi {
         data: FormData.fromMap({'file': await _photoPart(photo), 'isProof': isProof}));
   }
 
+  Future<void> replacePhoto(String spaceId, String photoId, XFile photo) async {
+    await _dio.put('/hosts/me/spaces/$spaceId/photos/$photoId', data: FormData.fromMap({'file': await _photoPart(photo)}));
+  }
+
+  /// True when this sent a waiting space back to draft (fewer than 3 photos or no proof left).
+  Future<bool> deletePhoto(String spaceId, String photoId) async =>
+      ((await _dio.delete('/hosts/me/spaces/$spaceId/photos/$photoId')).data as Map)['withdrawn'] as bool;
+
   Future<void> submit(String spaceId) => _dio.post('/hosts/me/spaces/$spaceId/submit');
 }
+
+/// API path of one of the host's space photos or proof, for preview and download.
+String spaceFilePath(String spaceId, SpaceFile f) => '/hosts/me/spaces/$spaceId/photos/${f.id}?v=${f.uploadedAt}';
 
 final farmerApiProvider = Provider((ref) => FarmerApi(ref.watch(dioProvider)));
 final hostApiProvider = Provider((ref) => HostApi(ref.watch(dioProvider)));
@@ -83,3 +101,6 @@ final cropsProvider = FutureProvider<List<Crop>>((ref) async {
 final farmerProvider = FutureProvider.autoDispose<Farmer>((ref) => ref.watch(farmerApiProvider).me());
 
 final mySpacesProvider = FutureProvider.autoDispose<List<Space>>((ref) => ref.watch(hostApiProvider).mySpaces());
+
+final profileProvider = FutureProvider.autoDispose<Profile>(
+    (ref) async => Profile.fromJson((await ref.watch(dioProvider).get('/users/me')).data as Map<String, dynamic>));

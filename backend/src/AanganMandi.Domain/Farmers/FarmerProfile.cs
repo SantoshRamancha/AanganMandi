@@ -43,6 +43,9 @@ public class FarmerProfile : Entity
     public List<FarmPlot> Plots { get; set; } = [];
 
     public bool CanEdit => Status is VerificationStatus.NotStarted or VerificationStatus.Rejected;
+
+    /// <summary>The evidence photo can still be replaced or deleted while waiting for review, but not once verified.</summary>
+    public bool CanChangeDocuments => Status is not VerificationStatus.Verified;
 }
 
 public class FarmerCrop : Entity

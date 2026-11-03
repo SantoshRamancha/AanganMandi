@@ -21,6 +21,12 @@ public class LocalFileStorage(string root) : IFileStorage
         return File.Exists(full) ? File.OpenRead(full) : null;
     }
 
+    public void Delete(string path)
+    {
+        var full = Resolve(path);
+        if (File.Exists(full)) File.Delete(full);
+    }
+
     private string Resolve(string relative)
     {
         var full = Path.GetFullPath(Path.Combine(root, relative));

@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/api/api_client.dart';
 import '../../core/api/ops_api.dart';
+import '../../core/labels.dart';
 import '../../core/widgets/responsive.dart';
+import '../../l10n/app_localizations.dart';
 import 'ops_widgets.dart';
 
 /// Farmers to verify. A verifier sees only the farmers assigned to them; an admin sees all, with who has each.
@@ -21,6 +23,7 @@ class _FarmerQueueState extends ConsumerState<FarmerQueue> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final rows = ref.watch(opsFarmersProvider(_status));
     return RefreshIndicator(
@@ -29,48 +32,52 @@ class _FarmerQueueState extends ConsumerState<FarmerQueue> {
         MaxWidth(
           maxWidth: 960,
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Text('Farmer verification', style: Theme.of(context).textTheme.headlineSmall),
-            Text(widget.isAdmin ? 'All farmers. Each submission goes to the verifier with the fewest waiting.' : 'Farmers assigned to you, oldest first.',
-                style: TextStyle(color: scheme.onSurfaceVariant)),
-            const SizedBox(height: 16),
+            PageHeader(l10n.farmerVerificationTitle,
+                subtitle: widget.isAdmin ? l10n.farmerQueueAdminHint : l10n.farmerQueueVerifierHint),
             StatusFilter(
               selected: _status,
               onChanged: (s) => setState(() => _status = s),
               options: [
-                for (final s in ['Pending', 'Verified', 'Rejected', if (widget.isAdmin) 'NotStarted']) (s, farmerStatusLabel(s)),
+                for (final s in ['Pending', 'Verified', 'Rejected', if (widget.isAdmin) 'NotStarted']) (s, l10n.farmerStatus(s)),
               ],
             ),
             const SizedBox(height: 16),
             rows.when(
               loading: () => const Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator())),
-              error: (e, _) => Text(apiErrorMessage(e, 'Could not load farmers.')),
+              error: (e, _) => Text(apiErrorMessage(e, l10n.couldNotLoad)),
               data: (list) => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                 if (widget.isAdmin && _status == 'Pending' && list.any((r) => r.verifierName == null))
-                  Card(
-                    color: Colors.amber.shade50,
-                    child: const ListTile(
-                      leading: Icon(Icons.warning_amber),
-                      title: Text('Some farmers have no verifier'),
-                      subtitle: Text('Add a verifier and they are assigned automatically, or open a farmer to assign one.'),
-                    ),
-                  ),
+                  WarningCard(title: l10n.noVerifierWarnTitle, body: l10n.noVerifierWarnBody),
                 if (list.isEmpty)
-                  Padding(padding: const EdgeInsets.all(24), child: Text('No farmers in this list.', textAlign: TextAlign.center, style: TextStyle(color: scheme.onSurfaceVariant))),
+                  Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Column(children: [
+                      Icon(Icons.inbox_outlined, size: 48, color: scheme.outline),
+                      const SizedBox(height: 8),
+                      Text(l10n.emptyList, textAlign: TextAlign.center, style: TextStyle(color: scheme.onSurfaceVariant)),
+                    ]),
+                  ),
                 for (final r in list)
                   Card(
                     margin: const EdgeInsets.only(bottom: 8),
+                    clipBehavior: Clip.antiAlias,
                     child: ListTile(
-                      title: Text(r.name ?? '(no name)', style: const TextStyle(fontWeight: FontWeight.w600)),
+                      leading: CircleAvatar(
+                        backgroundColor: scheme.secondaryContainer,
+                        foregroundColor: scheme.onSecondaryContainer,
+                        child: Text((r.name ?? '?').characters.first.toUpperCase()),
+                      ),
+                      title: Text(r.name ?? l10n.noName, style: const TextStyle(fontWeight: FontWeight.w600)),
                       subtitle: Text([
                         r.phone,
                         if (r.village != null) '${r.village}, ${r.district ?? ''}',
-                        if (r.evidenceType != null) evidenceLabel(r.evidenceType),
-                        if (r.submittedAt != null) 'Submitted ${formatWhen(r.submittedAt)}',
-                        if (widget.isAdmin && _status == 'Pending') 'Verifier: ${r.verifierName ?? 'Unassigned'}',
+                        if (r.evidenceType != null) l10n.evidence(r.evidenceType),
+                        if (r.submittedAt != null) l10n.submittedOn(formatWhen(r.submittedAt)),
+                        if (widget.isAdmin && _status == 'Pending') l10n.verifierIs(r.verifierName ?? l10n.unassigned),
                       ].join('\n')),
                       isThreeLine: true,
                       trailing: widget.isAdmin && _status == 'Pending' && r.verifierName == null
-                          ? const StatusChip('Pending', 'Unassigned')
+                          ? StatusChip('Pending', l10n.unassigned)
                           : const Icon(Icons.chevron_right),
                       onTap: () async {
                         await context.push('/ops/farmers/${r.id}');

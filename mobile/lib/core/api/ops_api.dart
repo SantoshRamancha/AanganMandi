@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'api_client.dart';
 
 // Staff (Verifier / Admin) API: farmer verification, space approvals and, for admins, verifier management.
-// Staff screens are English-only for now; they are an internal tool.
+// Labels for its enum values are in core/labels.dart, translated like the rest of the app.
 
 /// The API stores UTC without a "Z"; read it as UTC and show it in local time.
 DateTime? _utc(Object? v) {
@@ -202,11 +201,6 @@ class OpsApi {
     return (moved: data['assigned'] as int, unassigned: data['unassigned'] as int);
   }
 
-  /// A private file (evidence, proof) as bytes: it needs the login token, which an image URL cannot carry on web.
-  Future<Uint8List> file(String path) async {
-    final res = await _dio.get<List<int>>('/ops/files/$path', options: Options(responseType: ResponseType.bytes));
-    return Uint8List.fromList(res.data!);
-  }
 }
 
 final opsApiProvider = Provider((ref) => OpsApi(ref.watch(dioProvider)));
@@ -220,7 +214,6 @@ final opsSpacesProvider =
     FutureProvider.autoDispose.family<List<OpsSpaceRow>, String>((ref, status) => ref.watch(opsApiProvider).spaces(status));
 final opsSpaceProvider = FutureProvider.autoDispose.family<OpsSpace, String>((ref, id) => ref.watch(opsApiProvider).space(id));
 final verifiersProvider = FutureProvider.autoDispose<List<VerifierRow>>((ref) => ref.watch(opsApiProvider).verifiers());
-final opsFileProvider = FutureProvider.autoDispose.family<Uint8List, String>((ref, path) => ref.watch(opsApiProvider).file(path));
 
 /// Refetches every staff list and the dashboard (after a decision, or the app bar's refresh).
 void refreshOps(WidgetRef ref) {
@@ -229,40 +222,3 @@ void refreshOps(WidgetRef ref) {
   ref.invalidate(opsSpacesProvider);
   ref.invalidate(verifiersProvider);
 }
-
-// English labels for staff screens ------------------------------------------------
-
-String farmerStatusLabel(String s) => switch (s) {
-      'Pending' => 'Waiting for review',
-      'NotStarted' => 'Not submitted',
-      _ => s,
-    };
-
-String spaceStatusLabel(String s) => switch (s) {
-      'PendingReview' => 'Waiting for approval',
-      'Draft' => 'Draft',
-      _ => s,
-    };
-
-String evidenceLabel(String? t) => switch (t) {
-      'AgriStackFarmerId' => 'AgriStack Farmer ID',
-      'LandRecord' => 'Land / cultivation record',
-      'FpoMembership' => 'FPO membership or referral',
-      'OfficerReference' => 'Agri officer / farmer org reference',
-      _ => '–',
-    };
-
-String evidenceHowToCheck(String? t) => switch (t) {
-      'AgriStackFarmerId' => 'Check the Farmer ID number and name in the AgriStack farmer registry.',
-      'LandRecord' => 'Check the owner or cultivator name and survey number on the Bhu Bharati portal.',
-      'FpoMembership' => 'Call the FPO (or the person who referred them) and confirm they know this farmer.',
-      'OfficerReference' => 'Call the officer or organisation and confirm they know this farmer.',
-      _ => '',
-    };
-
-String produceSourceLabel(String? s) => switch (s) {
-      'OwnFarm' => 'Only what they grow',
-      'OwnAndOtherFarmers' => 'Own crops, plus some from other farmers',
-      'OtherFarmers' => 'Only produce from other farmers (not a grower)',
-      _ => '–',
-    };

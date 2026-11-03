@@ -23,7 +23,11 @@ public class HostSpacesController(AppDbContext db, IFileStorage storage) : Contr
         double Latitude, double Longitude, int AreaSqFt, string MaxStallSize, VehicleType MaxVehicle,
         Amenities[] Amenities, bool IsFree, decimal Fee, string? Rules, DayOfWeek[] AvailableDays,
         TimeOnly OpenFrom, TimeOnly OpenTo, SpaceStatus Status, string? RejectionReason,
-        string[] PhotoUrls, bool HasProof);
+        string[] PhotoUrls, bool HasProof, FileRef[] Photos, FileRef? Proof);
+    /// <summary>One stored photo or proof; Id is used to preview, download, replace or delete it.</summary>
+    public record FileRef(Guid Id, DateTime UploadedAt);
+    /// <summary>Withdrawn: the change left a waiting space incomplete, so it went back to Draft.</summary>
+    public record DocumentChange(bool Withdrawn);
 
     private static readonly GeometryFactory Geo = NetTopologySuite.NtsGeometryServices.Instance.CreateGeometryFactory(4326);
     private static readonly string[] AllowedImageTypes = ["image/jpeg", "image/png", "image/webp"];
@@ -78,28 +82,81 @@ public class HostSpacesController(AppDbContext db, IFileStorage storage) : Contr
         return ToDto(space);
     }
 
+    /// <summary>
+    /// Adds a photo, or sets the proof (replacing any earlier one). Photos and proof can be changed until the space
+    /// is approved; while it waits for review it stays in the queue and the reviewer sees the new file.
+    /// </summary>
     [HttpPost("{id:guid}/photos")]
     [RequestSizeLimit(MaxUploadBytes + 64 * 1024)]
     public async Task<IActionResult> AddPhoto(Guid id, IFormFile file, [FromForm] bool isProof, CancellationToken ct)
     {
         var space = await FindAsync(id, ct);
         if (space is null) return NotFound();
-        if (space.Status is SpaceStatus.PendingReview) return Problem(statusCode: 409, title: "Space is under review");
-        if (file.Length is 0 or > MaxUploadBytes) return Problem(statusCode: 400, title: "Photo must be under 8 MB");
-        if (!AllowedImageTypes.Contains(file.ContentType))
-            return Problem(statusCode: 400, title: "Only JPEG, PNG or WebP photos are accepted");
+        if (LockedFiles(space) is { } locked) return locked;
+        if (CheckUpload(file) is { } invalid) return invalid;
         if (!isProof && space.Photos.Count(p => !p.IsRightToUseProof) >= MaxPhotos)
             return Problem(statusCode: 400, title: $"A space can have at most {MaxPhotos} photos");
 
-        // Proof documents are private (kyc/); space photos are public (spaces/).
-        var folder = isProof ? $"kyc/spaces/{space.Id:N}" : $"spaces/{space.Id:N}";
-        await using var stream = file.OpenReadStream();
-        var path = await storage.SaveAsync(stream, folder, file.ContentType == "image/png" ? ".png" : ".jpg", ct);
-        if (isProof) db.SpacePhotos.RemoveRange(space.Photos.Where(p => p.IsRightToUseProof));
+        var path = await SaveAsync(space, file, isProof, ct);
+        var oldProof = isProof ? space.Photos.Where(p => p.IsRightToUseProof).ToList() : [];
+        db.SpacePhotos.RemoveRange(oldProof);
         db.SpacePhotos.Add(new SpacePhoto { SpaceId = space.Id, FilePath = path, IsRightToUseProof = isProof });
-        if (space.Status is SpaceStatus.Live or SpaceStatus.Rejected) space.Status = SpaceStatus.Draft;
+        Touch(space);
         await db.SaveChangesAsync(ct);
+        foreach (var p in oldProof) storage.Delete(p.FilePath);
         return NoContent();
+    }
+
+    /// <summary>One photo or the proof, for the host to preview or download (the proof is private).</summary>
+    [HttpGet("{id:guid}/photos/{photoId:guid}")]
+    public async Task<IActionResult> GetPhoto(Guid id, Guid photoId, CancellationToken ct)
+    {
+        var photo = (await FindAsync(id, ct))?.Photos.SingleOrDefault(p => p.Id == photoId);
+        var stream = photo is null ? null : storage.OpenRead(photo.FilePath);
+        return stream is null ? NotFound() : File(stream, ContentType(photo!.FilePath), Path.GetFileName(photo.FilePath));
+    }
+
+    /// <summary>Replaces one photo or the proof with a new file, keeping its place in the list.</summary>
+    [HttpPut("{id:guid}/photos/{photoId:guid}")]
+    [RequestSizeLimit(MaxUploadBytes + 64 * 1024)]
+    public async Task<IActionResult> ReplacePhoto(Guid id, Guid photoId, IFormFile file, CancellationToken ct)
+    {
+        var space = await FindAsync(id, ct);
+        var photo = space?.Photos.SingleOrDefault(p => p.Id == photoId);
+        if (photo is null) return NotFound();
+        if (LockedFiles(space!) is { } locked) return locked;
+        if (CheckUpload(file) is { } invalid) return invalid;
+
+        var old = photo.FilePath;
+        photo.FilePath = await SaveAsync(space!, file, photo.IsRightToUseProof, ct);
+        photo.UpdatedAt = DateTime.UtcNow;
+        Touch(space!);
+        await db.SaveChangesAsync(ct);
+        storage.Delete(old);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Deletes one photo or the proof. If a waiting space drops below the minimum photos or loses its proof,
+    /// it cannot be reviewed, so it goes back to Draft and the host submits again.
+    /// </summary>
+    [HttpDelete("{id:guid}/photos/{photoId:guid}")]
+    public async Task<ActionResult<DocumentChange>> DeletePhoto(Guid id, Guid photoId, CancellationToken ct)
+    {
+        var space = await FindAsync(id, ct);
+        var photo = space?.Photos.SingleOrDefault(p => p.Id == photoId);
+        if (photo is null) return NotFound();
+        if (LockedFiles(space!) is { } locked) return locked;
+
+        db.SpacePhotos.Remove(photo);
+        space!.Photos.Remove(photo);
+        var complete = space.Photos.Count(p => !p.IsRightToUseProof) >= MinPhotos && space.Photos.Any(p => p.IsRightToUseProof);
+        var withdrawn = space.Status is SpaceStatus.PendingReview && !complete;
+        if (withdrawn) space.Status = SpaceStatus.Draft;
+        Touch(space);
+        await db.SaveChangesAsync(ct);
+        storage.Delete(photo.FilePath);
+        return new DocumentChange(withdrawn);
     }
 
     [HttpPost("{id:guid}/submit")]
@@ -119,6 +176,39 @@ public class HostSpacesController(AppDbContext db, IFileStorage storage) : Contr
         space.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
         return NoContent();
+    }
+
+    /// <summary>An approved (live) space's photos and proof are final: preview and download only.</summary>
+    private ObjectResult? LockedFiles(Space s) => s.Status is SpaceStatus.Live
+        ? Problem(statusCode: 409, title: "This space is approved, so its photos and proof can no longer be changed")
+        : null;
+
+    private ObjectResult? CheckUpload(IFormFile file) =>
+        file.Length is 0 or > MaxUploadBytes ? Problem(statusCode: 400, title: "Photo must be under 8 MB") :
+        !AllowedImageTypes.Contains(file.ContentType) ? Problem(statusCode: 400, title: "Only JPEG, PNG or WebP photos are accepted") :
+        null;
+
+    /// <summary>Proof documents are private (kyc/); space photos are public (spaces/).</summary>
+    private async Task<string> SaveAsync(Space space, IFormFile file, bool isProof, CancellationToken ct)
+    {
+        var folder = isProof ? $"kyc/spaces/{space.Id:N}" : $"spaces/{space.Id:N}";
+        var extension = file.ContentType switch { "image/png" => ".png", "image/webp" => ".webp", _ => ".jpg" };
+        await using var stream = file.OpenReadStream();
+        return await storage.SaveAsync(stream, folder, extension, ct);
+    }
+
+    private static string ContentType(string path) => Path.GetExtension(path).ToLowerInvariant() switch
+    {
+        ".png" => "image/png",
+        ".webp" => "image/webp",
+        _ => "image/jpeg",
+    };
+
+    /// <summary>A change to a rejected space starts a new draft; a waiting one stays in the queue.</summary>
+    private static void Touch(Space s)
+    {
+        if (s.Status is SpaceStatus.Rejected) s.Status = SpaceStatus.Draft;
+        s.UpdatedAt = DateTime.UtcNow;
     }
 
     private Task<Space?> FindAsync(Guid id, CancellationToken ct) =>
@@ -166,5 +256,7 @@ public class HostSpacesController(AppDbContext db, IFileStorage storage) : Contr
         s.OpenFrom, s.OpenTo, s.Status, s.RejectionReason,
         s.Photos.Where(p => !p.IsRightToUseProof).OrderBy(p => p.CreatedAt)
             .Select(p => Url.Content($"~/api/v1/files/{p.FilePath}")).ToArray(),
-        s.Photos.Any(p => p.IsRightToUseProof));
+        s.Photos.Any(p => p.IsRightToUseProof),
+        s.Photos.Where(p => !p.IsRightToUseProof).OrderBy(p => p.CreatedAt).Select(p => new FileRef(p.Id, p.UpdatedAt)).ToArray(),
+        s.Photos.Where(p => p.IsRightToUseProof).Select(p => new FileRef(p.Id, p.UpdatedAt)).FirstOrDefault());
 }

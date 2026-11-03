@@ -23,7 +23,10 @@ public class FarmersController(AppDbContext db, IFileStorage storage) : Controll
     public record EvidenceRequest(EvidenceType Type, string? Details);
     public record FarmerDto(string? Name, string? Village, string? District, string[] CropCodes, decimal? FarmSizeAcres,
         ProduceSource? ProduceSource, EvidenceType? EvidenceType, string? EvidenceDetails, bool HasEvidencePhoto,
-        VerificationStatus Status, int Level, string? RejectionReason, DateTime? SubmittedAt, string[] Missing);
+        DateTime? EvidencePhotoAt, VerificationStatus Status, int Level, string? RejectionReason, DateTime? SubmittedAt,
+        string[] Missing);
+    /// <summary>Withdrawn: the change took a waiting submission back to "not submitted"; the farmer must submit again.</summary>
+    public record DocumentChange(bool Withdrawn);
 
     private static readonly string[] AllowedImageTypes = ["image/jpeg", "image/png", "image/webp"];
     private const long MaxUploadBytes = 8 * 1024 * 1024;
@@ -34,12 +37,12 @@ public class FarmersController(AppDbContext db, IFileStorage storage) : Controll
         var userId = User.UserId();
         var user = await db.Users.SingleAsync(u => u.Id == userId, ct);
         var farmer = await LoadAsync(userId, ct);
-        var hasPhoto = await HasEvidencePhotoAsync(userId, ct);
+        var photo = await EvidencePhotos(userId).OrderByDescending(d => d.CreatedAt).FirstOrDefaultAsync(ct);
         return new FarmerDto(user.Name, farmer?.Village, farmer?.District,
             farmer?.Crops.Select(c => c.CropCode).ToArray() ?? [], farmer?.FarmSizeAcres, farmer?.ProduceSource,
-            farmer?.EvidenceType, farmer?.EvidenceDetails, hasPhoto,
+            farmer?.EvidenceType, farmer?.EvidenceDetails, photo is not null, photo?.CreatedAt,
             farmer?.Status ?? VerificationStatus.NotStarted, farmer?.Level ?? 0, farmer?.RejectionReason,
-            farmer?.SubmittedAt, Missing(user.Name, farmer, hasPhoto));
+            farmer?.SubmittedAt, Missing(user.Name, farmer, photo is not null));
     }
 
     [HttpPut("details")]
@@ -90,7 +93,19 @@ public class FarmersController(AppDbContext db, IFileStorage storage) : Controll
         return NoContent();
     }
 
-    /// <summary>Uploads (or replaces) the photo of the farming evidence.</summary>
+    /// <summary>The farmer's own evidence photo, for preview and download.</summary>
+    [HttpGet("evidence/photo")]
+    public async Task<IActionResult> GetEvidencePhoto(CancellationToken ct)
+    {
+        var doc = await EvidencePhotos(User.UserId()).OrderByDescending(d => d.CreatedAt).FirstOrDefaultAsync(ct);
+        var stream = doc is null ? null : storage.OpenRead(doc.FilePath);
+        return stream is null ? NotFound() : File(stream, doc!.ContentType, $"evidence{Extension(doc.ContentType)}");
+    }
+
+    /// <summary>
+    /// Uploads or replaces the evidence photo. Allowed until the farmer is verified: a replacement while waiting
+    /// stays with the same verifier, who sees the new photo.
+    /// </summary>
     [HttpPost("evidence/photo")]
     [RequestSizeLimit(MaxUploadBytes + 64 * 1024)]
     public async Task<IActionResult> UploadEvidencePhoto(IFormFile file, CancellationToken ct)
@@ -102,12 +117,11 @@ public class FarmersController(AppDbContext db, IFileStorage storage) : Controll
 
         var userId = User.UserId();
         var farmer = await GetOrCreateAsync(userId, ct);
-        if (!farmer.CanEdit) return Locked(farmer);
+        if (!farmer.CanChangeDocuments) return Locked(farmer);
 
         await using var stream = file.OpenReadStream();
         var path = await storage.SaveAsync(stream, $"kyc/{userId:N}", Extension(file.ContentType), ct);
-        var old = await db.VerificationDocuments
-            .Where(d => d.OwnerUserId == userId && d.Type == DocumentType.Evidence).ToListAsync(ct);
+        var old = await EvidencePhotos(userId).ToListAsync(ct);
         db.VerificationDocuments.RemoveRange(old);
         db.VerificationDocuments.Add(new VerificationDocument
         {
@@ -116,8 +130,36 @@ public class FarmersController(AppDbContext db, IFileStorage storage) : Controll
             FilePath = path,
             ContentType = file.ContentType,
         });
+        farmer.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
+        foreach (var d in old) storage.Delete(d.FilePath);
         return NoContent();
+    }
+
+    /// <summary>
+    /// Deletes the evidence photo. A waiting submission without its evidence cannot be reviewed, so it goes back
+    /// to "not submitted" (keeping its verifier for when the farmer submits again).
+    /// </summary>
+    [HttpDelete("evidence/photo")]
+    public async Task<ActionResult<DocumentChange>> DeleteEvidencePhoto(CancellationToken ct)
+    {
+        var userId = User.UserId();
+        var farmer = await LoadAsync(userId, ct);
+        if (farmer is not null && !farmer.CanChangeDocuments) return Locked(farmer);
+        var docs = await EvidencePhotos(userId).ToListAsync(ct);
+        if (docs.Count == 0) return NotFound();
+
+        db.VerificationDocuments.RemoveRange(docs);
+        var withdrawn = farmer?.Status == VerificationStatus.Pending;
+        if (withdrawn)
+        {
+            farmer!.Status = VerificationStatus.NotStarted;
+            farmer.SubmittedAt = null;
+        }
+        if (farmer is not null) farmer.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync(ct);
+        foreach (var d in docs) storage.Delete(d.FilePath);
+        return new DocumentChange(withdrawn);
     }
 
     [HttpPost("submit")]
@@ -161,8 +203,10 @@ public class FarmersController(AppDbContext db, IFileStorage storage) : Controll
         _ => "Enter the officer's or organisation's name and phone number",
     };
 
-    private Task<bool> HasEvidencePhotoAsync(Guid userId, CancellationToken ct) =>
-        db.VerificationDocuments.AnyAsync(d => d.OwnerUserId == userId && d.Type == DocumentType.Evidence, ct);
+    private Task<bool> HasEvidencePhotoAsync(Guid userId, CancellationToken ct) => EvidencePhotos(userId).AnyAsync(ct);
+
+    private IQueryable<VerificationDocument> EvidencePhotos(Guid userId) =>
+        db.VerificationDocuments.Where(d => d.OwnerUserId == userId && d.Type == DocumentType.Evidence);
 
     private Task<FarmerProfile?> LoadAsync(Guid userId, CancellationToken ct) =>
         db.FarmerProfiles.Include(f => f.Crops).SingleOrDefaultAsync(f => f.UserId == userId, ct);

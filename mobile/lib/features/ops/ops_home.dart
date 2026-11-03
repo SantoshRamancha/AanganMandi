@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/ops_api.dart';
+import '../../core/widgets/dashboard.dart';
 import '../../core/widgets/responsive.dart';
 import '../../l10n/app_localizations.dart';
 import '../home/home_screen.dart';
 import 'farmer_queue.dart';
+import 'ops_widgets.dart';
 import 'space_queue.dart';
 import 'verifiers_page.dart';
 
@@ -32,30 +34,33 @@ class _OpsHomeState extends ConsumerState<OpsHome> {
             final revoked = e is DioException && e.response?.statusCode == 403;
             return EmptyState(
               icon: revoked ? Icons.lock_outline : Icons.cloud_off,
-              title: revoked ? 'You no longer have staff access' : l10n.errorGeneric,
-              body: revoked ? 'Ask an admin if you think this is a mistake. Log out to continue with your other account.' : '',
+              title: revoked ? l10n.staffAccessRevokedTitle : l10n.errorGeneric,
+              body: revoked ? l10n.staffAccessRevokedBody : '',
               action: revoked
                   ? const LogoutButton()
                   : OutlinedButton(onPressed: () => ref.invalidate(opsDashboardProvider), child: Text(l10n.retry)),
             );
           },
           data: (d) {
-            final pages = <(IconData, String, Widget)>[
-              (Icons.dashboard_outlined, 'Dashboard', _Dashboard(d, open: (tab) => setState(() => _tab = tab))),
-              (Icons.agriculture, 'Farmers', FarmerQueue(isAdmin: d.isAdmin)),
-              (Icons.home_work_outlined, 'Spaces', const SpaceQueue()),
-              if (d.isAdmin) (Icons.badge_outlined, 'Verifiers', const VerifiersPage()),
+            final pages = <(IconData, IconData, String, Widget)>[
+              (Icons.space_dashboard_outlined, Icons.space_dashboard, l10n.opsTabDashboard,
+                  _Dashboard(d, open: (tab) => setState(() => _tab = tab))),
+              (Icons.agriculture_outlined, Icons.agriculture, l10n.opsTabFarmers, FarmerQueue(isAdmin: d.isAdmin)),
+              (Icons.home_work_outlined, Icons.home_work, l10n.opsTabSpaces, const SpaceQueue()),
+              if (d.isAdmin) (Icons.badge_outlined, Icons.badge, l10n.opsTabVerifiers, const VerifiersPage()),
             ];
             final tab = _tab.clamp(0, pages.length - 1);
-            final page = pages[tab].$3;
+            final page = pages[tab].$4;
             if (Breakpoints.isWide(context)) {
               return Row(children: [
                 NavigationRail(
                   selectedIndex: tab,
                   onDestinationSelected: (i) => setState(() => _tab = i),
                   labelType: NavigationRailLabelType.all,
+                  groupAlignment: -0.9,
                   destinations: [
-                    for (final (icon, label, _) in pages) NavigationRailDestination(icon: Icon(icon), label: Text(label)),
+                    for (final (icon, selected, label, _) in pages)
+                      NavigationRailDestination(icon: Icon(icon), selectedIcon: Icon(selected), label: Text(label)),
                   ],
                 ),
                 const VerticalDivider(width: 1),
@@ -67,7 +72,10 @@ class _OpsHomeState extends ConsumerState<OpsHome> {
               NavigationBar(
                 selectedIndex: tab,
                 onDestinationSelected: (i) => setState(() => _tab = i),
-                destinations: [for (final (icon, label, _) in pages) NavigationDestination(icon: Icon(icon), label: label)],
+                destinations: [
+                  for (final (icon, selected, label, _) in pages)
+                    NavigationDestination(icon: Icon(icon), selectedIcon: Icon(selected), label: label),
+                ],
               ),
             ]);
           },
@@ -82,29 +90,32 @@ class _Dashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context);
     final tiles = [
-      (d.farmersWaiting, d.isAdmin ? 'Farmers waiting for review' : 'Farmers waiting for you', 1, d.farmersWaiting > 0),
-      if (d.isAdmin) (d.farmersUnassigned, 'Waiting with no verifier', 1, d.farmersUnassigned > 0),
-      if (d.isAdmin) (d.verifiers, 'Verifiers', 3, false),
-      (d.spacesWaiting, 'Spaces waiting for approval', 2, d.spacesWaiting > 0),
-      (d.farmersVerified, d.isAdmin ? 'Verified farmers' : 'Farmers you verified', 1, false),
-      (d.spacesLive, 'Live spaces', 2, false),
+      (d.farmersWaiting, d.isAdmin ? l10n.statFarmersWaitingAll : l10n.statFarmersWaitingYou, Icons.hourglass_top, 1,
+          d.farmersWaiting > 0),
+      if (d.isAdmin)
+        (d.farmersUnassigned, l10n.statUnassigned, Icons.person_off_outlined, 1, d.farmersUnassigned > 0),
+      if (d.isAdmin) (d.verifiers, l10n.opsTabVerifiers, Icons.badge_outlined, 3, false),
+      (d.spacesWaiting, l10n.statSpacesWaiting, Icons.pending_actions, 2, d.spacesWaiting > 0),
+      (d.farmersVerified, d.isAdmin ? l10n.statVerifiedAll : l10n.statVerifiedYou, Icons.verified_outlined, 1, false),
+      (d.spacesLive, l10n.statSpacesLive, Icons.storefront_outlined, 2, false),
     ];
     return ListView(padding: EdgeInsets.all(Breakpoints.gutter(context)), children: [
       MaxWidth(
         maxWidth: 960,
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Text('Hello${d.name == null ? '' : ', ${d.name}'}', style: text.headlineSmall),
-          Text(d.isAdmin ? 'Admin · you see every farmer and manage verifiers' : 'Verifier · you review the farmers assigned to you',
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
-          const SizedBox(height: 20),
+          PageHeader(d.name == null ? l10n.opsHelloNoName : l10n.opsHello(d.name!),
+              subtitle: d.isAdmin ? l10n.opsAdminSubtitle : l10n.opsVerifierSubtitle),
           LayoutBuilder(builder: (context, c) {
             final cols = c.maxWidth >= 720 ? 3 : 2;
             final width = (c.maxWidth - 12 * (cols - 1)) / cols;
             return Wrap(spacing: 12, runSpacing: 12, children: [
-              for (final (value, label, tab, highlight) in tiles)
-                SizedBox(width: width, child: _StatTile(value: value, label: label, highlight: highlight, onTap: () => open(tab))),
+              for (final (value, label, icon, tab, highlight) in tiles)
+                SizedBox(
+                  width: width,
+                  child: StatTile(value: value, label: label, icon: icon, highlight: highlight, onTap: () => open(tab)),
+                ),
             ]);
           }),
         ]),
@@ -113,33 +124,3 @@ class _Dashboard extends StatelessWidget {
   }
 }
 
-class _StatTile extends StatelessWidget {
-  const _StatTile({required this.value, required this.label, required this.highlight, required this.onTap});
-  final int value;
-  final String label;
-  final bool highlight;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Card(
-      margin: EdgeInsets.zero,
-      color: highlight ? Colors.amber.shade50 : null,
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('$value',
-                style: TextStyle(
-                    fontSize: 32, fontWeight: FontWeight.w700, color: highlight ? Colors.amber.shade900 : scheme.primary)),
-            const SizedBox(height: 4),
-            Text(label, style: TextStyle(color: scheme.onSurfaceVariant)),
-          ]),
-        ),
-      ),
-    );
-  }
-}

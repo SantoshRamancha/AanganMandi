@@ -8,4 +8,7 @@ public interface IFileStorage
 
     /// <summary>Opens a stored file, or returns null if it does not exist.</summary>
     Stream? OpenRead(string path);
+
+    /// <summary>Removes a stored file; a missing file is not an error.</summary>
+    void Delete(string path);
 }
