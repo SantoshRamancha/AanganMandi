@@ -14,6 +14,16 @@ public class UsersController(AppDbContext db, TokenService tokens) : ControllerB
 {
     public record RoleRequest(Role Role);
     public record LanguageRequest(string Language);
+    public record ProfileDto(string? Name, string Phone, string Language, Role[] Roles, DateTime MemberSince);
+
+    /// <summary>The signed-in user's own account details, for the profile screen.</summary>
+    [HttpGet]
+    public async Task<ProfileDto> Get(CancellationToken ct)
+    {
+        var user = await db.Users.AsNoTracking().Include(u => u.Roles).SingleAsync(u => u.Id == User.UserId(), ct);
+        return new ProfileDto(user.Name, user.Phone, user.PreferredLanguage,
+            user.Roles.Select(r => r.Role).Order().ToArray(), user.CreatedAt);
+    }
 
     /// <summary>Adds Farmer, Host or Buyer to the signed-in user and returns new tokens carrying it.</summary>
     [HttpPost("role")]

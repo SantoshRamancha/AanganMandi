@@ -14,7 +14,12 @@ public class FilesController(IFileStorage storage) : ControllerBase
     {
         var stream = storage.OpenRead($"spaces/{rest}");
         if (stream is null) return NotFound();
-        var type = rest.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ? "image/png" : "image/jpeg";
+        var type = Path.GetExtension(rest).ToLowerInvariant() switch
+        {
+            ".png" => "image/png",
+            ".webp" => "image/webp",
+            _ => "image/jpeg",
+        };
         return File(stream, type);
     }
 }

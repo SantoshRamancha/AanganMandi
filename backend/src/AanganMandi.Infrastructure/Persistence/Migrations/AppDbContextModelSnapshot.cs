@@ -675,6 +675,169 @@ namespace AanganMandi.Infrastructure.Persistence.Migrations
                     b.ToTable("SpacePhotos");
                 });
 
+            modelBuilder.Entity("AanganMandi.Domain.Trips.Booking", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CancelledBy")
+                        .HasMaxLength(8)
+                        .HasColumnType("nvarchar(8)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("FarmerUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Fee")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<TimeOnly>("From")
+                        .HasColumnType("time");
+
+                    b.Property<Guid>("HostUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("RespondedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("SlotTaken")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("SpaceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<TimeOnly>("To")
+                        .HasColumnType("time");
+
+                    b.Property<Guid>("TripId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TripId");
+
+                    b.HasIndex("HostUserId", "Status");
+
+                    b.HasIndex("SpaceId", "Date")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Bookings_OneAcceptedPerSpaceDay")
+                        .HasFilter("[Status] = 'Accepted'");
+
+                    b.HasIndex("SpaceId", "Date", "Status");
+
+                    b.ToTable("Bookings");
+                });
+
+            modelBuilder.Entity("AanganMandi.Domain.Trips.Trip", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("FarmerUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("PreferredArea")
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Vehicle")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FarmerUserId", "Date");
+
+                    b.ToTable("Trips");
+                });
+
+            modelBuilder.Entity("AanganMandi.Domain.Trips.TripProduce", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CropCode")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal?>("PricePerKg")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<decimal?>("QuantityKg")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<Guid>("TripId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TripId");
+
+                    b.ToTable("TripProduce");
+                });
+
             modelBuilder.Entity("AanganMandi.Domain.Farmers.FarmPlot", b =>
                 {
                     b.HasOne("AanganMandi.Domain.Farmers.FarmerProfile", null)
@@ -728,6 +891,39 @@ namespace AanganMandi.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("AanganMandi.Domain.Trips.Booking", b =>
+                {
+                    b.HasOne("AanganMandi.Domain.Spaces.Space", null)
+                        .WithMany()
+                        .HasForeignKey("SpaceId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("AanganMandi.Domain.Trips.Trip", null)
+                        .WithMany()
+                        .HasForeignKey("TripId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AanganMandi.Domain.Trips.Trip", b =>
+                {
+                    b.HasOne("AanganMandi.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("FarmerUserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AanganMandi.Domain.Trips.TripProduce", b =>
+                {
+                    b.HasOne("AanganMandi.Domain.Trips.Trip", null)
+                        .WithMany("Produce")
+                        .HasForeignKey("TripId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("AanganMandi.Domain.Farmers.FarmPlot", b =>
                 {
                     b.Navigation("Crops");
@@ -748,6 +944,11 @@ namespace AanganMandi.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("AanganMandi.Domain.Spaces.Space", b =>
                 {
                     b.Navigation("Photos");
+                });
+
+            modelBuilder.Entity("AanganMandi.Domain.Trips.Trip", b =>
+                {
+                    b.Navigation("Produce");
                 });
 #pragma warning restore 612, 618
         }

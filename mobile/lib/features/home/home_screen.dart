@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/api/api_client.dart';
 import '../../core/api/app_api.dart';
 import '../../core/api/ops_api.dart';
+import '../../core/api/trip_api.dart';
 import '../../core/router/app_router.dart';
 import '../../core/storage/prefs.dart';
 import '../../core/widgets/responsive.dart';
@@ -13,7 +15,7 @@ import '../host/host_home.dart';
 import '../onboarding/language_screen.dart';
 import '../ops/ops_home.dart';
 
-/// Role-based home with a shared app bar (refresh, language switch, log out).
+/// Role-based home with a shared app bar (refresh, language switch, profile).
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -34,6 +36,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void _refresh() {
     ref.invalidate(farmerProvider);
     ref.invalidate(mySpacesProvider);
+    ref.invalidate(tripsProvider);
+    ref.invalidate(hostBookingsProvider);
     refreshOps(ref);
   }
 
@@ -59,7 +63,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         actions: [
           IconButton(icon: const Icon(Icons.refresh), tooltip: l10n.refresh, onPressed: _refresh),
           const LanguageMenuButton(),
-          const LogoutButton(),
+          // Profile holds the user's details, theme, language and log out.
+          IconButton(
+            icon: const Icon(Icons.account_circle_outlined),
+            tooltip: l10n.profileTitle,
+            onPressed: () => context.push('/profile'),
+          ),
           SizedBox(width: Breakpoints.gutter(context) - 8),
         ],
       ),

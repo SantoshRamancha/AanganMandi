@@ -3,10 +3,53 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/api/api_client.dart';
-import '../../core/api/ops_api.dart';
+import '../../core/widgets/document_tile.dart';
+import '../../core/theme/app_theme.dart';
+import '../../l10n/app_localizations.dart';
 
-final _when = DateFormat('dd MMM yyyy, HH:mm');
-String formatWhen(DateTime? t) => t == null ? '–' : _when.format(t);
+/// Date and time in the app language (Intl.defaultLocale follows it).
+String formatWhen(DateTime? t) => t == null ? '–' : DateFormat('dd MMM yyyy, HH:mm').format(t);
+
+/// Page heading with an optional line of explanation under it.
+class PageHeader extends StatelessWidget {
+  const PageHeader(this.title, {super.key, this.subtitle});
+  final String title;
+  final String? subtitle;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(title, style: Theme.of(context).textTheme.headlineSmall),
+          if (subtitle != null) ...[
+            const SizedBox(height: 4),
+            Text(subtitle!, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, height: 1.35)),
+          ],
+        ]),
+      );
+}
+
+/// Amber notice card: something staff should act on.
+class WarningCard extends StatelessWidget {
+  const WarningCard({super.key, required this.title, required this.body});
+  final String title, body;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Card(
+      color: scheme.warningContainer,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      child: ListTile(
+        iconColor: scheme.onWarningContainer,
+        textColor: scheme.onWarningContainer,
+        leading: const Icon(Icons.warning_amber_rounded),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+        subtitle: Text(body),
+      ),
+    );
+  }
+}
 
 /// Titled card holding label/value rows.
 class InfoCard extends StatelessWidget {
@@ -59,7 +102,7 @@ class StatusChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final (bg, fg) = switch (status) {
-      'Pending' || 'PendingReview' => (Colors.amber.shade100, Colors.amber.shade900),
+      'Pending' || 'PendingReview' => (scheme.warningContainer, scheme.onWarningContainer),
       'Verified' || 'Live' => (scheme.primaryContainer, scheme.onPrimaryContainer),
       'Rejected' => (scheme.errorContainer, scheme.onErrorContainer),
       _ => (scheme.surfaceContainerHighest, scheme.onSurfaceVariant),
@@ -86,17 +129,22 @@ class StatusFilter extends StatelessWidget {
       ]);
 }
 
-/// A private file loaded with the staff login (works on web and phones). Tap to view full screen.
+/// A private file loaded with the staff login (works on web and phones), with preview and download.
+/// Staff never change a document they review: only the farmer or host can replace it.
 class AuthImage extends ConsumerWidget {
   const AuthImage(this.path, {super.key, this.height = 220, this.caption});
+
+  /// Storage path, e.g. "kyc/…/x.jpg".
   final String path;
   final double height;
   final String? caption;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
-    final image = ref.watch(opsFileProvider(path));
+    final api = '/ops/files/$path';
+    final name = path.split('/').last.split('.').first;
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: [
       ClipRRect(
         borderRadius: BorderRadius.circular(12),
@@ -104,31 +152,32 @@ class AuthImage extends ConsumerWidget {
           height: height,
           child: ColoredBox(
             color: scheme.surfaceContainerHighest,
-            child: image.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, _) => Icon(Icons.broken_image_outlined, size: 40, color: scheme.onSurfaceVariant),
-              data: (bytes) => InkWell(
-                onTap: () => showDialog<void>(
-                  context: context,
-                  builder: (dialog) => Dialog.fullscreen(
-                    child: Stack(children: [
-                      Positioned.fill(child: InteractiveViewer(maxScale: 5, child: Image.memory(bytes))),
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: IconButton.filled(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(dialog)),
-                      ),
-                    ]),
+            child: ref.watch(authFileProvider(api)).when(
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (_, _) => Icon(Icons.broken_image_outlined, size: 40, color: scheme.onSurfaceVariant),
+                  data: (f) => InkWell(
+                    onTap: () => showFilePreview(context, api, name),
+                    child: Image.memory(f.bytes, fit: BoxFit.cover),
                   ),
                 ),
-                child: Image.memory(bytes, fit: BoxFit.cover),
-              ),
-            ),
           ),
         ),
       ),
-      if (caption != null)
-        Padding(padding: const EdgeInsets.only(top: 6), child: Text(caption!, style: Theme.of(context).textTheme.bodySmall)),
+      Wrap(spacing: 4, crossAxisAlignment: WrapCrossAlignment.center, children: [
+        if (caption != null) Text(caption!, style: Theme.of(context).textTheme.bodySmall),
+        TextButton.icon(
+          style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+          icon: const Icon(Icons.visibility_outlined, size: 20),
+          label: Text(l10n.preview),
+          onPressed: () => showFilePreview(context, api, name),
+        ),
+        TextButton.icon(
+          style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+          icon: const Icon(Icons.download_outlined, size: 20),
+          label: Text(l10n.download),
+          onPressed: () => downloadFile(context, ref, api, name),
+        ),
+      ]),
     ]);
   }
 }
@@ -175,7 +224,8 @@ class _DecisionPanelState extends State<DecisionPanel> {
       await widget.onDecide(approve, approve ? null : _reason.text.trim());
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(apiErrorMessage(e, 'Could not save. Try again.'))));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(apiErrorMessage(e, AppLocalizations.of(context).couldNotSave))));
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -184,7 +234,8 @@ class _DecisionPanelState extends State<DecisionPanel> {
 
   @override
   Widget build(BuildContext context) {
-    return InfoCard(title: 'Decision', children: [
+    final l10n = AppLocalizations.of(context);
+    return InfoCard(title: l10n.decision, children: [
       Text(widget.guidance),
       const SizedBox(height: 12),
       Wrap(spacing: 8, runSpacing: 8, children: [
@@ -195,7 +246,7 @@ class _DecisionPanelState extends State<DecisionPanel> {
         controller: _reason,
         maxLines: 2,
         maxLength: 500,
-        decoration: const InputDecoration(labelText: 'Reason (required to reject; they will see it)'),
+        decoration: InputDecoration(labelText: l10n.reasonLabel),
       ),
       const SizedBox(height: 8),
       Wrap(spacing: 12, runSpacing: 12, children: [
@@ -206,7 +257,7 @@ class _DecisionPanelState extends State<DecisionPanel> {
         ),
         OutlinedButton.icon(
           icon: const Icon(Icons.close),
-          label: const Text('Reject'),
+          label: Text(l10n.reject),
           style: OutlinedButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
           onPressed: _busy || _reason.text.trim().isEmpty ? null : () => _decide(false),
         ),

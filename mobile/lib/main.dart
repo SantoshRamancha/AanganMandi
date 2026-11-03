@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import 'core/router/app_router.dart';
 import 'core/storage/prefs.dart';
@@ -19,12 +20,17 @@ class AanganMandiApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final language = ref.watch(localeProvider);
+    // Dates (DateFormat) follow the app language too.
+    Intl.defaultLocale = language;
     return MaterialApp.router(
-      // The debug ribbon covers the app-bar language button.
+      // The debug ribbon covers the app-bar buttons.
       debugShowCheckedModeBanner: false,
       onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
       theme: AppTheme.light(),
-      locale: Locale(ref.watch(localeProvider)),
+      darkTheme: AppTheme.dark(),
+      themeMode: ref.watch(themeModeProvider),
+      locale: Locale(language),
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const [
         AppLocalizations.delegate,

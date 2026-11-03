@@ -25,13 +25,18 @@ role in the database on every call, so a removed verifier loses access at once.
 | Flow | Who | Where |
 |---|---|---|
 | Language (en/te/hi), OTP login (test OTP shown on screen in Development), choose role | everyone | app |
+| My profile (account details, farming details or spaces), light / dark / system theme, language, log out | everyone | app → profile icon |
+| Documents (evidence photo, space photos, proof): preview and download always; reupload and delete until approved. Deleting something a waiting submission needs takes it back to "not submitted" / Draft | farmer, host | app (farmer home, space page) |
+| Preview and download every document under review (staff never change them) | verifier, admin | app → Operations |
 | Farmer verification: name, village, district, crops, farm size (optional), grows own or sources → one proof (AgriStack Farmer ID, land/cultivation record, FPO membership, or officer/organisation reference) with photo → submit | farmer | app |
 | Dashboard; add or remove verifiers; see all farmers, assign or reassign; a removed verifier's queue moves to the others | admin | app → Operations |
 | Submissions go to the verifier with the fewest waiting (resubmissions to the same one); verifier reviews only their own, approves (Level 2) or rejects with reason; farmer fixes and resubmits | verifier | app → Operations |
 | List a space: details, location, amenities, days/hours, fee, 3–8 photos, private right-to-use proof → submit | host | app |
+| Plan a trip (date up to 60 days ahead, vehicle, crops with optional kg and ₹/kg, preferred area) → find live spaces open that weekday that fit the vehicle and are free that day → request one; cancel the request, the booking or the whole trip | verified farmer | app → home → My trips |
+| Booking requests per space and day: accept (other requests for that day are declined automatically) or decline with a reason; cancel a confirmed booking with a reason. Address and both phone numbers are shared only once accepted (FR-1.9); the fee is paid to the host at the space | host | app → home → Bookings |
 | Approve space (goes Live) or reject with reason; host fixes from the space page | verifier, admin | app → Operations |
 
-Not built yet: trips and produce listings, matching, bookings, buyer alerts, maps, push notifications.
+Not built yet: in-app payment, buyer alerts and produce browsing, maps, push notifications (hosts and farmers see new requests and answers when they open the app).
 
 ## Toolchain (installed on this machine)
 

@@ -2,6 +2,7 @@ using AanganMandi.Domain.Farmers;
 using AanganMandi.Domain.Identity;
 using AanganMandi.Domain.Master;
 using AanganMandi.Domain.Spaces;
+using AanganMandi.Domain.Trips;
 using Microsoft.EntityFrameworkCore;
 
 namespace AanganMandi.Infrastructure.Persistence;
@@ -39,6 +40,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<VerificationDocument> VerificationDocuments => Set<VerificationDocument>();
     public DbSet<Space> Spaces => Set<Space>();
     public DbSet<SpacePhoto> SpacePhotos => Set<SpacePhoto>();
+    public DbSet<Trip> Trips => Set<Trip>();
+    public DbSet<TripProduce> TripProduce => Set<TripProduce>();
+    public DbSet<Booking> Bookings => Set<Booking>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -101,6 +105,38 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.Property(s => s.Fee).HasPrecision(10, 2);
             e.Property(s => s.Location).HasColumnType("geography");
             e.HasMany(s => s.Photos).WithOne().HasForeignKey(p => p.SpaceId);
+        });
+        b.Entity<Trip>(e =>
+        {
+            e.HasIndex(t => new { t.FarmerUserId, t.Date });
+            e.Property(t => t.Vehicle).HasConversion<string>().HasMaxLength(16);
+            e.Property(t => t.Status).HasConversion<string>().HasMaxLength(16);
+            e.Property(t => t.PreferredArea).HasMaxLength(80);
+            e.Property(t => t.Notes).HasMaxLength(200);
+            e.HasOne<User>().WithMany().HasForeignKey(t => t.FarmerUserId).OnDelete(DeleteBehavior.NoAction);
+            e.HasMany(t => t.Produce).WithOne().HasForeignKey(p => p.TripId);
+        });
+        b.Entity<TripProduce>(e =>
+        {
+            e.Property(p => p.CropCode).HasMaxLength(32);
+            e.Property(p => p.QuantityKg).HasPrecision(10, 2);
+            e.Property(p => p.PricePerKg).HasPrecision(10, 2);
+        });
+        b.Entity<Booking>(e =>
+        {
+            e.HasIndex(x => new { x.SpaceId, x.Date, x.Status });
+            e.HasIndex(x => new { x.HostUserId, x.Status });
+            e.HasIndex(x => x.TripId);
+            // At most one confirmed farmer per space and day, even if two hosts' clicks race.
+            e.HasIndex(x => new { x.SpaceId, x.Date }).IsUnique().HasFilter("[Status] = 'Accepted'")
+                .HasDatabaseName("IX_Bookings_OneAcceptedPerSpaceDay");
+            e.Property(x => x.Status).HasConversion<string>().HasMaxLength(16);
+            e.Property(x => x.Fee).HasPrecision(10, 2);
+            e.Property(x => x.Message).HasMaxLength(200);
+            e.Property(x => x.Reason).HasMaxLength(200);
+            e.Property(x => x.CancelledBy).HasMaxLength(8);
+            e.HasOne<Trip>().WithMany().HasForeignKey(x => x.TripId).OnDelete(DeleteBehavior.NoAction);
+            e.HasOne<Space>().WithMany().HasForeignKey(x => x.SpaceId).OnDelete(DeleteBehavior.NoAction);
         });
     }
 }
