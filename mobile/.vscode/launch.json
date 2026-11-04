@@ -1,5 +1,5 @@
 {
-  // For when only the mobile folder is open. Opening C:\Aangan_Mandi gives the API configs too.
+  // For when only the mobile folder is open. Opening C:\Aangan_Mandi\Aangan_Mandi gives the API configs too.
   "version": "0.2.0",
   "configurations": [
     {
@@ -7,7 +7,9 @@
       "type": "dart",
       "request": "launch",
       "program": "lib/main.dart",
-      "deviceId": "chrome"
+      "deviceId": "chrome",
+      // Same address every run (http://localhost:5090), so the browser keeps your login, language and theme.
+      "args": ["--web-port", "5090"]
     },
     {
       "name": "Flutter app (selected device)",

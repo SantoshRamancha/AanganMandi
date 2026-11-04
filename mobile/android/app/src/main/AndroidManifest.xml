@@ -8,6 +8,7 @@
     <application
         android:label="Aangan Mandi"
         android:name="${applicationName}"
+        android:usesCleartextTraffic="${usesCleartextTraffic}"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

@@ -5,11 +5,14 @@ import 'package:intl/intl.dart';
 import '../../core/api/api_client.dart';
 import '../../core/api/app_api.dart';
 import '../../core/api/models.dart';
+import '../../core/crops.dart';
+import '../../core/districts.dart';
 import '../../core/labels.dart';
-import '../../core/router/app_router.dart';
 import '../../core/storage/prefs.dart';
+import '../../core/widgets/initials_avatar.dart';
 import '../../core/widgets/responsive.dart';
 import '../../l10n/app_localizations.dart';
+import '../home/home_screen.dart';
 import '../onboarding/language_screen.dart';
 
 /// The signed-in user's details, plus app settings (theme, language) and log out. Same for every role.
@@ -47,18 +50,7 @@ class ProfileScreen extends ConsumerWidget {
               const _AppearanceCard(),
               const _LanguageCard(),
               const SizedBox(height: 8),
-              OutlinedButton.icon(
-                icon: const Icon(Icons.logout),
-                label: Text(l10n.logout),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.error,
-                  side: BorderSide(color: Theme.of(context).colorScheme.error.withValues(alpha: .5)),
-                ),
-                onPressed: () async {
-                  await Session.clear();
-                  ref.read(routerProvider).go('/login');
-                },
-              ),
+              _LogoutCard(phone: profile.value?.phone),
               const SizedBox(height: 24),
             ]),
           ),
@@ -77,20 +69,10 @@ class _Header extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final name = profile.name?.trim();
-    final initials = (name == null || name.isEmpty)
-        ? null
-        : name.split(RegExp(r'\s+')).take(2).map((w) => w.characters.first.toUpperCase()).join();
     return Padding(
       padding: const EdgeInsets.only(top: 8, bottom: 20),
       child: Column(children: [
-        CircleAvatar(
-          radius: 44,
-          backgroundColor: scheme.primaryContainer,
-          foregroundColor: scheme.onPrimaryContainer,
-          child: initials == null
-              ? const Icon(Icons.person, size: 48)
-              : Text(initials, style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w700)),
-        ),
+        InitialsAvatar(name: name, radius: 44),
         const SizedBox(height: 12),
         Text(name == null || name.isEmpty ? profile.phone : name,
             textAlign: TextAlign.center, style: Theme.of(context).textTheme.headlineSmall),
@@ -175,14 +157,14 @@ class _FarmerCard extends ConsumerWidget {
     final lang = ref.watch(localeProvider);
     final crops = ref.watch(cropsProvider).value ?? const <Crop>[];
     final cropNames = [
-      for (final code in farmer.cropCodes) crops.where((c) => c.code == code).firstOrNull?.name(lang) ?? code,
+      for (final code in farmer.cropCodes) cropName(code, crops, lang),
     ];
     return FormSection(
       title: l10n.farmDetails,
       child: Column(children: [
         _Row(Icons.verified_user_outlined, l10n.verificationStatus, l10n.farmerStatus(farmer.status)),
         _Row(Icons.location_on_outlined, l10n.village,
-            [farmer.village, farmer.district].whereType<String>().join(', ').ifEmpty(l10n.notGiven)),
+            [farmer.village, if (farmer.district case final d?) districtName(d, lang)].whereType<String>().join(', ').ifEmpty(l10n.notGiven)),
         _Row(Icons.grass, l10n.crops, cropNames.join(', ').ifEmpty(l10n.notGiven)),
         if (farmer.farmSizeAcres != null) _Row(Icons.straighten, l10n.farmSize, l10n.aboutAcres('${farmer.farmSizeAcres}')),
       ]),
@@ -255,4 +237,36 @@ class _LanguageCard extends ConsumerWidget {
 
 extension on String {
   String ifEmpty(String fallback) => isEmpty ? fallback : this;
+}
+
+/// Log out as a clear, separate row at the end of the profile; asks before logging out.
+class _LogoutCard extends ConsumerWidget {
+  const _LogoutCard({required this.phone});
+  final String? phone;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    return Card(
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(color: scheme.error.withValues(alpha: .35)),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        leading: CircleAvatar(
+          backgroundColor: scheme.errorContainer,
+          foregroundColor: scheme.onErrorContainer,
+          child: const Icon(Icons.logout),
+        ),
+        title: Text(l10n.logout, style: TextStyle(color: scheme.error, fontWeight: FontWeight.w700, fontSize: 17)),
+        subtitle: phone == null ? null : Text(l10n.signedInAs(phone!)),
+        trailing: Icon(Icons.chevron_right, color: scheme.error),
+        onTap: () => confirmLogout(context, ref),
+      ),
+    );
+  }
 }

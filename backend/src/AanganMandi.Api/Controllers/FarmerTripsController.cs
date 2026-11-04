@@ -1,4 +1,5 @@
 using AanganMandi.Api.Auth;
+using AanganMandi.Application.Master;
 using AanganMandi.Application.Trips;
 using AanganMandi.Domain.Farmers;
 using AanganMandi.Domain.Spaces;
@@ -206,10 +207,15 @@ public class FarmerTripsController(AppDbContext db) : ControllerBase
         if (req.Produce.Length == 0) return Problem(statusCode: 400, title: "Add at least one crop you will bring");
         if (req.Produce.Any(p => p.QuantityKg is <= 0 or > 100_000 || p.PricePerKg is <= 0 or > 100_000))
             return Problem(statusCode: 400, title: "Quantity and price must be positive numbers");
-        var codes = req.Produce.Select(p => p.CropCode).Distinct().ToArray();
-        if (codes.Length != req.Produce.Length) return Problem(statusCode: 400, title: "Each crop can be added once");
-        var known = await db.Crops.CountAsync(c => codes.Contains(c.Code), ct);
-        return known == codes.Length ? null : Problem(statusCode: 400, title: "Unknown crop code");
+        // Master crops by code, or the farmer's own "custom:<name>" crops; each once.
+        var requested = req.Produce.Select(p => p.CropCode.Trim()).ToArray();
+        var master = await db.Crops.Where(c => requested.Contains(c.Code)).Select(c => c.Code).ToListAsync(ct);
+        var (codes, cropError) = CropCodes.Normalize(requested, master.ToHashSet());
+        if (cropError is not null) return Problem(statusCode: 400, title: cropError);
+        if (codes!.Length != req.Produce.Length) return Problem(statusCode: 400, title: "Each crop can be added once");
+        // Store the tidied custom names.
+        for (var i = 0; i < codes.Length; i++) req.Produce[i] = req.Produce[i] with { CropCode = codes[i] };
+        return null;
     }
 
     private static void Apply(Trip t, TripRequest r)

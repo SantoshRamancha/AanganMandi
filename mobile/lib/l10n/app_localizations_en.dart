@@ -1507,4 +1507,79 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get hostHowAcceptBody =>
       'Accept, share your address, and collect the fee at the space.';
+
+  @override
+  String get catVegetable => 'Vegetables';
+
+  @override
+  String get catLeafy => 'Leafy greens';
+
+  @override
+  String get catFruit => 'Fruits';
+
+  @override
+  String get catGrain => 'Grains and millets';
+
+  @override
+  String get catPulse => 'Pulses';
+
+  @override
+  String get catOilseed => 'Oilseeds';
+
+  @override
+  String get catSpice => 'Spices';
+
+  @override
+  String get catFlower => 'Flowers';
+
+  @override
+  String get catOther => 'Other';
+
+  @override
+  String get searchCrops => 'Search crops (any language)';
+
+  @override
+  String get yourCrops => 'Your crops';
+
+  @override
+  String get addedByYou => 'Added by you';
+
+  @override
+  String get addAnotherCrop => 'Add another crop';
+
+  @override
+  String get addCropTitle => 'Add a crop';
+
+  @override
+  String get addCropBody =>
+      'Not in the list? Type its name in any language. It is shown exactly as you type it.';
+
+  @override
+  String get addCropHint => 'Crop name';
+
+  @override
+  String get addCropInvalid => 'Use 2 to 30 letters';
+
+  @override
+  String addCropNamed(String name) {
+    return 'Add “$name”';
+  }
+
+  @override
+  String get addButton => 'Add';
+
+  @override
+  String get noCropsMatch => 'No crop in the list has that name.';
+
+  @override
+  String get logoutQ => 'Log out?';
+
+  @override
+  String get logoutBody =>
+      'To come back, you will sign in again with your mobile number and an OTP.';
+
+  @override
+  String signedInAs(String phone) {
+    return 'Signed in as $phone';
+  }
 }

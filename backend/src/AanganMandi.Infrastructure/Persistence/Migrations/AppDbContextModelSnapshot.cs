@@ -546,6 +546,706 @@ namespace AanganMandi.Infrastructure.Persistence.Migrations
                             NameTe = "అరటి",
                             UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
                             YieldPerAcreKg = 12000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000011"),
+                            Category = "Vegetable",
+                            Code = "POTATO",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Potato",
+                            NameHi = "आलू",
+                            NameTe = "బంగాళాదుంప",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 10000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000012"),
+                            Category = "Vegetable",
+                            Code = "CABBAGE",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Cabbage",
+                            NameHi = "पत्ता गोभी",
+                            NameTe = "క్యాబేజీ",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 12000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000013"),
+                            Category = "Vegetable",
+                            Code = "CAULIFLOWER",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Cauliflower",
+                            NameHi = "फूलगोभी",
+                            NameTe = "కాలీఫ్లవర్",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 8000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000014"),
+                            Category = "Vegetable",
+                            Code = "CARROT",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Carrot",
+                            NameHi = "गाजर",
+                            NameTe = "క్యారెట్",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 10000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000015"),
+                            Category = "Vegetable",
+                            Code = "BEETROOT",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Beetroot",
+                            NameHi = "चुकंदर",
+                            NameTe = "బీట్‌రూట్",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 10000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000016"),
+                            Category = "Vegetable",
+                            Code = "RADISH",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Radish",
+                            NameHi = "मूली",
+                            NameTe = "ముల్లంగి",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 8000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000017"),
+                            Category = "Vegetable",
+                            Code = "CUCUMBER",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Cucumber",
+                            NameHi = "खीरा",
+                            NameTe = "దోసకాయ",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 8000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000018"),
+                            Category = "Vegetable",
+                            Code = "BITTER_GOURD",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Bitter gourd",
+                            NameHi = "करेला",
+                            NameTe = "కాకరకాయ",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 5000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000019"),
+                            Category = "Vegetable",
+                            Code = "RIDGE_GOURD",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Ridge gourd",
+                            NameHi = "तुरई",
+                            NameTe = "బీరకాయ",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 6000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000020"),
+                            Category = "Vegetable",
+                            Code = "SNAKE_GOURD",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Snake gourd",
+                            NameHi = "चिचिंडा",
+                            NameTe = "పొట్లకాయ",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 6000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000021"),
+                            Category = "Vegetable",
+                            Code = "PUMPKIN",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Pumpkin",
+                            NameHi = "कद्दू",
+                            NameTe = "గుమ్మడికాయ",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 10000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000022"),
+                            Category = "Vegetable",
+                            Code = "IVY_GOURD",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Ivy gourd",
+                            NameHi = "कुंदरू",
+                            NameTe = "దొండకాయ",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 5000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000023"),
+                            Category = "Vegetable",
+                            Code = "DRUMSTICK",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Drumstick",
+                            NameHi = "सहजन",
+                            NameTe = "మునగకాయ",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 4000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000024"),
+                            Category = "Vegetable",
+                            Code = "FRENCH_BEANS",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "French beans",
+                            NameHi = "फ्रेंच बीन्स",
+                            NameTe = "బీన్స్",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 4000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000025"),
+                            Category = "Vegetable",
+                            Code = "CLUSTER_BEANS",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Cluster beans",
+                            NameHi = "ग्वार फली",
+                            NameTe = "గోరుచిక్కుడు",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 3000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000026"),
+                            Category = "Vegetable",
+                            Code = "BROAD_BEANS",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Broad beans",
+                            NameHi = "सेम",
+                            NameTe = "చిక్కుడుకాయ",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 4000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000027"),
+                            Category = "Vegetable",
+                            Code = "CAPSICUM",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Capsicum",
+                            NameHi = "शिमला मिर्च",
+                            NameTe = "క్యాప్సికమ్",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 6000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000028"),
+                            Category = "Vegetable",
+                            Code = "SWEET_POTATO",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Sweet potato",
+                            NameHi = "शकरकंद",
+                            NameTe = "చిలగడదుంప",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 8000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000029"),
+                            Category = "Vegetable",
+                            Code = "GARLIC",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Garlic",
+                            NameHi = "लहसुन",
+                            NameTe = "వెల్లుల్లి",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 3000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000030"),
+                            Category = "Vegetable",
+                            Code = "GINGER",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Ginger",
+                            NameHi = "अदरक",
+                            NameTe = "అల్లం",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 6000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000031"),
+                            Category = "Vegetable",
+                            Code = "SWEET_CORN",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Sweet corn",
+                            NameHi = "स्वीट कॉर्न",
+                            NameTe = "స్వీట్ కార్న్",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 5000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000032"),
+                            Category = "Leafy",
+                            Code = "METHI",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Fenugreek leaves",
+                            NameHi = "मेथी",
+                            NameTe = "మెంతికూర",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 2500m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000033"),
+                            Category = "Leafy",
+                            Code = "GONGURA",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Gongura",
+                            NameHi = "गोंगूरा",
+                            NameTe = "గోంగూర",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 3000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000034"),
+                            Category = "Leafy",
+                            Code = "AMARANTH",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Amaranth leaves",
+                            NameHi = "चौलाई",
+                            NameTe = "తోటకూర",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 3000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000035"),
+                            Category = "Leafy",
+                            Code = "MINT",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Mint",
+                            NameHi = "पुदीना",
+                            NameTe = "పుదీనా",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 3000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000036"),
+                            Category = "Leafy",
+                            Code = "CURRY_LEAVES",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Curry leaves",
+                            NameHi = "करी पत्ता",
+                            NameTe = "కరివేపాకు",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 2000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000037"),
+                            Category = "Leafy",
+                            Code = "SPRING_ONION",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Spring onion",
+                            NameHi = "हरा प्याज",
+                            NameTe = "ఉల్లికాడలు",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 3000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000038"),
+                            Category = "Fruit",
+                            Code = "PAPAYA",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Papaya",
+                            NameHi = "पपीता",
+                            NameTe = "బొప్పాయి",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 15000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000039"),
+                            Category = "Fruit",
+                            Code = "GUAVA",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Guava",
+                            NameHi = "अमरूद",
+                            NameTe = "జామ",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 6000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000040"),
+                            Category = "Fruit",
+                            Code = "POMEGRANATE",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Pomegranate",
+                            NameHi = "अनार",
+                            NameTe = "దానిమ్మ",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 4000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000041"),
+                            Category = "Fruit",
+                            Code = "SWEET_LIME",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Sweet lime",
+                            NameHi = "मौसंबी",
+                            NameTe = "బత్తాయి",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 6000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000042"),
+                            Category = "Fruit",
+                            Code = "LEMON",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Lemon",
+                            NameHi = "नींबू",
+                            NameTe = "నిమ్మకాయ",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 4000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000043"),
+                            Category = "Fruit",
+                            Code = "WATERMELON",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Watermelon",
+                            NameHi = "तरबूज",
+                            NameTe = "పుచ్చకాయ",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 10000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000044"),
+                            Category = "Fruit",
+                            Code = "MUSKMELON",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Muskmelon",
+                            NameHi = "खरबूजा",
+                            NameTe = "కర్బూజ",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 6000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000045"),
+                            Category = "Fruit",
+                            Code = "SAPOTA",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Sapota",
+                            NameHi = "चीकू",
+                            NameTe = "సపోటా",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 5000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000046"),
+                            Category = "Fruit",
+                            Code = "CUSTARD_APPLE",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Custard apple",
+                            NameHi = "शरीफा",
+                            NameTe = "సీతాఫలం",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 3000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000047"),
+                            Category = "Fruit",
+                            Code = "COCONUT",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Coconut",
+                            NameHi = "नारियल",
+                            NameTe = "కొబ్బరికాయ",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 4000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000048"),
+                            Category = "Fruit",
+                            Code = "GRAPES",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Grapes",
+                            NameHi = "अंगूर",
+                            NameTe = "ద్రాక్ష",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 8000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000049"),
+                            Category = "Grain",
+                            Code = "RICE",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Rice",
+                            NameHi = "चावल",
+                            NameTe = "బియ్యం",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 2500m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000050"),
+                            Category = "Grain",
+                            Code = "MAIZE",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Maize",
+                            NameHi = "मक्का",
+                            NameTe = "మొక్కజొన్న",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 2500m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000051"),
+                            Category = "Grain",
+                            Code = "JOWAR",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Jowar",
+                            NameHi = "ज्वार",
+                            NameTe = "జొన్నలు",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 1200m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000052"),
+                            Category = "Grain",
+                            Code = "FOXTAIL_MILLET",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Foxtail millet",
+                            NameHi = "कंगनी",
+                            NameTe = "కొర్రలు",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 800m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000053"),
+                            Category = "Pulse",
+                            Code = "RED_GRAM",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Red gram (toor dal)",
+                            NameHi = "अरहर (तूर)",
+                            NameTe = "కందులు",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 600m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000054"),
+                            Category = "Pulse",
+                            Code = "GREEN_GRAM",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Green gram (moong)",
+                            NameHi = "मूंग",
+                            NameTe = "పెసలు",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 500m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000055"),
+                            Category = "Pulse",
+                            Code = "BENGAL_GRAM",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Bengal gram (chana)",
+                            NameHi = "चना",
+                            NameTe = "శనగలు",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 700m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000056"),
+                            Category = "Oilseed",
+                            Code = "GROUNDNUT",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Groundnut",
+                            NameHi = "मूंगफली",
+                            NameTe = "వేరుశనగ",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 1000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000057"),
+                            Category = "Spice",
+                            Code = "TURMERIC",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Turmeric",
+                            NameHi = "हल्दी",
+                            NameTe = "పసుపు",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 8000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000058"),
+                            Category = "Spice",
+                            Code = "DRY_CHILLI",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Dry red chilli",
+                            NameHi = "सूखी लाल मिर्च",
+                            NameTe = "ఎండు మిర్చి",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 1500m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000059"),
+                            Category = "Flower",
+                            Code = "MARIGOLD",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Marigold flowers",
+                            NameHi = "गेंदा फूल",
+                            NameTe = "బంతి పూలు",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 4000m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0001-000000000060"),
+                            Category = "Flower",
+                            Code = "JASMINE",
+                            CreatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrownInTelangana = true,
+                            IsDeleted = false,
+                            NameEn = "Jasmine flowers",
+                            NameHi = "चमेली फूल",
+                            NameTe = "మల్లె పూలు",
+                            UpdatedAt = new DateTime(2026, 10, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            YieldPerAcreKg = 1500m
                         });
                 });
 
@@ -811,8 +1511,8 @@ namespace AanganMandi.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("CropCode")
                         .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");

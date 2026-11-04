@@ -2721,6 +2721,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Accept, share your address, and collect the fee at the space.'**
   String get hostHowAcceptBody;
+
+  /// No description provided for @catVegetable.
+  ///
+  /// In en, this message translates to:
+  /// **'Vegetables'**
+  String get catVegetable;
+
+  /// No description provided for @catLeafy.
+  ///
+  /// In en, this message translates to:
+  /// **'Leafy greens'**
+  String get catLeafy;
+
+  /// No description provided for @catFruit.
+  ///
+  /// In en, this message translates to:
+  /// **'Fruits'**
+  String get catFruit;
+
+  /// No description provided for @catGrain.
+  ///
+  /// In en, this message translates to:
+  /// **'Grains and millets'**
+  String get catGrain;
+
+  /// No description provided for @catPulse.
+  ///
+  /// In en, this message translates to:
+  /// **'Pulses'**
+  String get catPulse;
+
+  /// No description provided for @catOilseed.
+  ///
+  /// In en, this message translates to:
+  /// **'Oilseeds'**
+  String get catOilseed;
+
+  /// No description provided for @catSpice.
+  ///
+  /// In en, this message translates to:
+  /// **'Spices'**
+  String get catSpice;
+
+  /// No description provided for @catFlower.
+  ///
+  /// In en, this message translates to:
+  /// **'Flowers'**
+  String get catFlower;
+
+  /// No description provided for @catOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get catOther;
+
+  /// No description provided for @searchCrops.
+  ///
+  /// In en, this message translates to:
+  /// **'Search crops (any language)'**
+  String get searchCrops;
+
+  /// No description provided for @yourCrops.
+  ///
+  /// In en, this message translates to:
+  /// **'Your crops'**
+  String get yourCrops;
+
+  /// No description provided for @addedByYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Added by you'**
+  String get addedByYou;
+
+  /// No description provided for @addAnotherCrop.
+  ///
+  /// In en, this message translates to:
+  /// **'Add another crop'**
+  String get addAnotherCrop;
+
+  /// No description provided for @addCropTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a crop'**
+  String get addCropTitle;
+
+  /// No description provided for @addCropBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Not in the list? Type its name in any language. It is shown exactly as you type it.'**
+  String get addCropBody;
+
+  /// No description provided for @addCropHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Crop name'**
+  String get addCropHint;
+
+  /// No description provided for @addCropInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Use 2 to 30 letters'**
+  String get addCropInvalid;
+
+  /// No description provided for @addCropNamed.
+  ///
+  /// In en, this message translates to:
+  /// **'Add “{name}”'**
+  String addCropNamed(String name);
+
+  /// No description provided for @addButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get addButton;
+
+  /// No description provided for @noCropsMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'No crop in the list has that name.'**
+  String get noCropsMatch;
+
+  /// No description provided for @logoutQ.
+  ///
+  /// In en, this message translates to:
+  /// **'Log out?'**
+  String get logoutQ;
+
+  /// No description provided for @logoutBody.
+  ///
+  /// In en, this message translates to:
+  /// **'To come back, you will sign in again with your mobile number and an OTP.'**
+  String get logoutBody;
+
+  /// No description provided for @signedInAs.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed in as {phone}'**
+  String signedInAs(String phone);
 }
 
 class _AppLocalizationsDelegate

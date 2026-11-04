@@ -1471,4 +1471,79 @@ class AppLocalizationsTe extends AppLocalizations {
   @override
   String get hostHowAcceptBody =>
       'అంగీకరించి, చిరునామా పంచుకుని, స్థలం వద్ద రుసుము తీసుకోండి.';
+
+  @override
+  String get catVegetable => 'కూరగాయలు';
+
+  @override
+  String get catLeafy => 'ఆకుకూరలు';
+
+  @override
+  String get catFruit => 'పండ్లు';
+
+  @override
+  String get catGrain => 'ధాన్యాలు, చిరుధాన్యాలు';
+
+  @override
+  String get catPulse => 'పప్పుధాన్యాలు';
+
+  @override
+  String get catOilseed => 'నూనె గింజలు';
+
+  @override
+  String get catSpice => 'సుగంధ ద్రవ్యాలు';
+
+  @override
+  String get catFlower => 'పూలు';
+
+  @override
+  String get catOther => 'ఇతరాలు';
+
+  @override
+  String get searchCrops => 'పంటలు వెతకండి (ఏ భాషలోనైనా)';
+
+  @override
+  String get yourCrops => 'మీ పంటలు';
+
+  @override
+  String get addedByYou => 'మీరు జోడించినవి';
+
+  @override
+  String get addAnotherCrop => 'మరో పంట జోడించండి';
+
+  @override
+  String get addCropTitle => 'పంట జోడించండి';
+
+  @override
+  String get addCropBody =>
+      'జాబితాలో లేదా? దాని పేరును ఏ భాషలోనైనా టైప్ చేయండి. మీరు టైప్ చేసినట్లే కనిపిస్తుంది.';
+
+  @override
+  String get addCropHint => 'పంట పేరు';
+
+  @override
+  String get addCropInvalid => '2 నుండి 30 అక్షరాలు వాడండి';
+
+  @override
+  String addCropNamed(String name) {
+    return '“$name” జోడించండి';
+  }
+
+  @override
+  String get addButton => 'జోడించు';
+
+  @override
+  String get noCropsMatch => 'జాబితాలో ఆ పేరుతో పంట లేదు.';
+
+  @override
+  String get logoutQ => 'లాగ్ అవుట్ చేయాలా?';
+
+  @override
+  String get logoutBody =>
+      'మళ్లీ రావడానికి, మీ మొబైల్ నంబర్ మరియు OTPతో మళ్లీ లాగిన్ అవ్వాలి.';
+
+  @override
+  String signedInAs(String phone) {
+    return '$phoneతో లాగిన్ అయ్యారు';
+  }
 }

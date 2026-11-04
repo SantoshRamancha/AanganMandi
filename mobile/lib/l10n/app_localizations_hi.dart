@@ -1474,4 +1474,79 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get hostHowAcceptBody =>
       'स्वीकार करें, अपना पता साझा करें, और जगह पर शुल्क लें।';
+
+  @override
+  String get catVegetable => 'सब्ज़ियाँ';
+
+  @override
+  String get catLeafy => 'पत्तेदार सब्ज़ियाँ';
+
+  @override
+  String get catFruit => 'फल';
+
+  @override
+  String get catGrain => 'अनाज और मोटा अनाज';
+
+  @override
+  String get catPulse => 'दालें';
+
+  @override
+  String get catOilseed => 'तिलहन';
+
+  @override
+  String get catSpice => 'मसाले';
+
+  @override
+  String get catFlower => 'फूल';
+
+  @override
+  String get catOther => 'अन्य';
+
+  @override
+  String get searchCrops => 'फसलें खोजें (किसी भी भाषा में)';
+
+  @override
+  String get yourCrops => 'आपकी फसलें';
+
+  @override
+  String get addedByYou => 'आपके द्वारा जोड़ी गई';
+
+  @override
+  String get addAnotherCrop => 'दूसरी फसल जोड़ें';
+
+  @override
+  String get addCropTitle => 'फसल जोड़ें';
+
+  @override
+  String get addCropBody =>
+      'सूची में नहीं है? उसका नाम किसी भी भाषा में लिखें। वह वैसे ही दिखेगा जैसा आप लिखेंगे।';
+
+  @override
+  String get addCropHint => 'फसल का नाम';
+
+  @override
+  String get addCropInvalid => '2 से 30 अक्षर लिखें';
+
+  @override
+  String addCropNamed(String name) {
+    return '“$name” जोड़ें';
+  }
+
+  @override
+  String get addButton => 'जोड़ें';
+
+  @override
+  String get noCropsMatch => 'सूची में इस नाम की कोई फसल नहीं है।';
+
+  @override
+  String get logoutQ => 'लॉग आउट करें?';
+
+  @override
+  String get logoutBody =>
+      'वापस आने के लिए आपको अपने मोबाइल नंबर और OTP से फिर से लॉग इन करना होगा।';
+
+  @override
+  String signedInAs(String phone) {
+    return '$phone से लॉग इन हैं';
+  }
 }
