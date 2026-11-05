@@ -8,6 +8,7 @@ import '../../core/api/ops_api.dart';
 import '../../core/api/trip_api.dart';
 import '../../core/router/app_router.dart';
 import '../../core/storage/prefs.dart';
+import '../../core/widgets/initials_avatar.dart';
 import '../../core/widgets/responsive.dart';
 import '../../l10n/app_localizations.dart';
 import '../farmer/farmer_home.dart';
@@ -37,6 +38,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ref.invalidate(farmerProvider);
     ref.invalidate(mySpacesProvider);
     ref.invalidate(tripsProvider);
+    ref.invalidate(profileProvider);
     ref.invalidate(hostBookingsProvider);
     refreshOps(ref);
   }
@@ -64,11 +66,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           IconButton(icon: const Icon(Icons.refresh), tooltip: l10n.refresh, onPressed: _refresh),
           const LanguageMenuButton(),
           // Profile holds the user's details, theme, language and log out.
-          IconButton(
-            icon: const Icon(Icons.account_circle_outlined),
-            tooltip: l10n.profileTitle,
-            onPressed: () => context.push('/profile'),
-          ),
+          const _ProfileButton(),
           SizedBox(width: Breakpoints.gutter(context) - 8),
         ],
       ),
@@ -102,17 +100,54 @@ class LanguageMenuButton extends ConsumerWidget {
   }
 }
 
+/// Asks first, then logs out and returns to the login screen.
+Future<void> confirmLogout(BuildContext context, WidgetRef ref) async {
+  final l10n = AppLocalizations.of(context);
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (dialog) => AlertDialog(
+      icon: const Icon(Icons.logout),
+      title: Text(l10n.logoutQ),
+      content: Text(l10n.logoutBody),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(dialog, false), child: Text(l10n.cancel)),
+        FilledButton.icon(
+          style: FilledButton.styleFrom(
+            backgroundColor: Theme.of(dialog).colorScheme.error,
+            foregroundColor: Theme.of(dialog).colorScheme.onError,
+          ),
+          icon: const Icon(Icons.logout),
+          label: Text(l10n.logout),
+          onPressed: () => Navigator.pop(dialog, true),
+        ),
+      ],
+    ),
+  );
+  if (ok != true) return;
+  await Session.clear();
+  ref.read(routerProvider).go('/login');
+}
+
 class LogoutButton extends ConsumerWidget {
   const LogoutButton({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => IconButton(
+  Widget build(BuildContext context, WidgetRef ref) => FilledButton.tonalIcon(
         icon: const Icon(Icons.logout),
-        tooltip: AppLocalizations.of(context).logout,
-        onPressed: () async {
-          await Session.clear();
-          ref.read(routerProvider).go('/login');
-        },
+        label: Text(AppLocalizations.of(context).logout),
+        onPressed: () => confirmLogout(context, ref),
+      );
+}
+
+/// The signed-in person's initials in the app bar; opens My profile.
+class _ProfileButton extends ConsumerWidget {
+  const _ProfileButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) => IconButton(
+        tooltip: AppLocalizations.of(context).profileTitle,
+        icon: InitialsAvatar(name: ref.watch(profileProvider).value?.name, radius: 17),
+        onPressed: () => context.push('/profile'),
       );
 }
 

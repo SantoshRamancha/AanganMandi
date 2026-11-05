@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/api/api_client.dart';
 import '../../core/api/ops_api.dart';
+import '../../core/districts.dart';
 import '../../core/labels.dart';
+import '../../core/storage/prefs.dart';
 import '../../core/widgets/responsive.dart';
 import '../../l10n/app_localizations.dart';
 import 'ops_widgets.dart';
@@ -24,6 +26,7 @@ class _FarmerQueueState extends ConsumerState<FarmerQueue> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final lang = ref.watch(localeProvider);
     final scheme = Theme.of(context).colorScheme;
     final rows = ref.watch(opsFarmersProvider(_status));
     return RefreshIndicator(
@@ -70,7 +73,7 @@ class _FarmerQueueState extends ConsumerState<FarmerQueue> {
                       title: Text(r.name ?? l10n.noName, style: const TextStyle(fontWeight: FontWeight.w600)),
                       subtitle: Text([
                         r.phone,
-                        if (r.village != null) '${r.village}, ${r.district ?? ''}',
+                        if (r.village != null) '${r.village}, ${r.district == null ? '' : districtName(r.district!, lang)}',
                         if (r.evidenceType != null) l10n.evidence(r.evidenceType),
                         if (r.submittedAt != null) l10n.submittedOn(formatWhen(r.submittedAt)),
                         if (widget.isAdmin && _status == 'Pending') l10n.verifierIs(r.verifierName ?? l10n.unassigned),

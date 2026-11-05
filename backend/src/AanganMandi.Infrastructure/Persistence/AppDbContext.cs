@@ -28,6 +28,61 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         C(8, "CORIANDER", "Coriander", "కొత్తిమీర", "धनिया", "Leafy", 2000),
         C(9, "MANGO", "Mango", "మామిడి", "आम", "Fruit", 3000),
         C(10, "BANANA", "Banana", "అరటి", "केला", "Fruit", 12000),
+        // Vegetables
+        C(11, "POTATO", "Potato", "బంగాళాదుంప", "आलू", "Vegetable", 10000),
+        C(12, "CABBAGE", "Cabbage", "క్యాబేజీ", "पत्ता गोभी", "Vegetable", 12000),
+        C(13, "CAULIFLOWER", "Cauliflower", "కాలీఫ్లవర్", "फूलगोभी", "Vegetable", 8000),
+        C(14, "CARROT", "Carrot", "క్యారెట్", "गाजर", "Vegetable", 10000),
+        C(15, "BEETROOT", "Beetroot", "బీట్‌రూట్", "चुकंदर", "Vegetable", 10000),
+        C(16, "RADISH", "Radish", "ముల్లంగి", "मूली", "Vegetable", 8000),
+        C(17, "CUCUMBER", "Cucumber", "దోసకాయ", "खीरा", "Vegetable", 8000),
+        C(18, "BITTER_GOURD", "Bitter gourd", "కాకరకాయ", "करेला", "Vegetable", 5000),
+        C(19, "RIDGE_GOURD", "Ridge gourd", "బీరకాయ", "तुरई", "Vegetable", 6000),
+        C(20, "SNAKE_GOURD", "Snake gourd", "పొట్లకాయ", "चिचिंडा", "Vegetable", 6000),
+        C(21, "PUMPKIN", "Pumpkin", "గుమ్మడికాయ", "कद्दू", "Vegetable", 10000),
+        C(22, "IVY_GOURD", "Ivy gourd", "దొండకాయ", "कुंदरू", "Vegetable", 5000),
+        C(23, "DRUMSTICK", "Drumstick", "మునగకాయ", "सहजन", "Vegetable", 4000),
+        C(24, "FRENCH_BEANS", "French beans", "బీన్స్", "फ्रेंच बीन्स", "Vegetable", 4000),
+        C(25, "CLUSTER_BEANS", "Cluster beans", "గోరుచిక్కుడు", "ग्वार फली", "Vegetable", 3000),
+        C(26, "BROAD_BEANS", "Broad beans", "చిక్కుడుకాయ", "सेम", "Vegetable", 4000),
+        C(27, "CAPSICUM", "Capsicum", "క్యాప్సికమ్", "शिमला मिर्च", "Vegetable", 6000),
+        C(28, "SWEET_POTATO", "Sweet potato", "చిలగడదుంప", "शकरकंद", "Vegetable", 8000),
+        C(29, "GARLIC", "Garlic", "వెల్లుల్లి", "लहसुन", "Vegetable", 3000),
+        C(30, "GINGER", "Ginger", "అల్లం", "अदरक", "Vegetable", 6000),
+        C(31, "SWEET_CORN", "Sweet corn", "స్వీట్ కార్న్", "स्वीट कॉर्न", "Vegetable", 5000),
+        // Leafy greens
+        C(32, "METHI", "Fenugreek leaves", "మెంతికూర", "मेथी", "Leafy", 2500),
+        C(33, "GONGURA", "Gongura", "గోంగూర", "गोंगूरा", "Leafy", 3000),
+        C(34, "AMARANTH", "Amaranth leaves", "తోటకూర", "चौलाई", "Leafy", 3000),
+        C(35, "MINT", "Mint", "పుదీనా", "पुदीना", "Leafy", 3000),
+        C(36, "CURRY_LEAVES", "Curry leaves", "కరివేపాకు", "करी पत्ता", "Leafy", 2000),
+        C(37, "SPRING_ONION", "Spring onion", "ఉల్లికాడలు", "हरा प्याज", "Leafy", 3000),
+        // Fruits
+        C(38, "PAPAYA", "Papaya", "బొప్పాయి", "पपीता", "Fruit", 15000),
+        C(39, "GUAVA", "Guava", "జామ", "अमरूद", "Fruit", 6000),
+        C(40, "POMEGRANATE", "Pomegranate", "దానిమ్మ", "अनार", "Fruit", 4000),
+        C(41, "SWEET_LIME", "Sweet lime", "బత్తాయి", "मौसंबी", "Fruit", 6000),
+        C(42, "LEMON", "Lemon", "నిమ్మకాయ", "नींबू", "Fruit", 4000),
+        C(43, "WATERMELON", "Watermelon", "పుచ్చకాయ", "तरबूज", "Fruit", 10000),
+        C(44, "MUSKMELON", "Muskmelon", "కర్బూజ", "खरबूजा", "Fruit", 6000),
+        C(45, "SAPOTA", "Sapota", "సపోటా", "चीकू", "Fruit", 5000),
+        C(46, "CUSTARD_APPLE", "Custard apple", "సీతాఫలం", "शरीफा", "Fruit", 3000),
+        C(47, "COCONUT", "Coconut", "కొబ్బరికాయ", "नारियल", "Fruit", 4000),
+        C(48, "GRAPES", "Grapes", "ద్రాక్ష", "अंगूर", "Fruit", 8000),
+        // Grains, millets, pulses, oilseeds
+        C(49, "RICE", "Rice", "బియ్యం", "चावल", "Grain", 2500),
+        C(50, "MAIZE", "Maize", "మొక్కజొన్న", "मक्का", "Grain", 2500),
+        C(51, "JOWAR", "Jowar", "జొన్నలు", "ज्वार", "Grain", 1200),
+        C(52, "FOXTAIL_MILLET", "Foxtail millet", "కొర్రలు", "कंगनी", "Grain", 800),
+        C(53, "RED_GRAM", "Red gram (toor dal)", "కందులు", "अरहर (तूर)", "Pulse", 600),
+        C(54, "GREEN_GRAM", "Green gram (moong)", "పెసలు", "मूंग", "Pulse", 500),
+        C(55, "BENGAL_GRAM", "Bengal gram (chana)", "శనగలు", "चना", "Pulse", 700),
+        C(56, "GROUNDNUT", "Groundnut", "వేరుశనగ", "मूंगफली", "Oilseed", 1000),
+        // Spices and flowers
+        C(57, "TURMERIC", "Turmeric", "పసుపు", "हल्दी", "Spice", 8000),
+        C(58, "DRY_CHILLI", "Dry red chilli", "ఎండు మిర్చి", "सूखी लाल मिर्च", "Spice", 1500),
+        C(59, "MARIGOLD", "Marigold flowers", "బంతి పూలు", "गेंदा फूल", "Flower", 4000),
+        C(60, "JASMINE", "Jasmine flowers", "మల్లె పూలు", "चमेली फूल", "Flower", 1500),
     ];
 
     public DbSet<User> Users => Set<User>();
@@ -118,7 +173,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         });
         b.Entity<TripProduce>(e =>
         {
-            e.Property(p => p.CropCode).HasMaxLength(32);
+            e.Property(p => p.CropCode).HasMaxLength(64);
             e.Property(p => p.QuantityKg).HasPrecision(10, 2);
             e.Property(p => p.PricePerKg).HasPrecision(10, 2);
         });

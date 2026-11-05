@@ -29,6 +29,8 @@ android {
         versionName = flutter.versionName
         // Set MAPS_API_KEY in android/local.properties (never commit it).
         manifestPlaceholders["mapsApiKey"] = (project.rootProject.file("local.properties").takeIf { it.exists() }?.readLines()?.firstOrNull { it.startsWith("MAPS_API_KEY=") }?.substringAfter("=") ?: "")
+        // The development API is plain HTTP on the PC (http://<PC-IP>:5080). Set to "false" once the API is on HTTPS.
+        manifestPlaceholders["usesCleartextTraffic"] = "true"
     }
 
     buildTypes {
@@ -36,6 +38,7 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 }

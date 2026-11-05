@@ -6,16 +6,13 @@ import 'package:image_picker/image_picker.dart';
 import '../../core/api/api_client.dart';
 import '../../core/api/app_api.dart';
 import '../../core/api/models.dart';
+import '../../core/crops.dart';
+import '../../core/districts.dart';
 import '../../core/storage/prefs.dart';
+import '../../core/widgets/crop_picker.dart';
 import '../../core/widgets/document_tile.dart';
 import '../../core/widgets/responsive.dart';
 import '../../l10n/app_localizations.dart';
-
-/// Districts the pilot draws farmers from (around Hyderabad).
-const _districts = [
-  'Rangareddy', 'Medchal-Malkajgiri', 'Sangareddy', 'Vikarabad', 'Medak', 'Siddipet',
-  'Yadadri Bhuvanagiri', 'Nalgonda', 'Mahabubnagar', 'Nagarkurnool', 'Jangaon', 'Kamareddy',
-];
 
 /// The phone is already OTP-verified at login, so verification is 3 steps:
 /// farming details → one piece of farming evidence → submit to the assigned verifier.
@@ -59,7 +56,7 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
     _loaded = true;
     _name.text = f.name ?? '';
     _village.text = f.village ?? '';
-    _district = _districts.contains(f.district) ? f.district : null;
+    _district = telanganaDistricts.any((d) => d.$1 == f.district) ? f.district : null;
     _crops.addAll(f.cropCodes);
     if (f.farmSizeAcres case final a?) _acres.text = a.toString();
     _source = f.produceSource;
@@ -242,7 +239,11 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
             DropdownButtonFormField<String>(
               initialValue: _district,
               decoration: InputDecoration(labelText: l10n.district),
-              items: [for (final d in _districts) DropdownMenuItem(value: d, child: Text(d))],
+              menuMaxHeight: 420,
+              items: [
+                // Stored in English; shown in the app language.
+                for (final d in telanganaDistricts) DropdownMenuItem(value: d.$1, child: Text(districtName(d.$1, lang))),
+              ],
               onChanged: (v) => setState(() => _district = v),
               validator: (v) => v == null ? l10n.required : null,
             ),
@@ -265,14 +266,10 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
           child: crops.when(
             loading: () => const LinearProgressIndicator(),
             error: (_, _) => Text(l10n.errorGeneric),
-            data: (list) => Wrap(spacing: 8, runSpacing: 8, children: [
-              for (final c in list)
-                FilterChip(
-                  label: Text(c.name(lang)),
-                  selected: _crops.contains(c.code),
-                  onSelected: (on) => setState(() => on ? _crops.add(c.code) : _crops.remove(c.code)),
-                ),
-            ]),
+            data: (_) => CropPicker(
+              selected: _crops,
+              onChanged: (code, on) => setState(() => on ? _crops.add(code) : _crops.remove(code)),
+            ),
           ),
         ),
         FormSection(
@@ -363,10 +360,8 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
   Widget _review(AppLocalizations l10n) {
     final scheme = Theme.of(context).colorScheme;
     final lang = ref.watch(localeProvider);
-    final cropNames = (ref.watch(cropsProvider).value ?? [])
-        .where((c) => _crops.contains(c.code))
-        .map((c) => c.name(lang))
-        .join(', ');
+    final crops = ref.watch(cropsProvider).value ?? const <Crop>[];
+    final cropNames = _crops.map((c) => cropName(c, crops, lang)).join(', ');
     final evidenceName = switch (_evidenceType) {
       'AgriStackFarmerId' => l10n.evidenceAgriStack,
       'LandRecord' => l10n.evidenceLandRecord,
@@ -376,7 +371,7 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
     };
     final details = _evidenceDetails.text.trim();
     final items = [
-      (l10n.stepAboutYou, '${_name.text}, ${_village.text}, ${_district ?? ''}'),
+      (l10n.stepAboutYou, '${_name.text}, ${_village.text}, ${_district == null ? '' : districtName(_district!, lang)}'),
       (l10n.cropsYouGrow, cropNames.isEmpty ? '—' : cropNames),
       (l10n.stepEvidence, details.isEmpty ? evidenceName : '$evidenceName · $details'),
       (l10n.evidencePhoto, _hasPhoto ? l10n.uploaded : '—'),

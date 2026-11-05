@@ -6,11 +6,21 @@ class Crop {
       : code = j['code'] as String,
         nameEn = j['nameEn'] as String,
         nameTe = j['nameTe'] as String,
-        nameHi = j['nameHi'] as String;
+        nameHi = j['nameHi'] as String,
+        category = j['category'] as String? ?? 'Other';
 
   final String code, nameEn, nameTe, nameHi;
 
+  /// Vegetable, Leafy, Fruit, Grain, Pulse, Oilseed, Spice, Flower (or Other).
+  final String category;
+
   String name(String lang) => switch (lang) { 'te' => nameTe, 'hi' => nameHi, _ => nameEn };
+
+  /// Whether [query] is part of the name in any language (search works whatever the app language).
+  bool matches(String query) {
+    final q = query.trim().toLowerCase();
+    return nameEn.toLowerCase().contains(q) || nameTe.contains(q) || nameHi.contains(q);
+  }
 }
 
 /// Verification status: NotStarted, Pending, Verified or Rejected.

@@ -55,8 +55,8 @@ public class OpsFarmersController(AppDbContext db) : ControllerBase
             return Problem(statusCode: 403, title: "This farmer is assigned to another verifier");
 
         var user = await db.Users.SingleAsync(u => u.Id == farmer.UserId, ct);
-        var codes = farmer.Crops.Select(c => c.CropCode).ToList();
-        var crops = await db.Crops.Where(c => codes.Contains(c.Code)).Select(c => c.NameEn).ToArrayAsync(ct);
+        // Codes, not names: the app shows them in the reviewer's language (custom crops as the farmer typed them).
+        var crops = farmer.Crops.Select(c => c.CropCode).ToArray();
         var docs = await db.VerificationDocuments.Where(d => d.OwnerUserId == farmer.UserId).ToListAsync(ct);
         var verifiers = isAdmin ? await VerifierOptionsAsync(ct) : [];
         var pending = farmer.Status == VerificationStatus.Pending;

@@ -1,4 +1,5 @@
 using AanganMandi.Api.Auth;
+using AanganMandi.Application.Master;
 using AanganMandi.Application.Storage;
 using AanganMandi.Domain.Farmers;
 using AanganMandi.Infrastructure.Persistence;
@@ -54,10 +55,12 @@ public class FarmersController(AppDbContext db, IFileStorage storage) : Controll
             return Problem(statusCode: 400, title: "Farm size must be between 0 and 1000 acres");
         if (!Enum.IsDefined(req.ProduceSource))
             return Problem(statusCode: 400, title: "Say whether you grow your own crops");
-        var codes = req.CropCodes.Distinct().ToArray();
-        if (codes.Length == 0) return Problem(statusCode: 400, title: "Choose at least one crop you grow or sell");
-        var known = await db.Crops.Where(c => codes.Contains(c.Code)).CountAsync(ct);
-        if (known != codes.Length) return Problem(statusCode: 400, title: "Unknown crop code");
+        // Master crops by code; crops the farmer added themselves as "custom:<name>".
+        var requested = req.CropCodes.Select(c => c.Trim()).ToArray();
+        var master = await db.Crops.Where(c => requested.Contains(c.Code)).Select(c => c.Code).ToListAsync(ct);
+        var (codes, cropError) = CropCodes.Normalize(requested, master.ToHashSet());
+        if (cropError is not null) return Problem(statusCode: 400, title: cropError);
+        if (codes!.Length == 0) return Problem(statusCode: 400, title: "Choose at least one crop you grow or sell");
 
         var userId = User.UserId();
         var farmer = await GetOrCreateAsync(userId, ct);

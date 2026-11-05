@@ -5,10 +5,13 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/api/api_client.dart';
 import '../../core/api/app_api.dart';
+import '../../core/api/models.dart';
 import '../../core/api/trip_api.dart';
 import '../../core/api/trip_models.dart';
+import '../../core/crops.dart';
 import '../../core/labels.dart';
 import '../../core/storage/prefs.dart';
+import '../../core/widgets/crop_picker.dart';
 import '../../core/widgets/responsive.dart';
 import '../../l10n/app_localizations.dart';
 import 'trip_widgets.dart';
@@ -131,10 +134,9 @@ class _TripFormScreenState extends ConsumerState<TripFormScreen> {
       }
     }
     final lang = ref.watch(localeProvider);
-    final crops = ref.watch(cropsProvider).value ?? const [];
-    // The farmer's own crops first (from verification), then the rest.
+    final crops = ref.watch(cropsProvider).value ?? const <Crop>[];
+    // The farmer's own crops (from verification) are offered first.
     final mine = ref.watch(farmerProvider).value?.cropCodes ?? const <String>[];
-    final ordered = [...crops.where((c) => mine.contains(c.code)), ...crops.where((c) => !mine.contains(c.code))];
     final gutter = Breakpoints.gutter(context);
 
     return Scaffold(
@@ -172,24 +174,25 @@ class _TripFormScreenState extends ConsumerState<TripFormScreen> {
               title: l10n.tripProduce,
               subtitle: l10n.tripProduceHint,
               child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                Wrap(spacing: 8, runSpacing: 8, children: [
-                  for (final c in ordered)
-                    FilterChip(
-                      label: Text(c.name(lang)),
-                      selected: _crops[c.code]?.selected ?? false,
-                      onSelected: (on) => setState(() => _input(c.code).selected = on),
-                    ),
-                ]),
-                for (final c in ordered)
-                  if (_crops[c.code]?.selected ?? false)
+                CropPicker(
+                  suggested: mine,
+                  selected: {for (final e in _crops.entries) if (e.value.selected) e.key},
+                  onChanged: (code, on) => setState(() => _input(code).selected = on),
+                ),
+                // Optional kg and ₹/kg for each chosen crop, in the order they were picked.
+                for (final MapEntry(key: code, value: c) in _crops.entries)
+                  if (c.selected)
                     Padding(
                       padding: const EdgeInsets.only(top: 16),
                       child: Row(children: [
-                        Expanded(flex: 3, child: Text(c.name(lang), style: const TextStyle(fontWeight: FontWeight.w600))),
+                        Expanded(
+                          flex: 3,
+                          child: Text(cropName(code, crops, lang), style: const TextStyle(fontWeight: FontWeight.w600)),
+                        ),
                         const SizedBox(width: 8),
-                        Expanded(flex: 2, child: _numberField(_crops[c.code]!.kg, l10n.quantityKg)),
+                        Expanded(flex: 2, child: _numberField(c.kg, l10n.quantityKg)),
                         const SizedBox(width: 8),
-                        Expanded(flex: 2, child: _numberField(_crops[c.code]!.price, l10n.priceKg)),
+                        Expanded(flex: 2, child: _numberField(c.price, l10n.priceKg)),
                       ]),
                     ),
               ]),

@@ -56,7 +56,7 @@ First time on a machine, set the JWT signing key (kept in .NET user secrets, out
 dotnet user-secrets set Jwt:Key "<random string, 64+ characters>" --project backend/src/AanganMandi.Api
 ```
 
-In VS Code, open the `C:\Aangan_Mandi` folder, Run and Debug, pick **"Everything: API + Flutter (Chrome)"**, press F5.
+In VS Code, open the `C:\Aangan_Mandi\Aangan_Mandi` folder, Run and Debug, pick **"Everything: API + Flutter (Chrome)"**, press F5.
 For the Android emulator or a phone, pick **"API + Flutter app (phone / emulator)"**.
 
 Or in two terminals:
@@ -65,7 +65,7 @@ Or in two terminals:
 dotnet run --project backend/src/AanganMandi.Api --launch-profile http
 ```
 ```bash
-cd mobile && flutter run -d chrome
+cd mobile && flutter run -d chrome --web-port 5090
 ```
 
 | What | URL |
@@ -73,6 +73,19 @@ cd mobile && flutter run -d chrome
 | API + Swagger | http://localhost:5080/swagger |
 | App on Android emulator | calls `http://10.0.2.2:5080/api/v1` |
 | App on a phone on Wi-Fi | `flutter run --dart-define=API_BASE_URL=http://<PC-IP>:5080/api/v1` |
+
+### Android APK (to install on a phone)
+
+The phone must reach the API on your PC over Wi-Fi, so bake in the PC's IP (`ipconfig` → Wi-Fi IPv4):
+
+```bash
+cd mobile && flutter build apk --release --dart-define=API_BASE_URL=http://<PC-IP>:5080/api/v1
+```
+
+Copy `mobile/build/app/outputs/flutter-apk/app-release.apk` to `C:\Aangan_Mandi\release`. Keep the API running (it
+listens on `0.0.0.0:5080`), allow port 5080 in Windows Firewall, and rebuild the APK if the PC's IP changes. The
+release build is signed with the debug key and allows plain HTTP (`usesCleartextTraffic` in
+`android/app/build.gradle.kts`): fine for testing, change both before a Play Store release.
 
 Pending migrations apply automatically when the API starts in Development.
 New migration:

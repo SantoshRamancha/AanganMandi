@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../core/api/api_client.dart';
 import '../../core/api/app_api.dart';
 import '../../core/api/trip_models.dart';
+import '../../core/crops.dart';
 import '../../core/labels.dart';
 import '../../core/storage/prefs.dart';
 import '../../core/theme/app_theme.dart';
@@ -99,7 +100,7 @@ class ProduceChips extends ConsumerWidget {
           visualDensity: VisualDensity.compact,
           avatar: const Icon(Icons.eco_outlined, size: 18),
           label: Text([
-            crops.where((c) => c.code == p.cropCode).firstOrNull?.name(lang) ?? p.cropCode,
+            cropName(p.cropCode, crops, lang),
             if (p.quantityKg != null) l10n.kgAmount(num(p.quantityKg!)),
             if (p.pricePerKg != null) l10n.pricePerKgAmount(num(p.pricePerKg!)),
           ].join(' · ')),
@@ -119,7 +120,7 @@ class ProduceLine extends ConsumerWidget {
     final lang = ref.watch(localeProvider);
     final crops = ref.watch(cropsProvider).value ?? const [];
     final names = [
-      for (final p in produce) crops.where((c) => c.code == p.cropCode).firstOrNull?.name(lang) ?? p.cropCode,
+      for (final p in produce) cropName(p.cropCode, crops, lang),
     ];
     final more = names.length - shown;
     final scheme = Theme.of(context).colorScheme;

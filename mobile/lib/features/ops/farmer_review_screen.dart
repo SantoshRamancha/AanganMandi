@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/api_client.dart';
+import '../../core/api/app_api.dart';
+import '../../core/api/models.dart';
 import '../../core/api/ops_api.dart';
+import '../../core/crops.dart';
+import '../../core/districts.dart';
 import '../../core/labels.dart';
+import '../../core/storage/prefs.dart';
 import '../../core/widgets/responsive.dart';
 import '../../l10n/app_localizations.dart';
 import 'ops_widgets.dart';
@@ -16,6 +21,8 @@ class FarmerReviewScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    final lang = ref.watch(localeProvider);
+    final crops = ref.watch(cropsProvider).value ?? const <Crop>[];
     final farmer = ref.watch(opsFarmerProvider(id));
     return Scaffold(
       appBar: AppBar(title: Text(farmer.value?.name ?? l10n.reviewFarmer)),
@@ -41,8 +48,8 @@ class FarmerReviewScreen extends ConsumerWidget {
               InfoCard(title: l10n.farmDetails, children: [
                 Fact(l10n.mobileNumber, l10n.phoneOtpVerified(f.phone)),
                 Fact(l10n.village, f.village ?? '–'),
-                Fact(l10n.district, f.district ?? '–'),
-                Fact(l10n.crops, f.crops.isEmpty ? '–' : f.crops.join(', ')),
+                Fact(l10n.district, f.district == null ? '–' : districtName(f.district!, lang)),
+                Fact(l10n.crops, f.crops.isEmpty ? '–' : f.crops.map((c) => cropName(c, crops, lang)).join(', ')),
                 Fact(l10n.farmSize, f.farmSizeAcres == null ? l10n.notGiven : l10n.aboutAcres('${f.farmSizeAcres}')),
                 Fact(l10n.sells, l10n.produceSource(f.produceSource), warn: f.produceSource == 'OtherFarmers'),
                 Fact(l10n.submitted, formatWhen(f.submittedAt)),

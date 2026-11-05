@@ -275,6 +275,7 @@ class _StatusCard extends ConsumerWidget {
                 }),
                 onPressed: () async {
                   await context.push('/farmer/verify');
+                  ref.invalidate(profileProvider);
                   ref.invalidate(farmerProvider);
                 },
               ),

@@ -68,6 +68,18 @@ extension ApiLabels on AppLocalizations {
         _ => a,
       };
 
+  String cropCategory(String c) => switch (c) {
+        'Vegetable' => catVegetable,
+        'Leafy' => catLeafy,
+        'Fruit' => catFruit,
+        'Grain' => catGrain,
+        'Pulse' => catPulse,
+        'Oilseed' => catOilseed,
+        'Spice' => catSpice,
+        'Flower' => catFlower,
+        _ => catOther,
+      };
+
   String roleName(String r) => switch (r) {
         'Farmer' => roleNameFarmer,
         'Host' => roleNameHost,

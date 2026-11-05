@@ -14,6 +14,11 @@ GoogleService-Info.plist
 appsettings.*.local.json
 secrets.json
 
+# Built app packages (share them from C:\Aangan_Mandi\release, not through Git)
+release/
+*.apk
+*.aab
+
 # IDE / OS
 .vs/
 .idea/
