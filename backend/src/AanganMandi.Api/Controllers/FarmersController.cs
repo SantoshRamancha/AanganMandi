@@ -1,4 +1,5 @@
 using AanganMandi.Api.Auth;
+using AanganMandi.Application.Notifications;
 using AanganMandi.Application.Master;
 using AanganMandi.Application.Storage;
 using AanganMandi.Domain.Farmers;
@@ -17,7 +18,7 @@ namespace AanganMandi.Api.Controllers;
 [ApiController]
 [Authorize(Roles = "Farmer")]
 [Route("api/v1/farmers/me")]
-public class FarmersController(AppDbContext db, IFileStorage storage) : ControllerBase
+public class FarmersController(AppDbContext db, IFileStorage storage, INotifier notifier) : ControllerBase
 {
     public record DetailsRequest(string Name, string Village, string District, string[] CropCodes,
         decimal? FarmSizeAcres, ProduceSource ProduceSource);
@@ -183,6 +184,7 @@ public class FarmersController(AppDbContext db, IFileStorage storage) : Controll
         farmer.UpdatedAt = DateTime.UtcNow;
         await VerifierAssignment.AssignAsync(db, farmer, ct);
         await db.SaveChangesAsync(ct);
+        await notifier.FarmerSubmittedAsync(userId, ct);
         return NoContent();
     }
 

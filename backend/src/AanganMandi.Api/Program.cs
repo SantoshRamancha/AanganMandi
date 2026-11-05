@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using AanganMandi.Api.Auth;
 using AanganMandi.Infrastructure;
 using AanganMandi.Infrastructure.Persistence;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -51,8 +52,13 @@ builder.Services.AddCors(o => o.AddPolicy("DevLocalhost", p => p
     .SetIsOriginAllowed(origin => new Uri(origin).IsLoopback)
     .AllowAnyHeader()
     .AllowAnyMethod()));
+// Background jobs (Hangfire tables in this database): sends the queued emails.
+builder.Services.AddHangfire(c => c.UseSqlServerStorage(builder.Configuration.GetConnectionString("Default")));
+builder.Services.AddHangfireServer();
 
 var app = builder.Build();
+
+app.Services.ScheduleBackgroundJobs();
 
 if (app.Environment.IsDevelopment())
 {

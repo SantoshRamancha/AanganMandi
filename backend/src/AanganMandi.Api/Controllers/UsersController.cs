@@ -1,4 +1,5 @@
 using AanganMandi.Api.Auth;
+using AanganMandi.Application.Identity;
 using AanganMandi.Domain.Identity;
 using AanganMandi.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
@@ -14,15 +15,29 @@ public class UsersController(AppDbContext db, TokenService tokens) : ControllerB
 {
     public record RoleRequest(Role Role);
     public record LanguageRequest(string Language);
-    public record ProfileDto(string? Name, string Phone, string Language, Role[] Roles, DateTime MemberSince);
+    public record ProfileDto(string? Name, string Phone, string? Email, string Language, Role[] Roles, DateTime MemberSince);
+    public record EmailRequest(string? Email);
 
     /// <summary>The signed-in user's own account details, for the profile screen.</summary>
     [HttpGet]
     public async Task<ProfileDto> Get(CancellationToken ct)
     {
         var user = await db.Users.AsNoTracking().Include(u => u.Roles).SingleAsync(u => u.Id == User.UserId(), ct);
-        return new ProfileDto(user.Name, user.Phone, user.PreferredLanguage,
+        return new ProfileDto(user.Name, user.Phone, user.Email, user.PreferredLanguage,
             user.Roles.Select(r => r.Role).Order().ToArray(), user.CreatedAt);
+    }
+
+    /// <summary>Sets the email address for updates (verification, spaces, bookings); empty removes it.</summary>
+    [HttpPut("email")]
+    public async Task<IActionResult> SetEmail(EmailRequest req, CancellationToken ct)
+    {
+        var (email, error) = EmailAddresses.Normalize(req.Email);
+        if (error is not null) return Problem(statusCode: 400, title: error);
+        var user = await db.Users.SingleAsync(u => u.Id == User.UserId(), ct);
+        user.Email = email;
+        user.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync(ct);
+        return NoContent();
     }
 
     /// <summary>Adds Farmer, Host or Buyer to the signed-in user and returns new tokens carrying it.</summary>

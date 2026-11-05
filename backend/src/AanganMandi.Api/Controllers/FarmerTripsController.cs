@@ -1,4 +1,5 @@
 using AanganMandi.Api.Auth;
+using AanganMandi.Application.Notifications;
 using AanganMandi.Application.Master;
 using AanganMandi.Application.Trips;
 using AanganMandi.Domain.Farmers;
@@ -18,7 +19,7 @@ namespace AanganMandi.Api.Controllers;
 [ApiController]
 [Authorize(Roles = "Farmer")]
 [Route("api/v1/farmers/me/trips")]
-public class FarmerTripsController(AppDbContext db) : ControllerBase
+public class FarmerTripsController(AppDbContext db, INotifier notifier) : ControllerBase
 {
     public record ProduceItem(string CropCode, decimal? QuantityKg, decimal? PricePerKg);
     public record TripRequest(DateOnly Date, VehicleType Vehicle, string? PreferredArea, string? Notes, ProduceItem[] Produce);
@@ -97,9 +98,10 @@ public class FarmerTripsController(AppDbContext db) : ControllerBase
         if (trip.Status != TripStatus.Planned) return Problem(statusCode: 409, title: "Trip is already cancelled");
         trip.Status = TripStatus.Cancelled;
         trip.UpdatedAt = DateTime.UtcNow;
-        foreach (var b in await db.Bookings.Where(b => b.TripId == id).ToListAsync(ct))
-            if (b.IsActive) b.Cancel("Farmer", Trim(req.Reason));
+        var cancelled = (await db.Bookings.Where(b => b.TripId == id).ToListAsync(ct)).Where(b => b.IsActive).ToList();
+        foreach (var b in cancelled) b.Cancel("Farmer", Trim(req.Reason));
         await db.SaveChangesAsync(ct);
+        foreach (var b in cancelled) await notifier.BookingChangedAsync(b.Id, ct);
         return NoContent();
     }
 
@@ -165,6 +167,7 @@ public class FarmerTripsController(AppDbContext db) : ControllerBase
         };
         db.Bookings.Add(booking);
         await db.SaveChangesAsync(ct);
+        await notifier.BookingChangedAsync(booking.Id, ct);
         return ToBookingDto(booking, space, null);
     }
 
@@ -178,6 +181,7 @@ public class FarmerTripsController(AppDbContext db) : ControllerBase
         if (booking.Date < Today) return Problem(statusCode: 409, title: "This booking date has passed");
         booking.Cancel("Farmer", Trim(req.Reason));
         await db.SaveChangesAsync(ct);
+        await notifier.BookingChangedAsync(booking.Id, ct);
         return NoContent();
     }
 

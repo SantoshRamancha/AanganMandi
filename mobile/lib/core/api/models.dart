@@ -109,12 +109,16 @@ class Profile {
   Profile.fromJson(Map<String, dynamic> j)
       : name = j['name'] as String?,
         phone = j['phone'] as String,
+        email = j['email'] as String?,
         language = j['language'] as String,
         roles = (j['roles'] as List).cast<String>(),
         // The API stores UTC without a "Z".
         memberSince = DateTime.parse('${(j['memberSince'] as String).replaceAll('Z', '')}Z').toLocal();
 
   final String? name;
+
+  /// Where email updates go; null when the user has not added one.
+  final String? email;
   final String phone, language;
   final List<String> roles;
   final DateTime memberSince;

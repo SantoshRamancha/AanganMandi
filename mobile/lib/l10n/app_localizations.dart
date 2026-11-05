@@ -2859,6 +2859,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Signed in as {phone}'**
   String signedInAs(String phone);
+
+  /// No description provided for @email.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get email;
+
+  /// No description provided for @emailNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your email to get updates'**
+  String get emailNotSet;
+
+  /// No description provided for @changeButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get changeButton;
+
+  /// No description provided for @emailDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Email for updates'**
+  String get emailDialogTitle;
+
+  /// No description provided for @emailDialogBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We email you about your verification, spaces and bookings, in your app language. Leave it empty to stop emails.'**
+  String get emailDialogBody;
+
+  /// No description provided for @emailInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email address, like name@example.com'**
+  String get emailInvalid;
+
+  /// No description provided for @emailSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Email saved'**
+  String get emailSaved;
+
+  /// No description provided for @emailRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Email removed'**
+  String get emailRemoved;
+
+  /// No description provided for @emailOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Email (optional)'**
+  String get emailOptional;
+
+  /// No description provided for @verifierEmailHint.
+  ///
+  /// In en, this message translates to:
+  /// **'They get a welcome email and one for each farmer assigned to them.'**
+  String get verifierEmailHint;
 }
 
 class _AppLocalizationsDelegate

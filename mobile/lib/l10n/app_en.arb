@@ -507,5 +507,15 @@
   "logoutQ": "Log out?",
   "logoutBody": "To come back, you will sign in again with your mobile number and an OTP.",
   "signedInAs": "Signed in as {phone}",
-  "@signedInAs": { "placeholders": { "phone": { "type": "String" } } }
+  "@signedInAs": { "placeholders": { "phone": { "type": "String" } } },
+  "email": "Email",
+  "emailNotSet": "Add your email to get updates",
+  "changeButton": "Change",
+  "emailDialogTitle": "Email for updates",
+  "emailDialogBody": "We email you about your verification, spaces and bookings, in your app language. Leave it empty to stop emails.",
+  "emailInvalid": "Enter a valid email address, like name@example.com",
+  "emailSaved": "Email saved",
+  "emailRemoved": "Email removed",
+  "emailOptional": "Email (optional)",
+  "verifierEmailHint": "They get a welcome email and one for each farmer assigned to them."
 }

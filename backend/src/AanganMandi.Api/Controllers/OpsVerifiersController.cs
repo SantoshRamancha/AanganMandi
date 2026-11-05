@@ -1,4 +1,6 @@
 using AanganMandi.Api.Auth;
+using AanganMandi.Application.Identity;
+using AanganMandi.Application.Notifications;
 using AanganMandi.Domain.Farmers;
 using AanganMandi.Domain.Identity;
 using AanganMandi.Infrastructure.Persistence;
@@ -16,10 +18,11 @@ namespace AanganMandi.Api.Controllers;
 [Authorize]
 [StaffOnly(AdminOnly = true)]
 [Route("api/v1/ops/verifiers")]
-public class OpsVerifiersController(AppDbContext db) : ControllerBase
+public class OpsVerifiersController(AppDbContext db, INotifier notifier) : ControllerBase
 {
     public record VerifierRow(Guid UserId, string? Name, string Phone, DateTime AddedAt, int Waiting, int Reviewed);
-    public record AddRequest(string Name, string Phone);
+    /// <summary>Email is optional; when given, the new verifier gets a welcome email and one for each farmer assigned.</summary>
+    public record AddRequest(string Name, string Phone, string? Email = null);
     /// <summary>Assigned: waiting farmers who got a verifier. Unassigned: those left with nobody.</summary>
     public record Result(int Assigned, int Unassigned);
 
@@ -41,6 +44,8 @@ public class OpsVerifiersController(AppDbContext db) : ControllerBase
         if (digits.Length == 12 && digits.StartsWith("91")) digits = digits[2..];
         if (digits.Length != 10) return Problem(statusCode: 400, title: "Enter a 10-digit mobile number");
         var phone = "+91" + digits;
+        var (email, emailError) = EmailAddresses.Normalize(req.Email);
+        if (emailError is not null) return Problem(statusCode: 400, title: emailError);
 
         // An existing app user (say, a host) keeps their account and gains the Verifier role.
         var user = await db.Users.Include(u => u.Roles).SingleOrDefaultAsync(u => u.Phone == phone, ct);
@@ -52,12 +57,14 @@ public class OpsVerifiersController(AppDbContext db) : ControllerBase
             db.Users.Add(user);
         }
         user.Name ??= req.Name.Trim();
+        user.Email ??= email;
         user.Roles.Add(new UserRole { Role = Role.Verifier });
         await db.SaveChangesAsync(ct);
 
         // Farmers who submitted while nobody could take them get picked up now.
         var assigned = await VerifierAssignment.RedistributeAsync(db, fromVerifierId: null, ct);
         await db.SaveChangesAsync(ct);
+        await notifier.VerifierAddedAsync(user.Id, User.UserId(), ct);
         return Ok(new Result(assigned, 0));
     }
 

@@ -139,6 +139,7 @@ class _AccountCard extends StatelessWidget {
       child: Column(children: [
         _Row(Icons.badge_outlined, l10n.name, name.isEmpty ? l10n.nameNotSet : name, muted: name.isEmpty),
         _Row(Icons.phone_iphone, l10n.mobileNumber, profile.phone),
+        _EmailRow(email: profile.email),
         _Row(Icons.event_available, l10n.memberSince, DateFormat.yMMMd().format(profile.memberSince)),
         _Row(Icons.groups_outlined, l10n.yourRoles, profile.roles.map(l10n.roleName).join(', ')),
       ]),
@@ -267,6 +268,109 @@ class _LogoutCard extends ConsumerWidget {
         trailing: Icon(Icons.chevron_right, color: scheme.error),
         onTap: () => confirmLogout(context, ref),
       ),
+    );
+  }
+}
+
+/// Email for updates, with Add / Change; the dialog also removes it.
+class _EmailRow extends ConsumerWidget {
+  const _EmailRow({required this.email});
+  final String? email;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      minVerticalPadding: 8,
+      leading: Icon(Icons.mail_outline, color: scheme.primary),
+      title: Text(l10n.email, style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14)),
+      subtitle: Text(email ?? l10n.emailNotSet,
+          style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: email == null ? scheme.onSurfaceVariant : scheme.onSurface,
+              fontStyle: email == null ? FontStyle.italic : null)),
+      trailing: TextButton(
+        child: Text(email == null ? l10n.addButton : l10n.changeButton),
+        onPressed: () async {
+          final saved = await showDialog<bool>(context: context, builder: (_) => _EmailDialog(current: email));
+          if (saved == true) ref.invalidate(profileProvider);
+        },
+      ),
+    );
+  }
+}
+
+/// Add, change or remove the email for updates. Owns its controller; pops true once saved.
+class _EmailDialog extends ConsumerStatefulWidget {
+  const _EmailDialog({required this.current});
+  final String? current;
+
+  @override
+  ConsumerState<_EmailDialog> createState() => _EmailDialogState();
+}
+
+class _EmailDialogState extends ConsumerState<_EmailDialog> {
+  late final _email = TextEditingController(text: widget.current ?? '');
+  String? _error;
+  bool _busy = false;
+
+  @override
+  void dispose() {
+    _email.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save(String? value) async {
+    final l10n = AppLocalizations.of(context);
+    final email = value?.trim() ?? '';
+    if (email.isNotEmpty && !RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)) {
+      setState(() => _error = l10n.emailInvalid);
+      return;
+    }
+    setState(() => _busy = true);
+    try {
+      await ref.read(authApiProvider).setEmail(email.isEmpty ? null : email);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(email.isEmpty ? l10n.emailRemoved : l10n.emailSaved)));
+      Navigator.pop(context, true);
+    } catch (e) {
+      if (mounted) setState(() => _error = apiErrorMessage(e, l10n.errorGeneric));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return AlertDialog(
+      icon: const Icon(Icons.mail_outline),
+      title: Text(l10n.emailDialogTitle),
+      content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Text(l10n.emailDialogBody),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _email,
+          autofocus: true,
+          keyboardType: TextInputType.emailAddress,
+          autofillHints: const [AutofillHints.email],
+          onSubmitted: _busy ? null : _save,
+          decoration: InputDecoration(labelText: l10n.email, hintText: 'name@example.com', errorText: _error),
+        ),
+      ]),
+      actions: [
+        if (widget.current != null)
+          TextButton(
+            style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
+            onPressed: _busy ? null : () => _save(null),
+            child: Text(l10n.remove),
+          ),
+        TextButton(onPressed: _busy ? null : () => Navigator.pop(context, false), child: Text(l10n.cancel)),
+        FilledButton(onPressed: _busy ? null : () => _save(_email.text), child: Text(l10n.save)),
+      ],
     );
   }
 }

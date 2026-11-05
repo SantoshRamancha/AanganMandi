@@ -1582,4 +1582,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String signedInAs(String phone) {
     return 'Signed in as $phone';
   }
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get emailNotSet => 'Add your email to get updates';
+
+  @override
+  String get changeButton => 'Change';
+
+  @override
+  String get emailDialogTitle => 'Email for updates';
+
+  @override
+  String get emailDialogBody =>
+      'We email you about your verification, spaces and bookings, in your app language. Leave it empty to stop emails.';
+
+  @override
+  String get emailInvalid =>
+      'Enter a valid email address, like name@example.com';
+
+  @override
+  String get emailSaved => 'Email saved';
+
+  @override
+  String get emailRemoved => 'Email removed';
+
+  @override
+  String get emailOptional => 'Email (optional)';
+
+  @override
+  String get verifierEmailHint =>
+      'They get a welcome email and one for each farmer assigned to them.';
 }

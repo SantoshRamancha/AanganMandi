@@ -106,6 +106,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasIndex(u => u.Phone).IsUnique();
             e.Property(u => u.Phone).HasMaxLength(15);
             e.Property(u => u.PreferredLanguage).HasMaxLength(2);
+            e.Property(u => u.Email).HasMaxLength(256);
             e.HasMany(u => u.Roles).WithOne().HasForeignKey(r => r.UserId);
             e.HasQueryFilter(u => !u.IsDeleted);
         });

@@ -115,6 +115,9 @@ class AuthApi {
   }
 
   Future<void> setLanguage(String code) => _dio.put('/users/me/language', data: {'language': code});
+
+  /// Email for updates; null or empty removes it.
+  Future<void> setEmail(String? email) => _dio.put('/users/me/email', data: {'email': email});
 }
 
 final authApiProvider = Provider((ref) => AuthApi(ref.watch(dioProvider)));

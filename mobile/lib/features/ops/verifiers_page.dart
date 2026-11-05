@@ -20,12 +20,14 @@ class _VerifiersPageState extends ConsumerState<VerifiersPage> {
   final _form = GlobalKey<FormState>();
   final _name = TextEditingController();
   final _phone = TextEditingController();
+  final _email = TextEditingController();
   bool _busy = false;
 
   @override
   void dispose() {
     _name.dispose();
     _phone.dispose();
+    _email.dispose();
     super.dispose();
   }
 
@@ -38,10 +40,14 @@ class _VerifiersPageState extends ConsumerState<VerifiersPage> {
     setState(() => _busy = true);
     try {
       final name = _name.text.trim();
-      final assigned = await ref.read(opsApiProvider).addVerifier(name: name, phone: _phone.text);
+      final email = _email.text.trim();
+      final assigned = await ref
+          .read(opsApiProvider)
+          .addVerifier(name: name, phone: _phone.text, email: email.isEmpty ? null : email);
       _say([l10n.verifierAddedToast(name, _phone.text), if (assigned > 0) l10n.farmersAssignedToNew(assigned)].join(' '));
       _name.clear();
       _phone.clear();
+      _email.clear();
       refreshOps(ref);
     } catch (e) {
       _say(apiErrorMessage(e, l10n.couldNotSave));
@@ -113,6 +119,14 @@ class _VerifiersPageState extends ConsumerState<VerifiersPage> {
                   maxLength: 10,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   validator: (v) => (v?.length ?? 0) == 10 ? null : l10n.enterTenDigits,
+                ),
+                TextFormField(
+                  controller: _email,
+                  decoration: InputDecoration(labelText: l10n.emailOptional, helperText: l10n.verifierEmailHint),
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (v) => v == null || v.trim().isEmpty || RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(v.trim())
+                      ? null
+                      : l10n.emailInvalid,
                 ),
               ]),
               const SizedBox(height: 8),

@@ -1,4 +1,5 @@
 using AanganMandi.Api.Auth;
+using AanganMandi.Application.Notifications;
 using AanganMandi.Domain.Farmers;
 using AanganMandi.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
@@ -15,7 +16,7 @@ namespace AanganMandi.Api.Controllers;
 [Authorize]
 [StaffOnly]
 [Route("api/v1/ops/farmers")]
-public class OpsFarmersController(AppDbContext db) : ControllerBase
+public class OpsFarmersController(AppDbContext db, INotifier notifier) : ControllerBase
 {
     public record FarmerRow(Guid Id, string? Name, string Phone, string? Village, string? District, EvidenceType? EvidenceType,
         DateTime? SubmittedAt, string? VerifierName);
@@ -85,6 +86,7 @@ public class OpsFarmersController(AppDbContext db) : ControllerBase
         farmer.AssignedAt = DateTime.UtcNow;
         farmer.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
+        await notifier.FarmerAssignedAsync(farmer.UserId, ct);
         return NoContent();
     }
 
@@ -110,6 +112,7 @@ public class OpsFarmersController(AppDbContext db) : ControllerBase
         farmer.ReviewedBy = me;
         farmer.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
+        await notifier.FarmerDecidedAsync(farmer.UserId, ct);
         return NoContent();
     }
 

@@ -1,4 +1,5 @@
 using AanganMandi.Api.Auth;
+using AanganMandi.Application.Notifications;
 using AanganMandi.Application.Storage;
 using AanganMandi.Domain.Spaces;
 using AanganMandi.Infrastructure.Persistence;
@@ -13,7 +14,7 @@ namespace AanganMandi.Api.Controllers;
 [ApiController]
 [Authorize(Roles = "Host")]
 [Route("api/v1/hosts/me/spaces")]
-public class HostSpacesController(AppDbContext db, IFileStorage storage) : ControllerBase
+public class HostSpacesController(AppDbContext db, IFileStorage storage, INotifier notifier) : ControllerBase
 {
     public record SpaceRequest(string Title, SpaceType Type, string Address, string Locality,
         double Latitude, double Longitude, int AreaSqFt, string MaxStallSize, VehicleType MaxVehicle,
@@ -175,6 +176,7 @@ public class HostSpacesController(AppDbContext db, IFileStorage storage) : Contr
         space.RejectionReason = null;
         space.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
+        await notifier.SpaceSubmittedAsync(space.Id, ct);
         return NoContent();
     }
 
