@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\AanganMandi.Application\AanganMandi.Application.csproj" />
+    <ProjectReference Include="..\..\src\AanganMandi.Infrastructure\AanganMandi.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

@@ -111,11 +111,40 @@ screen; it is also printed in the API console as `DEV OTP for +91…`.
 Uploaded photos are stored in `backend/App_Data/uploads` (git-ignored). KYC and proof files are served only
 to signed-in staff (`/api/v1/ops/files/...`); the public files endpoint serves space photos only.
 
+## Email
+
+Sent with **Kinichit.Communication** (team library, used as a DLL: `backend/lib`, see its README). Users add an email
+address in My profile (optional; admins can also give one when adding a verifier). Every email is in the recipient's app
+language (English, Telugu, Hindi) and uses one branded layout (`Infrastructure/Notifications`: `MailText.cs` for the
+wording, `MailLayout.cs` for the HTML).
+
+| When | Who gets it |
+|---|---|
+| Farmer submits verification | the farmer, and the verifier it is assigned to |
+| Admin (re)assigns a farmer | that verifier |
+| Farmer approved / rejected (with reason) | the farmer |
+| Admin adds a verifier | the new verifier (welcome) |
+| Host submits a space | the host, and every admin |
+| Space approved / rejected (with reason) | the host |
+| Farmer requests a space | the host |
+| Host accepts (address, phone, time, fee) / declines / cancels | the farmer (others declined automatically are told the day is taken) |
+| Farmer cancels | the host |
+
+Emails are **queued** in this database (`dbo.EmailQueueItems`, created on first use) and a **Hangfire** job sends them
+every 15 seconds, retrying failures (1, 5, 15, 60 min). A failed email never fails the action that triggered it.
+
+- **Development** saves each email as a `.eml` file in `backend/App_Data/mail` (double-click to open in Outlook) instead of
+  sending it.
+- **Real sending**: in `appsettings.Production.json` (or user-secrets) set `Email:Provider` to `Smtp` with
+  `Email:Smtp:Host`, `Username`, `Password` (port 587), or to `SendGrid` with `Email:SendGrid:ApiKey`, plus
+  `Email:FromAddress` and `Notifications:AppUrl`. Keep passwords and keys out of git, e.g.
+  `dotnet user-secrets set Email:Smtp:Password "<app password>" --project backend/src/AanganMandi.Api`.
+
 ## Still needed
 
 - **Google Maps**: add `MAPS_API_KEY=...` to `mobile/android/local.properties` (map pins instead of coordinates)
 - **Push alerts**: create a Firebase project, add `mobile/android/app/google-services.json`, then call `Firebase.initializeApp()` in `main.dart`
-- **Real SMS**: replace `DevOtpService` with a DLT-registered SMS gateway
+- **Real SMS**: Kinichit.Communication is already in place (`ISmsSender`, `Sms` settings); send the OTP through it with MSG91 and a DLT-registered template instead of `DevOtpService`
 - **Android emulator or phone**: install Android Studio for the emulator, or enable USB debugging on a phone
 - **Production storage**: replace `LocalFileStorage` with Azure Blob private containers
 - `permission_handler` is held at 12.x and `pinput` at 6.x until they work with this Flutter/AGP version

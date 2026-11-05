@@ -1,0 +1,506 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Kinichit.Communication</name>
+    </assembly>
+    <members>
+        <member name="T:Kinichit.Communication.IEmailSender">
+            <summary>Sends email through the provider chosen in configuration (<c>Email:Provider</c>).</summary>
+        </member>
+        <member name="M:Kinichit.Communication.IEmailSender.SendAsync(Kinichit.Communication.EmailMessage,System.Threading.CancellationToken)">
+            <summary>Sends the message. Throws <see cref="T:Kinichit.Communication.CommunicationException"/> when the provider refuses it.</summary>
+        </member>
+        <member name="T:Kinichit.Communication.ISmsSender">
+            <summary>Sends SMS through the provider chosen in configuration (<c>Sms:Provider</c>).</summary>
+        </member>
+        <member name="M:Kinichit.Communication.ISmsSender.SendAsync(Kinichit.Communication.SmsMessage,System.Threading.CancellationToken)">
+            <summary>Sends the message. Throws <see cref="T:Kinichit.Communication.CommunicationException"/> when the provider refuses it.</summary>
+        </member>
+        <member name="T:Kinichit.Communication.ICommunicationStatus">
+            <summary>Which providers are active and whether they have what they need (for admin screens and health checks).</summary>
+        </member>
+        <member name="P:Kinichit.Communication.EmailMessage.HtmlBody">
+            <summary>HTML body. At least one of <see cref="P:Kinichit.Communication.EmailMessage.HtmlBody"/> and <see cref="P:Kinichit.Communication.EmailMessage.TextBody"/> is required.</summary>
+        </member>
+        <member name="P:Kinichit.Communication.EmailMessage.From">
+            <summary>Overrides <c>Email:FromAddress</c> / <c>FromName</c> for this message.</summary>
+        </member>
+        <member name="P:Kinichit.Communication.SmsMessage.To">
+            <summary>Mobile number in any common format; normalised with <c>Sms:DefaultCountryCode</c> (e.g. 9876543210 → +919876543210).</summary>
+        </member>
+        <member name="P:Kinichit.Communication.SmsMessage.Body">
+            <summary>Text for providers that send free text (Twilio, Log).</summary>
+        </member>
+        <member name="P:Kinichit.Communication.SmsMessage.Template">
+            <summary>
+            Logical template name (e.g. "otp"). Template-based providers such as MSG91 (India DLT) map it to their
+            registered template id through <c>Sms:Msg91:Templates</c>.
+            </summary>
+        </member>
+        <member name="P:Kinichit.Communication.SmsMessage.Variables">
+            <summary>Values for the template's variables (e.g. otp = 123456).</summary>
+        </member>
+        <member name="P:Kinichit.Communication.SmsMessage.Sensitive">
+            <summary>The message holds a secret (OTP, password): never logged, even by the Log provider in production.</summary>
+        </member>
+        <member name="T:Kinichit.Communication.SendResult">
+            <summary>Outcome of a send. <see cref="P:Kinichit.Communication.SendResult.MessageId"/> is the provider's id when it returns one.</summary>
+        </member>
+        <member name="M:Kinichit.Communication.SendResult.#ctor(System.String,System.String)">
+            <summary>Outcome of a send. <see cref="P:Kinichit.Communication.SendResult.MessageId"/> is the provider's id when it returns one.</summary>
+        </member>
+        <member name="T:Kinichit.Communication.CommunicationException">
+            <summary>A provider refused or failed to send. <see cref="P:System.Exception.Message"/> is safe to show to users; details are logged.</summary>
+        </member>
+        <member name="M:Kinichit.Communication.CommunicationException.#ctor(System.String,System.Exception)">
+            <summary>A provider refused or failed to send. <see cref="P:System.Exception.Message"/> is safe to show to users; details are logged.</summary>
+        </member>
+        <member name="T:Kinichit.Communication.IEmailQueue">
+            <summary>
+            Outbox for email, in EngageNow's <c>EmailQueueItems</c> layout: <see cref="M:Kinichit.Communication.IEmailQueue.EnqueueAsync(Kinichit.Communication.EmailMessage,System.String,System.String,System.Nullable{System.DateTime},System.Threading.CancellationToken)"/> stores the message, and
+            <see cref="T:Kinichit.Communication.EmailQueueProcessor"/> (run by a Hangfire recurring job) sends it. A sent row gets <c>IsDeleted = 1</c>; an unsent
+            one keeps <c>IsDeleted = 0</c> with its <c>Retries</c>, so an admin screen can show what was sent and what wasn't.
+            </summary>
+        </member>
+        <member name="M:Kinichit.Communication.IEmailQueue.EnqueueAsync(Kinichit.Communication.EmailMessage,System.String,System.String,System.Nullable{System.DateTime},System.Threading.CancellationToken)">
+            <summary>Stores the message for sending and returns its id. Throws <see cref="T:System.ArgumentException"/> for a message that can't be queued.</summary>
+            <param name="message">
+            The email; checked now, not when the job sends it. One body is kept: <see cref="P:Kinichit.Communication.EmailMessage.HtmlBody"/> when set (Html = 1),
+            otherwise <see cref="P:Kinichit.Communication.EmailMessage.TextBody"/>. Reply-To is not supported by the queue.
+            </param>
+            <param name="category">Free text to group messages on the tracking screen, e.g. "orders".</param>
+            <param name="template">Name of the template the app built the message from, e.g. "order-confirmation".</param>
+            <param name="sendAfterUtc">Hold the message until this time (UTC); stored as its <c>Date</c>. Default: send on the next run.</param>
+            <param name="ct">Cancels the insert.</param>
+        </member>
+        <member name="M:Kinichit.Communication.IEmailQueue.ListAsync(Kinichit.Communication.EmailQueueFilter,System.Threading.CancellationToken)">
+            <summary>Messages matching the filter, newest first, without the body.</summary>
+        </member>
+        <member name="M:Kinichit.Communication.IEmailQueue.GetAsync(System.Guid,System.Threading.CancellationToken)">
+            <summary>One message with its body and sender, or null.</summary>
+        </member>
+        <member name="M:Kinichit.Communication.IEmailQueue.CountsAsync(System.Threading.CancellationToken)">
+            <summary>Number of messages in each status.</summary>
+        </member>
+        <member name="M:Kinichit.Communication.IEmailQueue.RetryAsync(System.Guid,System.Threading.CancellationToken)">
+            <summary>Puts a <see cref="F:Kinichit.Communication.EmailQueueStatus.Failed"/> message back in the queue (Retries = 0, Date = now). False when it isn't Failed.</summary>
+        </member>
+        <member name="T:Kinichit.Communication.EmailQueueStatus">
+            <summary>Worked out from the row: <c>IsDeleted = 1</c> is Sent; otherwise Failed once <c>Retries</c> reaches <c>EmailQueue:MaxAttempts</c>.</summary>
+        </member>
+        <member name="F:Kinichit.Communication.EmailQueueStatus.Pending">
+            <summary>Not sent yet: waiting for its first try or its next one.</summary>
+        </member>
+        <member name="F:Kinichit.Communication.EmailQueueStatus.Failed">
+            <summary>Gave up after <c>EmailQueue:MaxAttempts</c> tries, or the message itself is invalid. Use Retry to send it again.</summary>
+        </member>
+        <member name="T:Kinichit.Communication.EmailQueueOptions">
+            <summary>Configuration section <c>EmailQueue</c>.</summary>
+        </member>
+        <member name="P:Kinichit.Communication.EmailQueueOptions.Store">
+            <summary>SqlServer (default) or InMemory (tests and local experiments only: the queue is lost on restart).</summary>
+        </member>
+        <member name="P:Kinichit.Communication.EmailQueueOptions.ConnectionString">
+            <summary>Connection string for the SqlServer store. When empty, <c>ConnectionStrings:{ConnectionStringName}</c> is used.</summary>
+        </member>
+        <member name="P:Kinichit.Communication.EmailQueueOptions.Schema">
+            <summary>Database schema of the queue tables (<c>[dbo].[EmailQueueItems]</c>, <c>[dbo].[EmailQueueItemAttachments]</c>).</summary>
+        </member>
+        <member name="P:Kinichit.Communication.EmailQueueOptions.PrepareSchema">
+            <summary>Create the tables on first use when they are missing (the app's login needs CREATE TABLE once).</summary>
+        </member>
+        <member name="P:Kinichit.Communication.EmailQueueOptions.SendingEnabled">
+            <summary>False pauses sending: messages are still queued and stay Pending until it is true again.</summary>
+        </member>
+        <member name="P:Kinichit.Communication.EmailQueueOptions.MaxPerRun">
+            <summary>Most messages one run sends; the rest wait for the next run.</summary>
+        </member>
+        <member name="P:Kinichit.Communication.EmailQueueOptions.MaxAttempts">
+            <summary>Tries before a message counts as Failed. Waits between tries: 1, 5, 15, 60 minutes, then hourly.</summary>
+        </member>
+        <member name="P:Kinichit.Communication.EmailQueueOptions.RetainDays">
+            <summary>Sent and Failed messages whose Date is older than this are deleted by <see cref="M:Kinichit.Communication.EmailQueueProcessor.CleanUpAsync(System.Threading.CancellationToken)"/>.</summary>
+        </member>
+        <member name="T:Kinichit.Communication.EmailQueueFilter">
+            <summary>Filter for <see cref="M:Kinichit.Communication.IEmailQueue.ListAsync(Kinichit.Communication.EmailQueueFilter,System.Threading.CancellationToken)"/>. <see cref="P:Kinichit.Communication.EmailQueueFilter.Search"/> matches To, Cc, Bcc and Subject.</summary>
+        </member>
+        <member name="T:Kinichit.Communication.EmailQueueEntry">
+            <summary>
+            A queued message as the tracking screen lists it. <see cref="P:Kinichit.Communication.EmailQueueEntry.To"/>, <see cref="P:Kinichit.Communication.EmailQueueEntry.Cc"/> and <see cref="P:Kinichit.Communication.EmailQueueEntry.Bcc"/> are comma-separated
+            addresses; <see cref="P:Kinichit.Communication.EmailQueueEntry.Attachments"/> is the attachment file names; <see cref="P:Kinichit.Communication.EmailQueueEntry.Date"/> is when it was queued (or retried), UTC.
+            </summary>
+        </member>
+        <member name="M:Kinichit.Communication.EmailQueueEntry.#ctor(System.Guid,Kinichit.Communication.EmailQueueStatus,System.String,System.String,System.String,System.String,System.String,System.String,System.Int32,System.DateTime,System.String)">
+            <summary>
+            A queued message as the tracking screen lists it. <see cref="P:Kinichit.Communication.EmailQueueEntry.To"/>, <see cref="P:Kinichit.Communication.EmailQueueEntry.Cc"/> and <see cref="P:Kinichit.Communication.EmailQueueEntry.Bcc"/> are comma-separated
+            addresses; <see cref="P:Kinichit.Communication.EmailQueueEntry.Attachments"/> is the attachment file names; <see cref="P:Kinichit.Communication.EmailQueueEntry.Date"/> is when it was queued (or retried), UTC.
+            </summary>
+        </member>
+        <member name="T:Kinichit.Communication.EmailQueueEntryDetail">
+            <summary><see cref="P:Kinichit.Communication.EmailQueueEntryDetail.Html"/> tells whether <see cref="P:Kinichit.Communication.EmailQueueEntryDetail.Body"/> is HTML; <see cref="P:Kinichit.Communication.EmailQueueEntryDetail.EnableSsl"/> is recorded from <c>Email:Smtp:EnableSsl</c>.</summary>
+        </member>
+        <member name="M:Kinichit.Communication.EmailQueueEntryDetail.#ctor(Kinichit.Communication.EmailQueueEntry,System.String,System.String,System.String,System.Boolean,System.Boolean)">
+            <summary><see cref="P:Kinichit.Communication.EmailQueueEntryDetail.Html"/> tells whether <see cref="P:Kinichit.Communication.EmailQueueEntryDetail.Body"/> is HTML; <see cref="P:Kinichit.Communication.EmailQueueEntryDetail.EnableSsl"/> is recorded from <c>Email:Smtp:EnableSsl</c>.</summary>
+        </member>
+        <member name="T:Kinichit.Communication.EmailQueueRunResult">
+            <summary>Outcome of one <see cref="M:Kinichit.Communication.EmailQueueProcessor.ProcessAsync(System.Threading.CancellationToken)"/> run.</summary>
+        </member>
+        <member name="M:Kinichit.Communication.EmailQueueRunResult.#ctor(System.Int32,System.Int32,System.Int32)">
+            <summary>Outcome of one <see cref="M:Kinichit.Communication.EmailQueueProcessor.ProcessAsync(System.Threading.CancellationToken)"/> run.</summary>
+        </member>
+        <member name="T:Kinichit.Communication.IEmailQueueStore">
+            <summary>
+            Storage behind the queue. <see cref="T:Kinichit.Communication.SqlServerEmailQueueStore"/> and <see cref="T:Kinichit.Communication.InMemoryEmailQueueStore"/> ship with the
+            library; register your own implementation before <c>AddEmailQueue</c> to keep the queue somewhere else.
+            </summary>
+        </member>
+        <member name="M:Kinichit.Communication.IEmailQueueStore.TakeNextAsync(System.DateTime,System.Threading.CancellationToken)">
+            <summary>
+            Takes the oldest due message: not sent, fewer than MaxAttempts retries, and its wait after the last try is over (counted
+            from Date). The message stays locked to this lease until it is completed, failed or disposed, so two runs never send the
+            same message; disposing without completing (the app stopped mid-send) leaves it unchanged for a later run. Null when
+            nothing is due.
+            </summary>
+        </member>
+        <member name="M:Kinichit.Communication.IEmailQueueStore.RetryAsync(System.Guid,System.DateTime,System.Threading.CancellationToken)">
+            <summary>Failed → Pending: Retries = 0 and Date = now (so the waits start again). False when the message isn't Failed.</summary>
+        </member>
+        <member name="M:Kinichit.Communication.IEmailQueueStore.DeleteFinishedAsync(System.DateTime,System.Threading.CancellationToken)">
+            <summary>Deletes Sent and Failed messages dated before <paramref name="beforeUtc"/>. Returns how many.</summary>
+        </member>
+        <member name="T:Kinichit.Communication.IEmailQueueLease">
+            <summary>A message taken for sending by <see cref="M:Kinichit.Communication.IEmailQueueStore.TakeNextAsync(System.DateTime,System.Threading.CancellationToken)"/>.</summary>
+        </member>
+        <member name="M:Kinichit.Communication.IEmailQueueLease.CompleteAsync(System.Threading.CancellationToken)">
+            <summary>Sent: IsDeleted = 1, Retries + 1.</summary>
+        </member>
+        <member name="M:Kinichit.Communication.IEmailQueueLease.FailAsync(System.Boolean,System.Threading.CancellationToken)">
+            <summary>Not sent: Retries + 1, or straight to MaxAttempts when <paramref name="giveUp"/> (it can never be sent).</summary>
+        </member>
+        <member name="T:Kinichit.Communication.QueuedEmail">
+            <summary>A message as the store keeps it. <see cref="P:Kinichit.Communication.QueuedEmail.Date"/> is when it may be sent (queued, retried or held until).</summary>
+        </member>
+        <member name="P:Kinichit.Communication.QueuedEmail.Message">
+            <summary>Has <see cref="P:Kinichit.Communication.EmailMessage.From"/> set: the message's own sender or <c>Email:FromAddress</c>.</summary>
+        </member>
+        <member name="P:Kinichit.Communication.QueuedEmail.Retries">
+            <summary>Tries before this one.</summary>
+        </member>
+        <member name="M:Kinichit.Communication.EmailQueue.Validate(Kinichit.Communication.EmailMessage,Kinichit.Communication.EmailAddress,System.String,System.String)">
+            <summary>Rejects what would only fail later in the job, or not fit the table, so the caller hears about it while it can still fix it.</summary>
+        </member>
+        <member name="T:Kinichit.Communication.EmailQueueProcessor">
+            <summary>
+            Sends what is due in the queue. Run <see cref="M:Kinichit.Communication.EmailQueueProcessor.ProcessAsync(System.Threading.CancellationToken)"/> from a Hangfire recurring job (every 15 seconds or so) and
+            <see cref="M:Kinichit.Communication.EmailQueueProcessor.CleanUpAsync(System.Threading.CancellationToken)"/> once a day. Runs at the same time are safe: each message is locked by the run sending it.
+            </summary>
+        </member>
+        <member name="M:Kinichit.Communication.EmailQueueProcessor.#ctor(Kinichit.Communication.IEmailQueueStore,Kinichit.Communication.IEmailSender,Microsoft.Extensions.Options.IOptions{Kinichit.Communication.EmailQueueOptions},System.TimeProvider,Microsoft.Extensions.Logging.ILogger{Kinichit.Communication.EmailQueueProcessor})">
+            <summary>
+            Sends what is due in the queue. Run <see cref="M:Kinichit.Communication.EmailQueueProcessor.ProcessAsync(System.Threading.CancellationToken)"/> from a Hangfire recurring job (every 15 seconds or so) and
+            <see cref="M:Kinichit.Communication.EmailQueueProcessor.CleanUpAsync(System.Threading.CancellationToken)"/> once a day. Runs at the same time are safe: each message is locked by the run sending it.
+            </summary>
+        </member>
+        <member name="M:Kinichit.Communication.EmailQueueProcessor.RetryDelay(System.Int32)">
+            <summary>Wait before the next try after <paramref name="attempts"/> failed tries: 1, 5, 15, 60 minutes, then hourly.</summary>
+        </member>
+        <member name="M:Kinichit.Communication.EmailQueueProcessor.ProcessAsync(System.Threading.CancellationToken)">
+            <summary>Sends due messages until none are left or <c>EmailQueue:MaxPerRun</c> is reached.</summary>
+        </member>
+        <member name="M:Kinichit.Communication.EmailQueueProcessor.CleanUpAsync(System.Threading.CancellationToken)">
+            <summary>Deletes Sent and Failed messages dated more than <c>EmailQueue:RetainDays</c> ago. Returns how many.</summary>
+        </member>
+        <member name="T:Kinichit.Communication.QueueText">
+            <summary>Column sizes, address text and retry timing shared by the stores.</summary>
+        </member>
+        <member name="M:Kinichit.Communication.QueueText.MinutesAfterDate(System.Int32)">
+            <summary>
+            How long after its Date a message with <paramref name="retries"/> failed tries may be tried again: the waits added up
+            (0, 1, 6, 21, 81 minutes, then +60 per try). The table has no "next attempt" column, so this is counted from Date.
+            </summary>
+        </member>
+        <member name="M:Kinichit.Communication.QueueText.Join(System.Collections.Generic.IEnumerable{Kinichit.Communication.EmailAddress})">
+            <summary>Comma-separated addresses as <see cref="T:System.Net.Mail.MailAddress"/> writes them (names quoted when needed), so they parse back exactly.</summary>
+        </member>
+        <member name="M:Kinichit.Communication.QueueText.Describe(System.Exception)">
+            <summary>
+            The reason for the log. <see cref="T:Kinichit.Communication.CommunicationException"/> carries a message meant for end users; the provider's own
+            reason (its inner exception) is what an admin needs.
+            </summary>
+        </member>
+        <member name="T:Kinichit.Communication.LogEmailSender">
+            <summary>Development: writes the email to the log instead of sending it.</summary>
+        </member>
+        <member name="M:Kinichit.Communication.LogEmailSender.#ctor(Microsoft.Extensions.Options.IOptions{Kinichit.Communication.EmailOptions},Microsoft.Extensions.Logging.ILogger{Kinichit.Communication.LogEmailSender})">
+            <summary>Development: writes the email to the log instead of sending it.</summary>
+        </member>
+        <member name="T:Kinichit.Communication.PickupEmailSender">
+            <summary>Testing: writes each email as a .eml file into <c>Email:PickupDirectory</c> (open it in Outlook or a browser).</summary>
+        </member>
+        <member name="M:Kinichit.Communication.PickupEmailSender.#ctor(Microsoft.Extensions.Options.IOptions{Kinichit.Communication.EmailOptions},Microsoft.Extensions.Logging.ILogger{Kinichit.Communication.PickupEmailSender})">
+            <summary>Testing: writes each email as a .eml file into <c>Email:PickupDirectory</c> (open it in Outlook or a browser).</summary>
+        </member>
+        <member name="T:Kinichit.Communication.SmtpEmailSender">
+            <summary>Any SMTP server (Office 365, Gmail/Workspace, Zoho, your host's mail server) with STARTTLS.</summary>
+        </member>
+        <member name="M:Kinichit.Communication.SmtpEmailSender.#ctor(Microsoft.Extensions.Options.IOptions{Kinichit.Communication.EmailOptions},Microsoft.Extensions.Logging.ILogger{Kinichit.Communication.SmtpEmailSender})">
+            <summary>Any SMTP server (Office 365, Gmail/Workspace, Zoho, your host's mail server) with STARTTLS.</summary>
+        </member>
+        <member name="T:Kinichit.Communication.SendGridEmailSender">
+            <summary>SendGrid Web API v3 (no SMTP needed; works where port 587 is blocked).</summary>
+        </member>
+        <member name="M:Kinichit.Communication.SendGridEmailSender.#ctor(System.Net.Http.HttpClient,Microsoft.Extensions.Options.IOptions{Kinichit.Communication.EmailOptions},Microsoft.Extensions.Logging.ILogger{Kinichit.Communication.SendGridEmailSender})">
+            <summary>SendGrid Web API v3 (no SMTP needed; works where port 587 is blocked).</summary>
+        </member>
+        <member name="M:Kinichit.Communication.PhoneNumbers.ToE164(System.String,System.String)">
+            <summary>
+            E.164 form (+CCNNN…). Strips spaces, dashes and brackets; a leading 0 or 00 is handled; a number without a
+            country code gets <paramref name="defaultCountryCode"/>. Throws <see cref="T:System.ArgumentException"/> when it isn't a phone number.
+            </summary>
+        </member>
+        <member name="M:Kinichit.Communication.PhoneNumbers.Mask(System.String)">
+            <summary>Last four digits only, for logs.</summary>
+        </member>
+        <member name="T:Kinichit.Communication.MessageTemplate">
+            <summary>Very small template engine: replaces <c>{{name}}</c> with values (HTML-encoded when asked).</summary>
+        </member>
+        <member name="M:Kinichit.Communication.MessageTemplate.Placeholder">
+            <remarks>
+            Pattern:<br/>
+            <code>\\{\\{\\s*([A-Za-z0-9_.-]+)\\s*\\}\\}</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match the string "{{".<br/>
+            ○ Match a whitespace character atomically any number of times.<br/>
+            ○ 1st capture group.<br/>
+                ○ Match a character in the set [-.0-9A-Z_a-z] atomically at least once.<br/>
+            ○ Match a whitespace character atomically any number of times.<br/>
+            ○ Match the string "}}".<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:Kinichit.Communication.MessageTemplate.Render(System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},System.Boolean)">
+            <summary>Unknown placeholders are left as they are, so a missing value is visible in testing.</summary>
+        </member>
+        <member name="T:Kinichit.Communication.InMemoryEmailQueueStore">
+            <summary>Keeps the queue in memory, with the same rules as the SQL Server store. For tests only: everything is lost when the app stops.</summary>
+        </member>
+        <member name="M:Kinichit.Communication.InMemoryEmailQueueStore.#ctor(System.Int32)">
+            <summary>Keeps the queue in memory, with the same rules as the SQL Server store. For tests only: everything is lost when the app stops.</summary>
+        </member>
+        <member name="T:Kinichit.Communication.EmailOptions">
+            <summary>Configuration section <c>Email</c>.</summary>
+        </member>
+        <member name="P:Kinichit.Communication.EmailOptions.Provider">
+            <summary>Log (default: writes to the log), Pickup (writes .eml files to a folder), Smtp or SendGrid.</summary>
+        </member>
+        <member name="P:Kinichit.Communication.EmailOptions.PickupDirectory">
+            <summary>Folder for the Pickup provider (each message is a .eml file you can open in Outlook).</summary>
+        </member>
+        <member name="P:Kinichit.Communication.SmtpOptions.Port">
+            <summary>587 with STARTTLS (Office 365, Gmail, most hosts). Port 465 (implicit TLS) is not supported by System.Net.Mail.</summary>
+        </member>
+        <member name="T:Kinichit.Communication.SmsOptions">
+            <summary>Configuration section <c>Sms</c>.</summary>
+        </member>
+        <member name="P:Kinichit.Communication.SmsOptions.Provider">
+            <summary>Log (default), Twilio or Msg91.</summary>
+        </member>
+        <member name="P:Kinichit.Communication.SmsOptions.DefaultCountryCode">
+            <summary>Added to numbers written without one (10-digit Indian mobiles by default).</summary>
+        </member>
+        <member name="P:Kinichit.Communication.TwilioOptions.MessagingServiceSid">
+            <summary>Messaging Service SID (MG…), preferred for India DLT sender IDs. Otherwise set <see cref="P:Kinichit.Communication.TwilioOptions.From"/>.</summary>
+        </member>
+        <member name="P:Kinichit.Communication.TwilioOptions.From">
+            <summary>Sender number or alphanumeric sender ID, used when no Messaging Service is set.</summary>
+        </member>
+        <member name="P:Kinichit.Communication.Msg91Options.DefaultTemplateId">
+            <summary>DLT template id used when a message names no template (or an unmapped one).</summary>
+        </member>
+        <member name="P:Kinichit.Communication.Msg91Options.Templates">
+            <summary>Logical template name → MSG91 template id, e.g. { "otp": "65f…" }.</summary>
+        </member>
+        <member name="M:Kinichit.Communication.ServiceCollectionExtensions.AddCommunication(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration,System.String,System.String)">
+            <summary>
+            Registers <see cref="T:Kinichit.Communication.IEmailSender"/>, <see cref="T:Kinichit.Communication.ISmsSender"/> and <see cref="T:Kinichit.Communication.ICommunicationStatus"/> from the
+            <c>Email</c> and <c>Sms</c> configuration sections (names can be changed). A provider that is named but missing
+            its settings fails here, at startup, rather than on the first message.
+            </summary>
+        </member>
+        <member name="M:Kinichit.Communication.ServiceCollectionExtensions.AddEmailQueue(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration,System.String)">
+            <summary>
+            Registers <see cref="T:Kinichit.Communication.IEmailQueue"/> and <see cref="T:Kinichit.Communication.EmailQueueProcessor"/> from the <c>EmailQueue</c> section. Call it after
+            <see cref="M:Kinichit.Communication.ServiceCollectionExtensions.AddCommunication(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration,System.String,System.String)"/>: the processor sends through that <see cref="T:Kinichit.Communication.IEmailSender"/>. The SqlServer store (default) uses
+            <c>EmailQueue:ConnectionString</c>, or else <c>ConnectionStrings:DefaultConnection</c>. To keep the queue somewhere else,
+            register your own <see cref="T:Kinichit.Communication.IEmailQueueStore"/> first.
+            </summary>
+        </member>
+        <member name="T:Kinichit.Communication.LogSmsSender">
+            <summary>Development: writes the SMS to the log. Sensitive messages (OTP) are shown only in the Development environment.</summary>
+        </member>
+        <member name="M:Kinichit.Communication.LogSmsSender.#ctor(Microsoft.Extensions.Options.IOptions{Kinichit.Communication.SmsOptions},Microsoft.Extensions.Logging.ILogger{Kinichit.Communication.LogSmsSender},Microsoft.Extensions.Hosting.IHostEnvironment)">
+            <summary>Development: writes the SMS to the log. Sensitive messages (OTP) are shown only in the Development environment.</summary>
+        </member>
+        <member name="T:Kinichit.Communication.TwilioSmsSender">
+            <summary>Twilio Messages REST API (free text; use a Messaging Service for India DLT sender IDs).</summary>
+        </member>
+        <member name="M:Kinichit.Communication.TwilioSmsSender.#ctor(System.Net.Http.HttpClient,Microsoft.Extensions.Options.IOptions{Kinichit.Communication.SmsOptions},Microsoft.Extensions.Logging.ILogger{Kinichit.Communication.TwilioSmsSender})">
+            <summary>Twilio Messages REST API (free text; use a Messaging Service for India DLT sender IDs).</summary>
+        </member>
+        <member name="T:Kinichit.Communication.Msg91SmsSender">
+            <summary>
+            MSG91 Flow API (India): sends a DLT-registered template. The message's <see cref="P:Kinichit.Communication.SmsMessage.Template"/> is mapped to a
+            template id through <c>Sms:Msg91:Templates</c> (else <c>DefaultTemplateId</c>); <see cref="P:Kinichit.Communication.SmsMessage.Variables"/> fill it.
+            </summary>
+        </member>
+        <member name="M:Kinichit.Communication.Msg91SmsSender.#ctor(System.Net.Http.HttpClient,Microsoft.Extensions.Options.IOptions{Kinichit.Communication.SmsOptions},Microsoft.Extensions.Logging.ILogger{Kinichit.Communication.Msg91SmsSender})">
+            <summary>
+            MSG91 Flow API (India): sends a DLT-registered template. The message's <see cref="P:Kinichit.Communication.SmsMessage.Template"/> is mapped to a
+            template id through <c>Sms:Msg91:Templates</c> (else <c>DefaultTemplateId</c>); <see cref="P:Kinichit.Communication.SmsMessage.Variables"/> fill it.
+            </summary>
+        </member>
+        <member name="T:Kinichit.Communication.SqlServerEmailQueueStore">
+            <summary>
+            Keeps the queue in the app's own SQL Server database, in EngageNow's layout: <c>[dbo].[EmailQueueItems]</c>, plus
+            <c>[dbo].[EmailQueueItemAttachments]</c> for attachment contents. The tables are created on first use (like Hangfire's), so no
+            app migration is needed.
+            </summary>
+        </member>
+        <member name="M:Kinichit.Communication.SqlServerEmailQueueStore.SchemaName">
+            <remarks>
+            Pattern:<br/>
+            <code>^[A-Za-z_][A-Za-z0-9_]{0,63}$</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match if at the beginning of the string.<br/>
+            ○ Match a character in the set [A-Z_a-z].<br/>
+            ○ Match a character in the set [0-9A-Z_a-z] atomically at most 63 times.<br/>
+            ○ Match if at the end of the string or if before an ending newline.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="F:Kinichit.Communication.SqlServerEmailQueueStore.WaitMinutes">
+            <summary>Minutes after Date before a message with this many retries is due again (see <see cref="M:Kinichit.Communication.QueueText.MinutesAfterDate(System.Int32)"/>).</summary>
+        </member>
+        <member name="M:Kinichit.Communication.SqlServerEmailQueueStore.LikeEscape">
+            <remarks>
+            Pattern:<br/>
+            <code>[\\\\%_\\[]</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match a character in the set [%[\\_].<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:Kinichit.Communication.SqlServerEmailQueueStore.PrepareSchemaAsync(System.Threading.CancellationToken)">
+            <summary>Creates the schema and tables when missing. Safe to run from several app instances at once (sp_getapplock).</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.Placeholder_0">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the Placeholder method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Placeholder_0.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Placeholder_0.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.Placeholder_0.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Placeholder_0.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.Placeholder_0.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Placeholder_0.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Placeholder_0.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Placeholder_0.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.SchemaName_1">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the SchemaName method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.SchemaName_1.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.SchemaName_1.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.SchemaName_1.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.SchemaName_1.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.SchemaName_1.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.SchemaName_1.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.SchemaName_1.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.SchemaName_1.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.LikeEscape_2">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the LikeEscape method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.LikeEscape_2.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.LikeEscape_2.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.LikeEscape_2.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.LikeEscape_2.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.LikeEscape_2.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.LikeEscape_2.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.LikeEscape_2.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.Utilities">
+            <summary>Helper methods used by generated <see cref="T:System.Text.RegularExpressions.Regex"/>-derived implementations.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_defaultTimeout">
+            <summary>Default timeout value set in <see cref="T:System.AppContext"/>, or <see cref="F:System.Text.RegularExpressions.Regex.InfiniteMatchTimeout"/> if none was set.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_hasTimeout">
+            <summary>Whether <see cref="F:System.Text.RegularExpressions.Generated.Utilities.s_defaultTimeout"/> is non-infinite.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_ascii_200000000000009800000000">
+            <summary>Supports searching for characters in or not in "%[\\_".</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_ascii_60FF03FEFFFF87FEFFFF07">
+            <summary>Supports searching for characters in or not in "-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz".</summary>
+        </member>
+    </members>
+</doc>

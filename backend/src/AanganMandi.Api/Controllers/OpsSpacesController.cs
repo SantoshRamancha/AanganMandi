@@ -1,4 +1,5 @@
 using AanganMandi.Api.Auth;
+using AanganMandi.Application.Notifications;
 using AanganMandi.Domain.Spaces;
 using AanganMandi.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
@@ -12,7 +13,7 @@ namespace AanganMandi.Api.Controllers;
 [Authorize]
 [StaffOnly]
 [Route("api/v1/ops/spaces")]
-public class OpsSpacesController(AppDbContext db) : ControllerBase
+public class OpsSpacesController(AppDbContext db, INotifier notifier) : ControllerBase
 {
     public record SpaceRow(Guid Id, string Title, SpaceType Type, string Locality, string HostName, DateTime UpdatedAt);
     public record SpaceDetail(Guid Id, string Title, SpaceType Type, string Address, string Locality, double Latitude,
@@ -60,6 +61,7 @@ public class OpsSpacesController(AppDbContext db) : ControllerBase
         s.ReviewedAt = DateTime.UtcNow;
         s.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
+        await notifier.SpaceDecidedAsync(s.Id, ct);
         return NoContent();
     }
 }

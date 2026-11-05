@@ -1546,4 +1546,37 @@ class AppLocalizationsTe extends AppLocalizations {
   String signedInAs(String phone) {
     return '$phoneతో లాగిన్ అయ్యారు';
   }
+
+  @override
+  String get email => 'ఈమెయిల్';
+
+  @override
+  String get emailNotSet => 'అప్‌డేట్‌ల కోసం మీ ఈమెయిల్ జోడించండి';
+
+  @override
+  String get changeButton => 'మార్చు';
+
+  @override
+  String get emailDialogTitle => 'అప్‌డేట్‌ల కోసం ఈమెయిల్';
+
+  @override
+  String get emailDialogBody =>
+      'మీ ధృవీకరణ, స్థలాలు, బుకింగ్‌ల గురించి మీ యాప్ భాషలో ఈమెయిల్ చేస్తాము. ఈమెయిల్స్ ఆపడానికి ఖాళీగా వదలండి.';
+
+  @override
+  String get emailInvalid =>
+      'సరైన ఈమెయిల్ చిరునామా ఇవ్వండి, ఉదా. name@example.com';
+
+  @override
+  String get emailSaved => 'ఈమెయిల్ సేవ్ అయింది';
+
+  @override
+  String get emailRemoved => 'ఈమెయిల్ తీసివేయబడింది';
+
+  @override
+  String get emailOptional => 'ఈమెయిల్ (ఐచ్ఛికం)';
+
+  @override
+  String get verifierEmailHint =>
+      'వారికి స్వాగత ఈమెయిల్, కేటాయించిన ప్రతి రైతు కోసం ఒక ఈమెయిల్ వస్తుంది.';
 }

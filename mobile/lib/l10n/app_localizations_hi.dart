@@ -1549,4 +1549,36 @@ class AppLocalizationsHi extends AppLocalizations {
   String signedInAs(String phone) {
     return '$phone से लॉग इन हैं';
   }
+
+  @override
+  String get email => 'ईमेल';
+
+  @override
+  String get emailNotSet => 'अपडेट पाने के लिए अपना ईमेल जोड़ें';
+
+  @override
+  String get changeButton => 'बदलें';
+
+  @override
+  String get emailDialogTitle => 'अपडेट के लिए ईमेल';
+
+  @override
+  String get emailDialogBody =>
+      'हम आपके सत्यापन, जगहों और बुकिंग के बारे में आपकी ऐप भाषा में ईमेल करते हैं। ईमेल बंद करने के लिए इसे खाली छोड़ें।';
+
+  @override
+  String get emailInvalid => 'सही ईमेल पता दर्ज करें, जैसे name@example.com';
+
+  @override
+  String get emailSaved => 'ईमेल सेव हो गया';
+
+  @override
+  String get emailRemoved => 'ईमेल हटा दिया गया';
+
+  @override
+  String get emailOptional => 'ईमेल (वैकल्पिक)';
+
+  @override
+  String get verifierEmailHint =>
+      'उन्हें स्वागत ईमेल और सौंपे गए हर किसान के लिए एक ईमेल मिलेगा।';
 }

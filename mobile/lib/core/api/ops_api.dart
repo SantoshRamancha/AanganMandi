@@ -192,8 +192,8 @@ class OpsApi {
       [for (final j in (await _dio.get('/ops/verifiers')).data as List) VerifierRow.fromJson(j as Map<String, dynamic>)];
 
   /// Returns how many waiting farmers with no verifier were assigned to the new one.
-  Future<int> addVerifier({required String name, required String phone}) async =>
-      (await _dio.post('/ops/verifiers', data: {'name': name, 'phone': phone})).data['assigned'] as int;
+  Future<int> addVerifier({required String name, required String phone, String? email}) async =>
+      (await _dio.post('/ops/verifiers', data: {'name': name, 'phone': phone, 'email': email})).data['assigned'] as int;
 
   /// Returns how many of their waiting farmers moved to other verifiers, and how many were left unassigned.
   Future<({int moved, int unassigned})> removeVerifier(String userId) async {

@@ -1,4 +1,5 @@
 using AanganMandi.Api.Auth;
+using AanganMandi.Application.Notifications;
 using AanganMandi.Application.Trips;
 using AanganMandi.Domain.Spaces;
 using AanganMandi.Domain.Trips;
@@ -16,7 +17,7 @@ namespace AanganMandi.Api.Controllers;
 [ApiController]
 [Authorize(Roles = "Host")]
 [Route("api/v1/hosts/me/bookings")]
-public class HostBookingsController(AppDbContext db) : ControllerBase
+public class HostBookingsController(AppDbContext db, INotifier notifier) : ControllerBase
 {
     public record ProduceItem(string CropCode, decimal? QuantityKg, decimal? PricePerKg);
     /// <summary>Phone only for an accepted booking (FR-1.9 works both ways).</summary>
@@ -92,6 +93,8 @@ public class HostBookingsController(AppDbContext db) : ControllerBase
             // The unique "one accepted per space and day" index caught a race with another accept.
             return Problem(statusCode: 409, title: "You already confirmed another farmer for this day");
         }
+        await notifier.BookingChangedAsync(booking.Id, ct);
+        foreach (var other in sameDay) await notifier.BookingChangedAsync(other.Id, ct); // declined: slot taken
         return NoContent();
     }
 
@@ -106,6 +109,7 @@ public class HostBookingsController(AppDbContext db) : ControllerBase
         booking.Reason = req.Reason!.Trim();
         booking.RespondedAt = booking.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
+        await notifier.BookingChangedAsync(booking.Id, ct);
         return NoContent();
     }
 
@@ -120,6 +124,7 @@ public class HostBookingsController(AppDbContext db) : ControllerBase
         if (ReasonError(req.Reason) is { } error) return error;
         booking.Cancel("Host", req.Reason!.Trim());
         await db.SaveChangesAsync(ct);
+        await notifier.BookingChangedAsync(booking.Id, ct);
         return NoContent();
     }
 
