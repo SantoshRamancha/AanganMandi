@@ -5,14 +5,25 @@ import 'package:image_picker/image_picker.dart';
 import 'api_client.dart';
 import 'models.dart';
 
-/// Builds a multipart file from a picked photo (works on Android and web).
+/// The photo's real type from its first bytes: jpeg, png or webp, or null for anything else. The picker's own label
+/// can be wrong: on web it re-draws a photo to shrink it, so an AVIF arrives as PNG bytes still labelled image/avif.
+String? photoSubtype(List<int> b) {
+  bool starts(List<int> sig, [int at = 0]) =>
+      b.length >= at + sig.length && [for (var i = 0; i < sig.length; i++) b[at + i] == sig[i]].every((ok) => ok);
+  if (starts([0xFF, 0xD8, 0xFF])) return 'jpeg';
+  if (starts([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])) return 'png';
+  if (starts('RIFF'.codeUnits) && starts('WEBP'.codeUnits, 8)) return 'webp';
+  return null;
+}
+
+/// Builds a multipart file from a picked photo (works on Android and web). The server checks the bytes too, and
+/// answers "Only JPEG, PNG or WebP photos are accepted" for anything else (e.g. HEIC on a browser that can't show it).
 Future<MultipartFile> _photoPart(XFile photo) async {
   final bytes = await photo.readAsBytes();
-  final mime = photo.mimeType ??
-      (photo.name.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg');
-  final parts = mime.split('/');
+  final subtype = photoSubtype(bytes);
   return MultipartFile.fromBytes(bytes,
-      filename: photo.name.isEmpty ? 'photo.jpg' : photo.name, contentType: DioMediaType(parts[0], parts[1]));
+      filename: 'photo.${subtype == 'jpeg' ? 'jpg' : subtype ?? 'bin'}',
+      contentType: subtype == null ? DioMediaType('application', 'octet-stream') : DioMediaType('image', subtype));
 }
 
 class FarmerApi {
@@ -70,6 +81,9 @@ class HostApi {
 
   Future<Space> create(Map<String, dynamic> body) async =>
       Space.fromJson((await _dio.post('/hosts/me/spaces', data: body)).data as Map<String, dynamic>);
+
+  Future<Space> update(String id, Map<String, dynamic> body) async =>
+      Space.fromJson((await _dio.put('/hosts/me/spaces/$id', data: body)).data as Map<String, dynamic>);
 
   Future<void> addPhoto(String spaceId, XFile photo, {bool isProof = false}) async {
     await _dio.post('/hosts/me/spaces/$spaceId/photos',

@@ -1,4 +1,5 @@
 using AanganMandi.Api.Auth;
+using AanganMandi.Application.Files;
 using AanganMandi.Application.Notifications;
 using AanganMandi.Application.Master;
 using AanganMandi.Application.Storage;
@@ -30,7 +31,6 @@ public class FarmersController(AppDbContext db, IFileStorage storage, INotifier 
     /// <summary>Withdrawn: the change took a waiting submission back to "not submitted"; the farmer must submit again.</summary>
     public record DocumentChange(bool Withdrawn);
 
-    private static readonly string[] AllowedImageTypes = ["image/jpeg", "image/png", "image/webp"];
     private const long MaxUploadBytes = 8 * 1024 * 1024;
 
     [HttpGet]
@@ -116,7 +116,10 @@ public class FarmersController(AppDbContext db, IFileStorage storage, INotifier 
     {
         if (file.Length is 0 or > MaxUploadBytes)
             return Problem(statusCode: 400, title: "Photo must be under 8 MB");
-        if (!AllowedImageTypes.Contains(file.ContentType))
+        // The real format comes from the bytes: the label the browser sends can be wrong (see ImageFormat).
+        ImageFormat.Kind? kind;
+        await using (var head = file.OpenReadStream()) kind = await ImageFormat.DetectAsync(head, ct);
+        if (kind is null)
             return Problem(statusCode: 400, title: "Only JPEG, PNG or WebP photos are accepted");
 
         var userId = User.UserId();
@@ -124,7 +127,7 @@ public class FarmersController(AppDbContext db, IFileStorage storage, INotifier 
         if (!farmer.CanChangeDocuments) return Locked(farmer);
 
         await using var stream = file.OpenReadStream();
-        var path = await storage.SaveAsync(stream, $"kyc/{userId:N}", Extension(file.ContentType), ct);
+        var path = await storage.SaveAsync(stream, $"kyc/{userId:N}", kind.Extension, ct);
         var old = await EvidencePhotos(userId).ToListAsync(ct);
         db.VerificationDocuments.RemoveRange(old);
         db.VerificationDocuments.Add(new VerificationDocument
@@ -132,7 +135,7 @@ public class FarmersController(AppDbContext db, IFileStorage storage, INotifier 
             OwnerUserId = userId,
             Type = DocumentType.Evidence,
             FilePath = path,
-            ContentType = file.ContentType,
+            ContentType = kind.ContentType,
         });
         farmer.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
