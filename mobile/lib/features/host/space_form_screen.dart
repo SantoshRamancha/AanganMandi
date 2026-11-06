@@ -50,6 +50,9 @@ class _SpaceFormScreenState extends ConsumerState<SpaceFormScreen> {
   (XFile, Uint8List)? _proof;
   bool _busy = false;
 
+  /// The draft an earlier Submit created before an upload failed: a retry finishes it instead of creating another.
+  String? _draftId;
+
   @override
   void dispose() {
     for (final c in [_title, _address, _locality, _area, _fee, _rules, _lat, _lng]) {
@@ -114,7 +117,7 @@ class _SpaceFormScreenState extends ConsumerState<SpaceFormScreen> {
     setState(() => _busy = true);
     final api = ref.read(hostApiProvider);
     try {
-      final space = await api.create({
+      final body = {
         'title': _title.text.trim(),
         'type': _type,
         'address': _address.text.trim(),
@@ -131,13 +134,25 @@ class _SpaceFormScreenState extends ConsumerState<SpaceFormScreen> {
         'availableDays': weekdays.where(_days.contains).toList(),
         'openFrom': _hms(_from),
         'openTo': _hms(_to),
-      });
-      // If an upload fails the space stays a draft; the host can finish it from its page.
-      for (final (photo, _) in _photos) {
-        await api.addPhoto(space.id, photo);
+      };
+      final String id;
+      if (_draftId case final draft?) {
+        // A retry: keep the same draft with the details as they are now, and send the photos again from scratch,
+        // since the host may have removed one that was already uploaded.
+        await api.update(draft, body);
+        for (final p in (await api.get(draft)).photos) {
+          await api.deletePhoto(draft, p.id);
+        }
+        id = draft;
+      } else {
+        id = _draftId = (await api.create(body)).id;
       }
-      await api.addPhoto(space.id, _proof!.$1, isProof: true);
-      await api.submit(space.id);
+      // If an upload fails the space stays a draft: Submit again finishes this same draft.
+      for (final (photo, _) in _photos) {
+        await api.addPhoto(id, photo);
+      }
+      await api.addPhoto(id, _proof!.$1, isProof: true);
+      await api.submit(id);
       if (!mounted) return;
       _toast(l10n.spaceSubmitted);
       Navigator.of(context).pop();
