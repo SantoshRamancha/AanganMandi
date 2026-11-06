@@ -1,4 +1,5 @@
 using AanganMandi.Api.Auth;
+using AanganMandi.Application.Files;
 using AanganMandi.Application.Notifications;
 using AanganMandi.Application.Storage;
 using AanganMandi.Domain.Spaces;
@@ -31,7 +32,6 @@ public class HostSpacesController(AppDbContext db, IFileStorage storage, INotifi
     public record DocumentChange(bool Withdrawn);
 
     private static readonly GeometryFactory Geo = NetTopologySuite.NtsGeometryServices.Instance.CreateGeometryFactory(4326);
-    private static readonly string[] AllowedImageTypes = ["image/jpeg", "image/png", "image/webp"];
     private const long MaxUploadBytes = 8 * 1024 * 1024;
     private const int MinPhotos = 3, MaxPhotos = 8;
 
@@ -94,11 +94,12 @@ public class HostSpacesController(AppDbContext db, IFileStorage storage, INotifi
         var space = await FindAsync(id, ct);
         if (space is null) return NotFound();
         if (LockedFiles(space) is { } locked) return locked;
-        if (CheckUpload(file) is { } invalid) return invalid;
+        var (invalid, kind) = await CheckUploadAsync(file, ct);
+        if (invalid is not null) return invalid;
         if (!isProof && space.Photos.Count(p => !p.IsRightToUseProof) >= MaxPhotos)
             return Problem(statusCode: 400, title: $"A space can have at most {MaxPhotos} photos");
 
-        var path = await SaveAsync(space, file, isProof, ct);
+        var path = await SaveAsync(space, file, kind, isProof, ct);
         var oldProof = isProof ? space.Photos.Where(p => p.IsRightToUseProof).ToList() : [];
         db.SpacePhotos.RemoveRange(oldProof);
         db.SpacePhotos.Add(new SpacePhoto { SpaceId = space.Id, FilePath = path, IsRightToUseProof = isProof });
@@ -126,10 +127,11 @@ public class HostSpacesController(AppDbContext db, IFileStorage storage, INotifi
         var photo = space?.Photos.SingleOrDefault(p => p.Id == photoId);
         if (photo is null) return NotFound();
         if (LockedFiles(space!) is { } locked) return locked;
-        if (CheckUpload(file) is { } invalid) return invalid;
+        var (invalid, kind) = await CheckUploadAsync(file, ct);
+        if (invalid is not null) return invalid;
 
         var old = photo.FilePath;
-        photo.FilePath = await SaveAsync(space!, file, photo.IsRightToUseProof, ct);
+        photo.FilePath = await SaveAsync(space!, file, kind, photo.IsRightToUseProof, ct);
         photo.UpdatedAt = DateTime.UtcNow;
         Touch(space!);
         await db.SaveChangesAsync(ct);
@@ -185,18 +187,22 @@ public class HostSpacesController(AppDbContext db, IFileStorage storage, INotifi
         ? Problem(statusCode: 409, title: "This space is approved, so its photos and proof can no longer be changed")
         : null;
 
-    private ObjectResult? CheckUpload(IFormFile file) =>
-        file.Length is 0 or > MaxUploadBytes ? Problem(statusCode: 400, title: "Photo must be under 8 MB") :
-        !AllowedImageTypes.Contains(file.ContentType) ? Problem(statusCode: 400, title: "Only JPEG, PNG or WebP photos are accepted") :
-        null;
+    /// <summary>The photo's real format, read from its bytes (the label the browser sends can be wrong), or the error.</summary>
+    private async Task<(ObjectResult? Error, ImageFormat.Kind Kind)> CheckUploadAsync(IFormFile file, CancellationToken ct)
+    {
+        if (file.Length is 0 or > MaxUploadBytes) return (Problem(statusCode: 400, title: "Photo must be under 8 MB"), ImageFormat.Jpeg);
+        await using var head = file.OpenReadStream();
+        return await ImageFormat.DetectAsync(head, ct) is { } kind
+            ? (null, kind)
+            : (Problem(statusCode: 400, title: "Only JPEG, PNG or WebP photos are accepted"), ImageFormat.Jpeg);
+    }
 
     /// <summary>Proof documents are private (kyc/); space photos are public (spaces/).</summary>
-    private async Task<string> SaveAsync(Space space, IFormFile file, bool isProof, CancellationToken ct)
+    private async Task<string> SaveAsync(Space space, IFormFile file, ImageFormat.Kind kind, bool isProof, CancellationToken ct)
     {
         var folder = isProof ? $"kyc/spaces/{space.Id:N}" : $"spaces/{space.Id:N}";
-        var extension = file.ContentType switch { "image/png" => ".png", "image/webp" => ".webp", _ => ".jpg" };
         await using var stream = file.OpenReadStream();
-        return await storage.SaveAsync(stream, folder, extension, ct);
+        return await storage.SaveAsync(stream, folder, kind.Extension, ct);
     }
 
     private static string ContentType(string path) => Path.GetExtension(path).ToLowerInvariant() switch
