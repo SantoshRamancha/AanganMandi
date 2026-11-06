@@ -3,6 +3,7 @@ using AanganMandi.Application.Storage;
 using AanganMandi.Domain.Farmers;
 using AanganMandi.Domain.Identity;
 using AanganMandi.Domain.Spaces;
+using AanganMandi.Infrastructure;
 using AanganMandi.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -40,14 +41,12 @@ public class OpsController(AppDbContext db, IFileStorage storage) : ControllerBa
 
     /// <summary>Any stored file, private ones included, for staff only. Paths come from the review endpoints.</summary>
     [HttpGet("files/{**path}")]
-    public IActionResult GetFile(string path)
+    public async Task<IActionResult> GetFile(string path, CancellationToken ct)
     {
-        if (path.Contains("..") || !(path.StartsWith("kyc/") || path.StartsWith("spaces/"))) return NotFound();
-        var stream = storage.OpenRead(path);
+        if (path.Contains("..") || path.Contains('\\') || !(path.StartsWith("kyc/") || path.StartsWith("spaces/"))) return NotFound();
+        var stream = await storage.OpenReadAsync(path, ct);
         if (stream is null) return NotFound();
-        var type = path.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ? "image/png"
-            : path.EndsWith(".webp", StringComparison.OrdinalIgnoreCase) ? "image/webp" : "image/jpeg";
         Response.Headers.CacheControl = "private, max-age=3600";
-        return File(stream, type);
+        return File(stream, ContentTypes.ForPath(path));
     }
 }

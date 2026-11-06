@@ -2,9 +2,11 @@ using AanganMandi.Application.Storage;
 
 namespace AanganMandi.Infrastructure;
 
-/// <summary>Development storage on local disk. Paths are relative ("kyc/{user}/{file}.jpg") and never leave the root.</summary>
+/// <summary>Storage on local disk (Storage:Provider = Local). Paths are relative ("kyc/{user}/{file}.jpg") and never leave the root.</summary>
 public class LocalFileStorage(string root) : IFileStorage
 {
+    public string Root { get; } = Path.GetFullPath(root);
+
     public async Task<string> SaveAsync(Stream content, string folder, string extension, CancellationToken ct = default)
     {
         var relative = $"{folder.Trim('/')}/{Guid.NewGuid():N}{extension}";
@@ -15,22 +17,23 @@ public class LocalFileStorage(string root) : IFileStorage
         return relative;
     }
 
-    public Stream? OpenRead(string path)
+    public Task<Stream?> OpenReadAsync(string path, CancellationToken ct = default)
     {
         var full = Resolve(path);
-        return File.Exists(full) ? File.OpenRead(full) : null;
+        return Task.FromResult<Stream?>(File.Exists(full) ? File.OpenRead(full) : null);
     }
 
-    public void Delete(string path)
+    public Task DeleteAsync(string path, CancellationToken ct = default)
     {
         var full = Resolve(path);
         if (File.Exists(full)) File.Delete(full);
+        return Task.CompletedTask;
     }
 
     private string Resolve(string relative)
     {
-        var full = Path.GetFullPath(Path.Combine(root, relative));
-        if (!full.StartsWith(Path.GetFullPath(root), StringComparison.OrdinalIgnoreCase))
+        var full = Path.GetFullPath(Path.Combine(Root, relative));
+        if (!full.StartsWith(Path.TrimEndingDirectorySeparator(Root) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
             throw new UnauthorizedAccessException("Path escapes the storage root.");
         return full;
     }

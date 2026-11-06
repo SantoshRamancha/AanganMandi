@@ -58,6 +58,14 @@ builder.Services.AddHangfireServer();
 
 var app = builder.Build();
 
+// One-time move to the bucket: dotnet run --project backend/src/AanganMandi.Api -- copy-uploads-to-bucket
+// copies backend/App_Data/uploads into the bucket (skipping files already there), then exits without serving.
+if (args.Contains("copy-uploads-to-bucket"))
+{
+    await app.Services.CopyLocalUploadsToBucketAsync(builder.Configuration, builder.Environment.ContentRootPath, Console.Out);
+    return;
+}
+
 app.Services.ScheduleBackgroundJobs();
 
 if (app.Environment.IsDevelopment())

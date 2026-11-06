@@ -140,11 +140,39 @@ every 15 seconds, retrying failures (1, 5, 15, 60 min). A failed email never fai
   `Email:FromAddress` and `Notifications:AppUrl`. Keep passwords and keys out of git, e.g.
   `dotnet user-secrets set Email:Smtp:Password "<app password>" --project backend/src/AanganMandi.Api`.
 
+## File storage
+
+Uploaded files (farmer proofs, space photos and proofs) go through `IFileStorage`. `Storage:Provider` picks where:
+
+- **Local** (Development default): `backend/App_Data/uploads` (git-ignored).
+- **Object** (production default): the product's E2E Object Storage bucket, through
+  [StorageProvider](https://github.com/SantoshRamancha/StorageProvider) (`backend/lib/StorageProvider`). Files sit under
+  `Storage:KeyPrefix` (`dev` locally, `prod` in production) so environments never mix. The bucket stays private: the
+  API streams every file, and proofs are only served to staff.
+
+To use the bucket on your PC, set these in your own terminal (the keys never go in appsettings or git), then restart the API:
+
+```bash
+dotnet user-secrets set Storage:Provider Object --project backend/src/AanganMandi.Api
+dotnet user-secrets set StorageProvider:ServiceUrl "<bucket endpoint, e.g. https://in-south1-objectstore.e2enetworks.net>" --project backend/src/AanganMandi.Api
+dotnet user-secrets set StorageProvider:BucketName "<bucket name>" --project backend/src/AanganMandi.Api
+dotnet user-secrets set StorageProvider:AccessKey "<access key>" --project backend/src/AanganMandi.Api
+dotnet user-secrets set StorageProvider:SecretKey "<secret key>" --project backend/src/AanganMandi.Api
+```
+
+Files uploaded before the switch are still on disk; copy them once (files already in the bucket are skipped):
+
+```bash
+dotnet run --project backend/src/AanganMandi.Api -- copy-uploads-to-bucket
+```
+
+On a server use environment variables instead, e.g. `StorageProvider__SecretKey`. A missing setting fails on the
+first file request with an error naming it.
+
 ## Still needed
 
 - **Google Maps**: add `MAPS_API_KEY=...` to `mobile/android/local.properties` (map pins instead of coordinates)
 - **Push alerts**: create a Firebase project, add `mobile/android/app/google-services.json`, then call `Firebase.initializeApp()` in `main.dart`
 - **Real SMS**: Kinichit.Communication is already in place (`ISmsSender`, `Sms` settings); send the OTP through it with MSG91 and a DLT-registered template instead of `DevOtpService`
 - **Android emulator or phone**: install Android Studio for the emulator, or enable USB debugging on a phone
-- **Production storage**: replace `LocalFileStorage` with Azure Blob private containers
 - `permission_handler` is held at 12.x and `pinput` at 6.x until they work with this Flutter/AGP version

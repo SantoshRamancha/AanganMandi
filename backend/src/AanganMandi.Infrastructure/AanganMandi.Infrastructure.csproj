@@ -30,6 +30,18 @@
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
   </ItemGroup>
 
+  <!--
+    StorageProvider 1.0.0 (E2E Object Storage / any S3-compatible bucket), used as a DLL built from
+    https://github.com/SantoshRamancha/StorageProvider commit bfa9201; see backend/lib/README.md.
+    Its own dependency is listed here at the same version.
+  -->
+  <ItemGroup>
+    <Reference Include="StorageProvider">
+      <HintPath>..\..\lib\StorageProvider\StorageProvider.dll</HintPath>
+    </Reference>
+    <PackageReference Include="AWSSDK.S3" Version="4.0.104.7" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
