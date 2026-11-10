@@ -150,11 +150,12 @@ Uploaded files (farmer proofs, space photos and proofs) go through `IFileStorage
   `Storage:KeyPrefix` (`dev` locally, `prod` in production) so environments never mix. The bucket stays private: the
   API streams every file, and proofs are only served to staff.
 
-To use the bucket on your PC, set these in your own terminal (the keys never go in appsettings or git), then restart the API:
+The endpoint (`StorageProvider:ServiceUrl`, E2E Chennai `https://in-south1-objectstore.e2enetworks.net`) is not a secret
+and is already in `appsettings.json`; don't set it in user-secrets, where it would override that. To use the bucket on
+your PC, set these in your own terminal (the keys never go in appsettings or git), then restart the API:
 
 ```bash
 dotnet user-secrets set Storage:Provider Object --project backend/src/AanganMandi.Api
-dotnet user-secrets set StorageProvider:ServiceUrl "<bucket endpoint, e.g. https://in-south1-objectstore.e2enetworks.net>" --project backend/src/AanganMandi.Api
 dotnet user-secrets set StorageProvider:BucketName "<bucket name>" --project backend/src/AanganMandi.Api
 dotnet user-secrets set StorageProvider:AccessKey "<access key>" --project backend/src/AanganMandi.Api
 dotnet user-secrets set StorageProvider:SecretKey "<secret key>" --project backend/src/AanganMandi.Api
