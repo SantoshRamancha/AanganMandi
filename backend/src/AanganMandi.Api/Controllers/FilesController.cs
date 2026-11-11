@@ -1,4 +1,5 @@
 using AanganMandi.Application.Storage;
+using AanganMandi.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AanganMandi.Api.Controllers;
@@ -10,16 +11,10 @@ public class FilesController(IFileStorage storage) : ControllerBase
 {
     [HttpGet("spaces/{**rest}")]
     [ResponseCache(Duration = 86400)]
-    public IActionResult SpacePhoto(string rest)
+    public async Task<IActionResult> SpacePhoto(string rest, CancellationToken ct)
     {
-        var stream = storage.OpenRead($"spaces/{rest}");
-        if (stream is null) return NotFound();
-        var type = Path.GetExtension(rest).ToLowerInvariant() switch
-        {
-            ".png" => "image/png",
-            ".webp" => "image/webp",
-            _ => "image/jpeg",
-        };
-        return File(stream, type);
+        if (rest.Contains("..") || rest.Contains('\\')) return NotFound();
+        var stream = await storage.OpenReadAsync($"spaces/{rest}", ct);
+        return stream is null ? NotFound() : File(stream, ContentTypes.ForPath(rest));
     }
 }

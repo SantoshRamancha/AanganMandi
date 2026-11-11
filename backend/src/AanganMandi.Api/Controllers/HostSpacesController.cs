@@ -105,7 +105,7 @@ public class HostSpacesController(AppDbContext db, IFileStorage storage, INotifi
         db.SpacePhotos.Add(new SpacePhoto { SpaceId = space.Id, FilePath = path, IsRightToUseProof = isProof });
         Touch(space);
         await db.SaveChangesAsync(ct);
-        foreach (var p in oldProof) storage.Delete(p.FilePath);
+        foreach (var p in oldProof) await storage.DeleteAsync(p.FilePath, ct);
         return NoContent();
     }
 
@@ -114,7 +114,7 @@ public class HostSpacesController(AppDbContext db, IFileStorage storage, INotifi
     public async Task<IActionResult> GetPhoto(Guid id, Guid photoId, CancellationToken ct)
     {
         var photo = (await FindAsync(id, ct))?.Photos.SingleOrDefault(p => p.Id == photoId);
-        var stream = photo is null ? null : storage.OpenRead(photo.FilePath);
+        var stream = photo is null ? null : await storage.OpenReadAsync(photo.FilePath, ct);
         return stream is null ? NotFound() : File(stream, ContentType(photo!.FilePath), Path.GetFileName(photo.FilePath));
     }
 
@@ -135,7 +135,7 @@ public class HostSpacesController(AppDbContext db, IFileStorage storage, INotifi
         photo.UpdatedAt = DateTime.UtcNow;
         Touch(space!);
         await db.SaveChangesAsync(ct);
-        storage.Delete(old);
+        await storage.DeleteAsync(old, ct);
         return NoContent();
     }
 
@@ -158,7 +158,7 @@ public class HostSpacesController(AppDbContext db, IFileStorage storage, INotifi
         if (withdrawn) space.Status = SpaceStatus.Draft;
         Touch(space);
         await db.SaveChangesAsync(ct);
-        storage.Delete(photo.FilePath);
+        await storage.DeleteAsync(photo.FilePath, ct);
         return new DocumentChange(withdrawn);
     }
 

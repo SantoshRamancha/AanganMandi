@@ -1,0 +1,109 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>StorageProvider</name>
+    </assembly>
+    <members>
+        <member name="T:StorageProvider.IStorageProvider">
+            <summary>
+            Reads and writes files in the product's bucket. Each product gets one bucket (set in
+            <see cref="P:StorageProvider.StorageProviderOptions.BucketName"/>); content is grouped into folders inside it,
+            so every method works with an object key such as <c>items/2f3c...e1.jpg</c>.
+            Build keys with <see cref="M:StorageProvider.StorageKey.Combine(System.String[])"/>.
+            </summary>
+        </member>
+        <member name="M:StorageProvider.IStorageProvider.UploadAsync(System.String,System.IO.Stream,System.String,System.Threading.CancellationToken)">
+            <summary>Uploads <paramref name="content"/> to <paramref name="key"/>, replacing any object already there.</summary>
+        </member>
+        <member name="M:StorageProvider.IStorageProvider.DownloadAsync(System.String,System.Threading.CancellationToken)">
+            <summary>Opens the object for reading, or returns <c>null</c> when it does not exist. Dispose the result.</summary>
+        </member>
+        <member name="M:StorageProvider.IStorageProvider.ExistsAsync(System.String,System.Threading.CancellationToken)">
+            <summary>Whether an object exists at <paramref name="key"/>.</summary>
+        </member>
+        <member name="M:StorageProvider.IStorageProvider.DeleteAsync(System.String,System.Threading.CancellationToken)">
+            <summary>Deletes the object. Deleting a key that does not exist is not an error.</summary>
+        </member>
+        <member name="M:StorageProvider.IStorageProvider.ListAsync(System.String,System.Threading.CancellationToken)">
+            <summary>Lists the objects under a folder (all of them, following pagination).</summary>
+        </member>
+        <member name="M:StorageProvider.IStorageProvider.GetPresignedDownloadUrl(System.String,System.TimeSpan)">
+            <summary>
+            A time-limited URL that lets anyone holding it download the object directly from the bucket,
+            without making the bucket public. Use for private files such as KYC documents.
+            </summary>
+        </member>
+        <member name="T:StorageProvider.StoredObject">
+            <summary>An object in the bucket.</summary>
+        </member>
+        <member name="M:StorageProvider.StoredObject.#ctor(System.String,System.Int64,System.String,System.Nullable{System.DateTimeOffset})">
+            <summary>An object in the bucket.</summary>
+        </member>
+        <member name="T:StorageProvider.StorageDownload">
+            <summary>An open download. Disposing it closes the underlying network stream.</summary>
+        </member>
+        <member name="M:StorageProvider.StorageDownload.#ctor(System.IO.Stream,System.String,System.String,System.Nullable{System.Int64},System.String,System.Nullable{System.DateTimeOffset})">
+            <summary>An open download. Disposing it closes the underlying network stream.</summary>
+        </member>
+        <member name="T:StorageProvider.S3CompatibleStorageProvider">
+            <summary>
+            <see cref="T:StorageProvider.IStorageProvider"/> over E2E Object Storage, or any other S3-compatible store, using the AWS S3 SDK.
+            Thread-safe; register it as a singleton.
+            </summary>
+        </member>
+        <member name="M:StorageProvider.S3CompatibleStorageProvider.#ctor(Amazon.S3.IAmazonS3,System.String)">
+            <summary>For tests: wraps an existing client.</summary>
+        </member>
+        <member name="M:StorageProvider.ServiceCollectionExtensions.AddStorageProvider(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfigurationSection)">
+            <summary>
+            Registers <see cref="T:StorageProvider.IStorageProvider"/> as a singleton bound to <paramref name="section"/>
+            (for example <c>configuration.GetSection("StorageProvider")</c>). Settings are checked the first
+            time the provider is resolved, with an error that names each missing key.
+            </summary>
+        </member>
+        <member name="T:StorageProvider.StorageKey">
+            <summary>Builds and checks object keys (<c>folder/sub-folder/file.ext</c>).</summary>
+        </member>
+        <member name="M:StorageProvider.StorageKey.Combine(System.String[])">
+            <summary>
+            Joins folder and file segments with <c>/</c>. Backslashes become <c>/</c>, empty segments are dropped,
+            and <c>.</c> / <c>..</c> segments are rejected so user input can't escape its folder.
+            </summary>
+        </member>
+        <member name="M:StorageProvider.StorageKey.Validate(System.String)">
+            <summary>Throws <see cref="T:System.ArgumentException"/> when <paramref name="key"/> is not a usable object key.</summary>
+        </member>
+        <member name="M:StorageProvider.StorageKey.FolderPrefix(System.String)">
+            <summary>Folder prefix used for listing: <c>items</c> → <c>items/</c>; empty → whole bucket.</summary>
+        </member>
+        <member name="T:StorageProvider.StorageProviderOptions">
+            <summary>Connection settings for the product's bucket. Keep <see cref="P:StorageProvider.StorageProviderOptions.AccessKey"/> and <see cref="P:StorageProvider.StorageProviderOptions.SecretKey"/>
+            in user-secrets or environment variables, never in a committed appsettings file.</summary>
+        </member>
+        <member name="F:StorageProvider.StorageProviderOptions.Section">
+            <summary>Default configuration section name.</summary>
+        </member>
+        <member name="P:StorageProvider.StorageProviderOptions.ServiceUrl">
+            <summary>
+            The object storage endpoint, e.g. <c>https://in-south1-objectstore.e2enetworks.net</c> (E2E Chennai) or
+            <c>https://objectstore.e2enetworks.net</c> (E2E Delhi). The exact host is the start of any presigned URL
+            generated for the bucket in the E2E console.
+            </summary>
+        </member>
+        <member name="P:StorageProvider.StorageProviderOptions.BucketName">
+            <summary>The product's single bucket, e.g. <c>quickshop</c>.</summary>
+        </member>
+        <member name="P:StorageProvider.StorageProviderOptions.Region">
+            <summary>Region name used for request signing. E2E (and most S3-compatible stores) accept <c>us-east-1</c>.</summary>
+        </member>
+        <member name="P:StorageProvider.StorageProviderOptions.ForcePathStyle">
+            <summary>Path-style URLs (<c>endpoint/bucket/key</c>), which S3-compatible stores expect.</summary>
+        </member>
+        <member name="P:StorageProvider.StorageProviderOptions.Timeout">
+            <summary>Per-request timeout.</summary>
+        </member>
+        <member name="M:StorageProvider.StorageProviderOptions.Validate(System.String)">
+            <summary>Throws <see cref="T:System.InvalidOperationException"/> naming every missing setting.</summary>
+        </member>
+    </members>
+</doc>

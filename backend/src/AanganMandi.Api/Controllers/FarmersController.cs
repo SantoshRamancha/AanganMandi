@@ -102,7 +102,7 @@ public class FarmersController(AppDbContext db, IFileStorage storage, INotifier 
     public async Task<IActionResult> GetEvidencePhoto(CancellationToken ct)
     {
         var doc = await EvidencePhotos(User.UserId()).OrderByDescending(d => d.CreatedAt).FirstOrDefaultAsync(ct);
-        var stream = doc is null ? null : storage.OpenRead(doc.FilePath);
+        var stream = doc is null ? null : await storage.OpenReadAsync(doc.FilePath, ct);
         return stream is null ? NotFound() : File(stream, doc!.ContentType, $"evidence{Extension(doc.ContentType)}");
     }
 
@@ -139,7 +139,7 @@ public class FarmersController(AppDbContext db, IFileStorage storage, INotifier 
         });
         farmer.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
-        foreach (var d in old) storage.Delete(d.FilePath);
+        foreach (var d in old) await storage.DeleteAsync(d.FilePath, ct);
         return NoContent();
     }
 
@@ -165,7 +165,7 @@ public class FarmersController(AppDbContext db, IFileStorage storage, INotifier 
         }
         if (farmer is not null) farmer.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
-        foreach (var d in docs) storage.Delete(d.FilePath);
+        foreach (var d in docs) await storage.DeleteAsync(d.FilePath, ct);
         return new DocumentChange(withdrawn);
     }
 
