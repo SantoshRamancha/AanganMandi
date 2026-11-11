@@ -161,7 +161,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.Property(s => s.Fee).HasPrecision(10, 2);
             e.Property(s => s.Location).HasColumnType("geography");
             e.HasMany(s => s.Photos).WithOne().HasForeignKey(p => p.SpaceId);
+            // A deleted space disappears everywhere; booking lists read it with IgnoreQueryFilters for its name.
+            e.HasQueryFilter(s => !s.IsDeleted);
         });
+        // Matching filter on the rows that need a space, so EF knows they follow it (their own flag is never set).
+        b.Entity<SpacePhoto>().HasQueryFilter(p => !p.IsDeleted);
         b.Entity<Trip>(e =>
         {
             e.HasIndex(t => new { t.FarmerUserId, t.Date });
@@ -193,6 +197,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.Property(x => x.CancelledBy).HasMaxLength(8);
             e.HasOne<Trip>().WithMany().HasForeignKey(x => x.TripId).OnDelete(DeleteBehavior.NoAction);
             e.HasOne<Space>().WithMany().HasForeignKey(x => x.SpaceId).OnDelete(DeleteBehavior.NoAction);
+            e.HasQueryFilter(x => !x.IsDeleted);
         });
     }
 }

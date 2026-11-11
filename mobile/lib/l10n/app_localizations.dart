@@ -2919,6 +2919,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'They get a welcome email and one for each farmer assigned to them.'**
   String get verifierEmailHint;
+
+  /// No description provided for @deleteSpace.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete space'**
+  String get deleteSpace;
+
+  /// No description provided for @deleteSpaceQ.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this space?'**
+  String get deleteSpaceQ;
+
+  /// No description provided for @deleteSpaceBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Its photos and proof are deleted and it leaves search. This cannot be undone.'**
+  String get deleteSpaceBody;
+
+  /// No description provided for @deleteSpaceBookings.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting and confirmed bookings from today on are cancelled, and each farmer is told.'**
+  String get deleteSpaceBookings;
+
+  /// No description provided for @spaceDeletedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Space deleted} =1{Space deleted. 1 booking was cancelled.} other{Space deleted. {count} bookings were cancelled.}}'**
+  String spaceDeletedToast(int count);
+
+  /// No description provided for @resetVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear and start over'**
+  String get resetVerification;
+
+  /// No description provided for @resetVerificationQ.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear your verification?'**
+  String get resetVerificationQ;
+
+  /// No description provided for @resetVerificationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your farming details, crops, evidence and evidence photo are deleted. Your name stays. This cannot be undone.'**
+  String get resetVerificationBody;
+
+  /// No description provided for @resetWithdrawWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Your verification is waiting for review. Clearing it takes it out of the queue, so you will need to submit again.'**
+  String get resetWithdrawWarning;
+
+  /// No description provided for @verificationResetToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification cleared. You can start again.'**
+  String get verificationResetToast;
 }
 
 class _AppLocalizationsDelegate

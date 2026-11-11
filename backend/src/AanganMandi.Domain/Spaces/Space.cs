@@ -21,7 +21,10 @@ public enum Amenities
 
 public enum SpaceStatus { Draft, PendingReview, Live, Rejected }
 
-/// <summary>A host's space (FR-1.2–1.8). Goes live only after an admin checks photos, location and right-to-use proof.</summary>
+/// <summary>
+/// A host's space (FR-1.2–1.8). Goes live only after an admin checks photos, location and right-to-use proof.
+/// Deleting a space only sets IsDeleted (a query filter hides it), so past bookings can still show its name.
+/// </summary>
 public class Space : Entity
 {
     public Guid HostUserId { get; set; }

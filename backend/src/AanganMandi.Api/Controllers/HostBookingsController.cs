@@ -43,7 +43,7 @@ public class HostBookingsController(AppDbContext db, INotifier notifier) : Contr
         var rows = await (
             from b in q
             join t in db.Trips.Include(t => t.Produce) on b.TripId equals t.Id
-            join s in db.Spaces on b.SpaceId equals s.Id
+            join s in db.Spaces.IgnoreQueryFilters() on b.SpaceId equals s.Id // a deleted space's past bookings stay
             join u in db.Users on b.FarmerUserId equals u.Id
             join f in db.FarmerProfiles on b.FarmerUserId equals f.UserId into fs
             from f in fs.DefaultIfEmpty()

@@ -1579,4 +1579,48 @@ class AppLocalizationsTe extends AppLocalizations {
   @override
   String get verifierEmailHint =>
       'వారికి స్వాగత ఈమెయిల్, కేటాయించిన ప్రతి రైతు కోసం ఒక ఈమెయిల్ వస్తుంది.';
+
+  @override
+  String get deleteSpace => 'స్థలాన్ని తొలగించు';
+
+  @override
+  String get deleteSpaceQ => 'ఈ స్థలాన్ని తొలగించాలా?';
+
+  @override
+  String get deleteSpaceBody =>
+      'దీని ఫోటోలు, రుజువు తొలగించబడతాయి, ఇది శోధనలో కనిపించదు. దీన్ని తిరిగి పొందలేరు.';
+
+  @override
+  String get deleteSpaceBookings =>
+      'ఈరోజు నుండి వేచి ఉన్న, నిర్ధారించిన బుకింగ్‌లు రద్దవుతాయి, ప్రతి రైతుకు తెలియజేయబడుతుంది.';
+
+  @override
+  String spaceDeletedToast(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'స్థలం తొలగించబడింది. $count బుకింగ్‌లు రద్దయ్యాయి.',
+      one: 'స్థలం తొలగించబడింది. 1 బుకింగ్ రద్దయింది.',
+      zero: 'స్థలం తొలగించబడింది',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get resetVerification => 'అన్నీ తొలగించి మళ్లీ ప్రారంభించండి';
+
+  @override
+  String get resetVerificationQ => 'మీ ధృవీకరణను తొలగించాలా?';
+
+  @override
+  String get resetVerificationBody =>
+      'మీ వ్యవసాయ వివరాలు, పంటలు, ఆధారం, ఆధారం ఫోటో తొలగించబడతాయి. మీ పేరు అలాగే ఉంటుంది. దీన్ని తిరిగి పొందలేరు.';
+
+  @override
+  String get resetWithdrawWarning =>
+      'మీ ధృవీకరణ సమీక్ష కోసం వేచి ఉంది. తొలగిస్తే అది క్యూ నుండి తొలగిపోతుంది, మీరు మళ్లీ సమర్పించాలి.';
+
+  @override
+  String get verificationResetToast =>
+      'ధృవీకరణ తొలగించబడింది. మీరు మళ్లీ ప్రారంభించవచ్చు.';
 }

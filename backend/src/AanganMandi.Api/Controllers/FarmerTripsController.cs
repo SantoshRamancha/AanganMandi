@@ -238,7 +238,7 @@ public class FarmerTripsController(AppDbContext db, INotifier notifier) : Contro
         var rows = await (
             from b in db.Bookings
             where tripIds.Contains(b.TripId)
-            join s in db.Spaces.Include(s => s.Photos) on b.SpaceId equals s.Id
+            join s in db.Spaces.IgnoreQueryFilters().Include(s => s.Photos) on b.SpaceId equals s.Id // deleted spaces too
             join h in db.Users on b.HostUserId equals h.Id
             select new { b, s, h }).ToListAsync(ct);
         return rows.GroupBy(r => r.b.TripId).ToDictionary(g => g.Key, g =>

@@ -1615,4 +1615,48 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get verifierEmailHint =>
       'They get a welcome email and one for each farmer assigned to them.';
+
+  @override
+  String get deleteSpace => 'Delete space';
+
+  @override
+  String get deleteSpaceQ => 'Delete this space?';
+
+  @override
+  String get deleteSpaceBody =>
+      'Its photos and proof are deleted and it leaves search. This cannot be undone.';
+
+  @override
+  String get deleteSpaceBookings =>
+      'Waiting and confirmed bookings from today on are cancelled, and each farmer is told.';
+
+  @override
+  String spaceDeletedToast(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Space deleted. $count bookings were cancelled.',
+      one: 'Space deleted. 1 booking was cancelled.',
+      zero: 'Space deleted',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get resetVerification => 'Clear and start over';
+
+  @override
+  String get resetVerificationQ => 'Clear your verification?';
+
+  @override
+  String get resetVerificationBody =>
+      'Your farming details, crops, evidence and evidence photo are deleted. Your name stays. This cannot be undone.';
+
+  @override
+  String get resetWithdrawWarning =>
+      'Your verification is waiting for review. Clearing it takes it out of the queue, so you will need to submit again.';
+
+  @override
+  String get verificationResetToast =>
+      'Verification cleared. You can start again.';
 }

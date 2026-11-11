@@ -169,6 +169,30 @@ public class FarmersController(AppDbContext db, IFileStorage storage, INotifier 
         return new DocumentChange(withdrawn);
     }
 
+    /// <summary>
+    /// Clears the farming details, crops, evidence and evidence photo so the farmer can start over. Allowed until
+    /// verified; a waiting submission is withdrawn. The name stays: it belongs to the account, not the verification.
+    /// </summary>
+    [HttpDelete("verification")]
+    public async Task<ActionResult<DocumentChange>> ResetVerification(CancellationToken ct)
+    {
+        var userId = User.UserId();
+        var farmer = await LoadAsync(userId, ct);
+        if (farmer is not null && !farmer.CanReset) return Locked(farmer);
+        var docs = await EvidencePhotos(userId).ToListAsync(ct);
+
+        var withdrawn = farmer?.Status == VerificationStatus.Pending;
+        if (farmer is not null)
+        {
+            db.RemoveRange(farmer.Crops);
+            farmer.ResetVerification();
+        }
+        db.VerificationDocuments.RemoveRange(docs);
+        await db.SaveChangesAsync(ct);
+        foreach (var d in docs) await storage.DeleteAsync(d.FilePath, ct);
+        return new DocumentChange(withdrawn);
+    }
+
     [HttpPost("submit")]
     public async Task<IActionResult> Submit(CancellationToken ct)
     {

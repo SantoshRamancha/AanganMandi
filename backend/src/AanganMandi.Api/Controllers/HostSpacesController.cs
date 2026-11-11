@@ -2,6 +2,7 @@ using AanganMandi.Api.Auth;
 using AanganMandi.Application.Files;
 using AanganMandi.Application.Notifications;
 using AanganMandi.Application.Storage;
+using AanganMandi.Application.Trips;
 using AanganMandi.Domain.Spaces;
 using AanganMandi.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
@@ -30,6 +31,11 @@ public class HostSpacesController(AppDbContext db, IFileStorage storage, INotifi
     public record FileRef(Guid Id, DateTime UploadedAt);
     /// <summary>Withdrawn: the change left a waiting space incomplete, so it went back to Draft.</summary>
     public record DocumentChange(bool Withdrawn);
+    /// <summary>How many upcoming bookings deleting the space cancelled.</summary>
+    public record SpaceDeleted(int CancelledBookings);
+
+    /// <summary>The reason a farmer sees on a booking cancelled because the host deleted the space.</summary>
+    public const string SpaceDeletedReason = "The host removed this space from Aangan Mandi";
 
     private static readonly GeometryFactory Geo = NetTopologySuite.NtsGeometryServices.Instance.CreateGeometryFactory(4326);
     private const long MaxUploadBytes = 8 * 1024 * 1024;
@@ -160,6 +166,31 @@ public class HostSpacesController(AppDbContext db, IFileStorage storage, INotifi
         await db.SaveChangesAsync(ct);
         await storage.DeleteAsync(photo.FilePath, ct);
         return new DocumentChange(withdrawn);
+    }
+
+    /// <summary>
+    /// Deletes the space, whatever its status. It leaves search and the review queue, its photos and proof are
+    /// removed from storage, and every waiting or confirmed booking for today or later is cancelled with the farmer
+    /// told why. Past bookings keep showing the space's name.
+    /// </summary>
+    [HttpDelete("{id:guid}")]
+    public async Task<ActionResult<SpaceDeleted>> Delete(Guid id, CancellationToken ct)
+    {
+        var space = await FindAsync(id, ct);
+        if (space is null) return NotFound();
+        var today = TripRules.TodayInIndia(DateTime.UtcNow);
+        var cancelled = (await db.Bookings.Where(b => b.SpaceId == id && b.Date >= today).ToListAsync(ct))
+            .Where(b => b.IsUpcoming(today)).ToList();
+        foreach (var b in cancelled) b.Cancel("Host", SpaceDeletedReason);
+
+        var files = space.Photos.ToList();
+        db.SpacePhotos.RemoveRange(files);
+        space.IsDeleted = true;
+        space.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync(ct);
+        foreach (var f in files) await storage.DeleteAsync(f.FilePath, ct);
+        foreach (var b in cancelled) await notifier.BookingChangedAsync(b.Id, ct);
+        return new SpaceDeleted(cancelled.Count);
     }
 
     [HttpPost("{id:guid}/submit")]

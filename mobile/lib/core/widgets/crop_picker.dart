@@ -50,10 +50,13 @@ class _CropPickerState extends ConsumerState<CropPicker> {
     final query = _search.text.trim();
     final custom = {...widget.suggested, ...widget.selected}.where(isCustomCrop).toList();
 
+    // A crop the farmer typed in gets an ✕ while selected, so a typo is easy to remove.
     Widget chip(String code) => FilterChip(
           label: Text(cropName(code, crops, lang)),
           selected: widget.selected.contains(code),
           onSelected: (on) => widget.onChanged(code, on),
+          onDeleted: isCustomCrop(code) && widget.selected.contains(code) ? () => widget.onChanged(code, false) : null,
+          deleteButtonTooltipMessage: l10n.delete,
         );
     Widget group(String title, List<String> codes) => Padding(
           padding: const EdgeInsets.only(top: 14),
