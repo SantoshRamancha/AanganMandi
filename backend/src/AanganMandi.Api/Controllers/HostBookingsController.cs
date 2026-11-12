@@ -22,9 +22,14 @@ public class HostBookingsController(AppDbContext db, INotifier notifier) : Contr
     public record ProduceItem(string CropCode, decimal? QuantityKg, decimal? PricePerKg);
     /// <summary>Phone only for an accepted booking (FR-1.9 works both ways).</summary>
     public record FarmerCard(string? Name, string? Village, string? District, string? Phone);
+    /// <summary>
+    /// ArrivedAt: when the farmer checked in at the space (UTC). NoShow: marked by the host. CanMarkNoShow: the slot
+    /// is over and the farmer never checked in.
+    /// </summary>
     public record HostBookingDto(Guid Id, BookingStatus Status, DateOnly Date, TimeOnly From, TimeOnly To, decimal Fee,
         string? Message, string? Reason, bool SlotTaken, string? CancelledBy, Guid SpaceId, string SpaceTitle,
-        VehicleType Vehicle, ProduceItem[] Produce, FarmerCard Farmer, DateTime RequestedAt);
+        VehicleType Vehicle, ProduceItem[] Produce, FarmerCard Farmer, DateTime RequestedAt,
+        DateTime? ArrivedAt, bool NoShow, bool CanMarkNoShow);
     public record ReasonRequest(string? Reason);
 
     /// <summary>view: "requests" (waiting for you), "upcoming" (accepted, today or later) or "past" (everything else).</summary>
@@ -50,11 +55,30 @@ public class HostBookingsController(AppDbContext db, INotifier notifier) : Contr
             select new { b, t, s.Title, u.Name, u.Phone, Village = f == null ? null : f.Village, District = f == null ? null : f.District })
             .ToListAsync(ct);
         var ordered = view == "past" ? rows.OrderByDescending(r => r.b.Date) : rows.OrderBy(r => r.b.Date).ThenBy(r => r.b.CreatedAt);
+        var indiaNow = ArrivalRules.IndiaTime(DateTime.UtcNow);
         return ordered.Select(r => new HostBookingDto(r.b.Id, r.b.Status, r.b.Date, r.b.From, r.b.To, r.b.Fee, r.b.Message,
             r.b.Reason, r.b.SlotTaken, r.b.CancelledBy, r.b.SpaceId, r.Title, r.t.Vehicle,
             r.t.Produce.Select(p => new ProduceItem(p.CropCode, p.QuantityKg, p.PricePerKg)).ToArray(),
             new FarmerCard(r.Name, r.Village, r.District, r.b.Status == BookingStatus.Accepted ? r.Phone : null),
-            r.b.CreatedAt)).ToList();
+            r.b.CreatedAt, ArrivalRules.AsUtc(r.b.ArrivedAt), r.b.NoShowAt is not null, ArrivalRules.CanMarkNoShow(r.b, indiaNow))).ToList();
+    }
+
+    /// <summary>
+    /// The farmer did not come: allowed once the slot is over and the farmer never checked in. It is recorded on the
+    /// booking (shown to both sides); nothing is emailed.
+    /// </summary>
+    [HttpPost("{id:guid}/no-show")]
+    public async Task<IActionResult> NoShow(Guid id, CancellationToken ct)
+    {
+        var booking = await FindAsync(id, ct);
+        if (booking is null) return NotFound();
+        if (!ArrivalRules.CanMarkNoShow(booking, ArrivalRules.IndiaTime(DateTime.UtcNow)))
+            return Problem(statusCode: 409, title: booking.ArrivedAt is not null
+                ? "The farmer checked in for this booking"
+                : "You can mark this once the slot has ended");
+        booking.NoShowAt = booking.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync(ct);
+        return NoContent();
     }
 
     /// <summary>Confirms this farmer for the day; other requests for the same space and day are declined.</summary>

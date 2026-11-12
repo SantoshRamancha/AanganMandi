@@ -23,6 +23,76 @@ namespace AanganMandi.Infrastructure.Persistence.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("AanganMandi.Domain.Buyers.BuyerArea", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("AlertsOn")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<Point>("Location")
+                        .IsRequired()
+                        .HasColumnType("geography");
+
+                    b.Property<int>("RadiusKm")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("BuyerAreas");
+                });
+
+            modelBuilder.Entity("AanganMandi.Domain.Buyers.NearbyAlert", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BookingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BuyerUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BuyerUserId", "BookingId", "Kind")
+                        .IsUnique();
+
+                    b.ToTable("NearbyAlerts");
+                });
+
             modelBuilder.Entity("AanganMandi.Domain.Farmers.FarmPlot", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1385,6 +1455,12 @@ namespace AanganMandi.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int?>("ArrivalDistanceMeters")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ArrivedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("CancelledBy")
                         .HasMaxLength(8)
                         .HasColumnType("nvarchar(8)");
@@ -1414,6 +1490,9 @@ namespace AanganMandi.Infrastructure.Persistence.Migrations
                     b.Property<string>("Message")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("NoShowAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Reason")
                         .HasMaxLength(200)
@@ -1540,6 +1619,15 @@ namespace AanganMandi.Infrastructure.Persistence.Migrations
                     b.HasIndex("TripId");
 
                     b.ToTable("TripProduce");
+                });
+
+            modelBuilder.Entity("AanganMandi.Domain.Buyers.BuyerArea", b =>
+                {
+                    b.HasOne("AanganMandi.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("AanganMandi.Domain.Farmers.FarmPlot", b =>

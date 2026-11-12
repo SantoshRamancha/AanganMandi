@@ -159,11 +159,39 @@ public static class MailText
             "{{farmer}} {{date}} న {{space}} కోసం తమ అభ్యర్థనను రద్దు చేశారు. ఆ రోజు మళ్లీ ఇతర రైతులకు ఖాళీగా ఉంది.",
             "{{farmer}} ने {{date}} के लिए {{space}} का अपना अनुरोध रद्द कर दिया। वह दिन फिर से दूसरे किसानों के लिए खाली है।"));
 
+    public static readonly MailTemplate BookingArrived = new("booking-arrived",
+        new("{{farmer}} has arrived at {{space}}", "{{farmer}} {{space}}కు చేరుకున్నారు", "{{farmer}} {{space}} पहुँच गए हैं"),
+        new("Your farmer is here", "మీ రైతు వచ్చారు", "आपके किसान आ गए हैं"),
+        new("{{farmer}} checked in at {{space}} at {{time}} for today's slot. Please make the space ready for the stall if you have not already.",
+            "{{farmer}} ఈరోజు స్లాట్ కోసం {{time}}కు {{space}} వద్ద చెక్ ఇన్ చేశారు. ఇంకా చేయకపోతే, దయచేసి దుకాణం కోసం స్థలాన్ని సిద్ధం చేయండి.",
+            "{{farmer}} ने आज के स्लॉट के लिए {{time}} बजे {{space}} पर चेक इन किया है। अगर अभी तक नहीं किया है, तो कृपया दुकान के लिए जगह तैयार करें।"));
+
+    // Nearby buyers -------------------------------------------------------------------------------
+
+    public static readonly L Until = new("Until", "వరకు", "तक");
+    public static readonly L Distance = new("Distance", "దూరం", "दूरी");
+    public static readonly L KmAway = new("{{km}} km from you", "మీకు {{km}} కి.మీ. దూరంలో", "आपसे {{km}} किमी दूर");
+
+    public static readonly MailTemplate NearbyTomorrow = new("nearby-tomorrow",
+        new("Fresh produce near you on {{date}}", "{{date}} న మీ దగ్గర తాజా పంట", "{{date}} को आपके पास ताज़ी उपज"),
+        new("Farmers selling near you tomorrow", "రేపు మీ దగ్గర అమ్మే రైతులు", "कल आपके पास बेचने वाले किसान"),
+        new("Verified farmers will sell their own produce close to you on {{date}}. Here is when and in which area; the exact place shows in the app once they arrive.\n\nTo stop these alerts, turn off nearby alerts on the Aangan Mandi home screen.",
+            "ధృవీకరించిన రైతులు {{date}} న మీకు దగ్గరలో తమ సొంత పంటను అమ్ముతారు. ఎప్పుడు, ఏ ప్రాంతంలో అనేది ఇక్కడ ఉంది; వారు చేరుకున్నాక సరిగ్గా ఎక్కడ అనేది యాప్‌లో కనిపిస్తుంది.\n\nఈ హెచ్చరికలు ఆపడానికి, ఆంగన్ మండి హోమ్ స్క్రీన్‌లో దగ్గరి హెచ్చరికలను ఆఫ్ చేయండి.",
+            "सत्यापित किसान {{date}} को आपके पास अपनी उपज बेचेंगे। कब और किस इलाके में, यह नीचे है; उनके पहुँचने पर सही जगह ऐप में दिखेगी।\n\nये सूचनाएँ बंद करने के लिए, आंगन मंडी की होम स्क्रीन पर आस-पास की सूचनाएँ बंद करें।"));
+
+    public static readonly MailTemplate NearbySellingNow = new("nearby-selling-now",
+        new("Selling now near you: {{farmer}} in {{locality}}", "ఇప్పుడు మీ దగ్గర అమ్ముతున్నారు: {{locality}}లో {{farmer}}", "अभी आपके पास बिक रहा है: {{locality}} में {{farmer}}"),
+        new("A farmer is selling near you now", "ఒక రైతు ఇప్పుడు మీ దగ్గర అమ్ముతున్నారు", "एक किसान अभी आपके पास बेच रहे हैं"),
+        new("{{farmer}} has just set up at {{space}}, {{locality}}, with fresh produce from their farm. They are there until {{until}}.\n\nTo stop these alerts, turn off nearby alerts on the Aangan Mandi home screen.",
+            "{{farmer}} ఇప్పుడే {{locality}}లోని {{space}} వద్ద తమ పొలం నుండి తాజా పంటతో దుకాణం పెట్టారు. వారు {{until}} వరకు అక్కడ ఉంటారు.\n\nఈ హెచ్చరికలు ఆపడానికి, ఆంగన్ మండి హోమ్ స్క్రీన్‌లో దగ్గరి హెచ్చరికలను ఆఫ్ చేయండి.",
+            "{{farmer}} ने अभी {{locality}} में {{space}} पर अपने खेत की ताज़ी उपज के साथ दुकान लगाई है। वे {{until}} बजे तक वहाँ हैं।\n\nये सूचनाएँ बंद करने के लिए, आंगन मंडी की होम स्क्रीन पर आस-पास की सूचनाएँ बंद करें।"));
+
     /// <summary>Every template, for tests and an admin preview.</summary>
     public static readonly MailTemplate[] All =
     [
         FarmerSubmitted, FarmerToVerify, FarmerApproved, FarmerRejected, VerifierAdded,
         SpaceSubmitted, SpaceToReview, SpaceApproved, SpaceRejected,
         BookingRequested, BookingAccepted, BookingDeclined, BookingCancelledByHost, BookingCancelledByFarmer,
+        BookingArrived, NearbyTomorrow, NearbySellingNow,
     ];
 }

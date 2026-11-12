@@ -31,9 +31,13 @@ public class FarmerTripsController(AppDbContext db, INotifier notifier) : Contro
         string? Rules, string[] PhotoUrls);
     /// <summary>Shared only for an accepted booking (FR-1.9).</summary>
     public record HostContact(string? Name, string Phone, string Address, double Latitude, double Longitude);
+    /// <summary>ArrivedAt: the farmer's check-in (UTC). NoShow: the host marked that the farmer did not come.</summary>
     public record BookingDto(Guid Id, BookingStatus Status, DateOnly Date, TimeOnly From, TimeOnly To, decimal Fee,
-        string? Message, string? Reason, bool SlotTaken, string? CancelledBy, SpaceCard Space, HostContact? Host);
+        string? Message, string? Reason, bool SlotTaken, string? CancelledBy, SpaceCard Space, HostContact? Host,
+        DateTime? ArrivedAt, bool NoShow);
     public record BookRequest(Guid SpaceId, string? Message);
+    /// <summary>The phone's GPS position at the space.</summary>
+    public record ArriveRequest(double Latitude, double Longitude);
     public record CancelRequest(string? Reason);
 
     [HttpGet]
@@ -185,6 +189,37 @@ public class FarmerTripsController(AppDbContext db, INotifier notifier) : Contro
         return NoContent();
     }
 
+    /// <summary>
+    /// "I've arrived": the farmer checks in at the space on the booking day, from an hour before the slot until it
+    /// ends, standing within <see cref="ArrivalRules.MaxDistanceMeters"/> of it. The host is told, and so are buyers
+    /// whose saved area covers the space.
+    /// </summary>
+    [HttpPost("{id:guid}/bookings/{bookingId:guid}/arrive")]
+    public async Task<ActionResult<BookingDto>> Arrive(Guid id, Guid bookingId, ArriveRequest req, CancellationToken ct)
+    {
+        if (req.Latitude is < -90 or > 90 || req.Longitude is < -180 or > 180 || (req.Latitude == 0 && req.Longitude == 0))
+            return Problem(statusCode: 400, title: "Turn on location to check in");
+        var booking = await db.Bookings.SingleOrDefaultAsync(
+            b => b.Id == bookingId && b.TripId == id && b.FarmerUserId == User.UserId(), ct);
+        if (booking is null) return NotFound();
+        var space = await db.Spaces.Include(s => s.Photos).SingleOrDefaultAsync(s => s.Id == booking.SpaceId, ct);
+        if (space is null) return NotFound();
+
+        var meters = ArrivalRules.DistanceMeters(req.Latitude, req.Longitude, space.Location.Y, space.Location.X);
+        if (ArrivalRules.CheckArrival(booking, ArrivalRules.IndiaTime(DateTime.UtcNow), meters) is { } error)
+            return Problem(statusCode: 409, title: error);
+
+        booking.ArrivedAt = DateTime.UtcNow;
+        booking.ArrivalDistanceMeters = (int)Math.Round(meters);
+        booking.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync(ct);
+        await notifier.FarmerArrivedAsync(booking.Id, ct);
+
+        var host = await db.Users.SingleAsync(u => u.Id == booking.HostUserId, ct);
+        return ToBookingDto(booking, space,
+            new HostContact(host.Name, host.Phone, $"{space.Address}, {space.Locality}", space.Location.Y, space.Location.X));
+    }
+
     // ---------------------------------------------------------------------------------------------
 
     private static DateOnly Today => TripRules.TodayInIndia(DateTime.UtcNow);
@@ -252,7 +287,8 @@ public class FarmerTripsController(AppDbContext db, INotifier notifier) : Contro
     }
 
     private BookingDto ToBookingDto(Booking b, Space s, HostContact? host) =>
-        new(b.Id, b.Status, b.Date, b.From, b.To, b.Fee, b.Message, b.Reason, b.SlotTaken, b.CancelledBy, ToCard(s), host);
+        new(b.Id, b.Status, b.Date, b.From, b.To, b.Fee, b.Message, b.Reason, b.SlotTaken, b.CancelledBy, ToCard(s), host,
+            ArrivalRules.AsUtc(b.ArrivedAt), b.NoShowAt is not null);
 
     private static TripDto ToDto(Trip t, BookingDto? booking, DateOnly today) => new(t.Id, t.Date, t.Vehicle,
         t.PreferredArea, t.Notes,

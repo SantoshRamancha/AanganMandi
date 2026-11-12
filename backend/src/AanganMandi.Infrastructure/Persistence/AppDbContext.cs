@@ -1,3 +1,4 @@
+using AanganMandi.Domain.Buyers;
 using AanganMandi.Domain.Farmers;
 using AanganMandi.Domain.Identity;
 using AanganMandi.Domain.Master;
@@ -98,6 +99,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Trip> Trips => Set<Trip>();
     public DbSet<TripProduce> TripProduce => Set<TripProduce>();
     public DbSet<Booking> Bookings => Set<Booking>();
+    public DbSet<BuyerArea> BuyerAreas => Set<BuyerArea>();
+    public DbSet<NearbyAlert> NearbyAlerts => Set<NearbyAlert>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -198,6 +201,19 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasOne<Trip>().WithMany().HasForeignKey(x => x.TripId).OnDelete(DeleteBehavior.NoAction);
             e.HasOne<Space>().WithMany().HasForeignKey(x => x.SpaceId).OnDelete(DeleteBehavior.NoAction);
             e.HasQueryFilter(x => !x.IsDeleted);
+        });
+        b.Entity<BuyerArea>(e =>
+        {
+            e.HasIndex(a => a.UserId).IsUnique();
+            e.Property(a => a.Location).HasColumnType("geography");
+            e.HasOne<User>().WithMany().HasForeignKey(a => a.UserId).OnDelete(DeleteBehavior.Cascade);
+            e.HasQueryFilter(a => !a.IsDeleted);
+        });
+        b.Entity<NearbyAlert>(e =>
+        {
+            // One alert of each kind per buyer and booking, even if a job runs twice.
+            e.HasIndex(a => new { a.BuyerUserId, a.BookingId, a.Kind }).IsUnique();
+            e.Property(a => a.Kind).HasConversion<string>().HasMaxLength(16);
         });
     }
 }

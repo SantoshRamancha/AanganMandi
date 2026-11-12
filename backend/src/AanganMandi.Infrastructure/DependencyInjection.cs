@@ -80,11 +80,15 @@ public static class DependencyInjection
         await log.WriteLineAsync($"Copied {copied} file(s) from {root} to the bucket; {skipped} were already there.");
     }
 
-    /// <summary>Recurring Hangfire jobs: send queued emails every 15 seconds, and clear old ones daily at 03:00.</summary>
+    /// <summary>
+    /// Recurring Hangfire jobs (times in UTC): send queued emails every 15 seconds, clear old ones daily at 03:00, and
+    /// tell buyers about tomorrow's stalls near them at 12:30 UTC = 18:00 in India.
+    /// </summary>
     public static void ScheduleBackgroundJobs(this IServiceProvider services)
     {
         var jobs = services.GetRequiredService<IRecurringJobManager>();
         jobs.AddOrUpdate<EmailQueueProcessor>("email-queue", p => p.ProcessAsync(CancellationToken.None), "*/15 * * * * *");
         jobs.AddOrUpdate<EmailQueueProcessor>("email-queue-cleanup", p => p.CleanUpAsync(CancellationToken.None), Cron.Daily(3));
+        jobs.AddOrUpdate<INotifier>("nearby-day-before", n => n.NearbyTomorrowAsync(CancellationToken.None), "30 12 * * *");
     }
 }

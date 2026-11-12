@@ -7,6 +7,7 @@ import '../../core/api/api_client.dart';
 import '../../core/api/trip_api.dart';
 import '../../core/api/trip_models.dart';
 import '../../core/labels.dart';
+import '../../core/location.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/responsive.dart';
 import '../../l10n/app_localizations.dart';
@@ -132,6 +133,21 @@ class _BookingCard extends ConsumerWidget {
       }
     }
 
+    // On the day: "I've arrived" from the phone's position; the server checks the time and the distance.
+    Future<void> checkIn() async {
+      final messenger = ScaffoldMessenger.of(context);
+      final pos = await currentPosition();
+      if (!context.mounted) return;
+      if (pos == null) {
+        messenger.showSnackBar(SnackBar(content: Text(l10n.locationNeededToCheckIn)));
+        return;
+      }
+      if (await runWithToast(context, () => api.arrive(trip.id, b!.id, pos.latitude, pos.longitude),
+          success: l10n.checkedInToast)) {
+        onChanged();
+      }
+    }
+
     // Booked: everything needed on the day.
     if (b != null && b.status == 'Accepted') {
       final h = b.host!;
@@ -143,6 +159,21 @@ class _BookingCard extends ConsumerWidget {
         children: [
           Text(b.space.title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
           const SizedBox(height: 10),
+          if (b.arrivedAt case final at?)
+            _Note(Icons.where_to_vote, l10n.checkedInAt(TimeOfDay.fromDateTime(at).format(context)), scheme.primary)
+          else if (b.noShow)
+            _Note(Icons.person_off_outlined, l10n.noShowFarmerNote, scheme.error)
+          else if (b.canCheckIn(DateTime.now())) ...[
+            FilledButton.icon(
+              icon: const Icon(Icons.where_to_vote),
+              label: Text(l10n.iveArrived),
+              style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(52)),
+              onPressed: checkIn,
+            ),
+            const SizedBox(height: 6),
+            Text(l10n.checkInHint, style: TextStyle(color: scheme.onSurfaceVariant)),
+            const SizedBox(height: 12),
+          ],
           IconFact(Icons.schedule, '${tripDate(b.date)} · ${b.from} – ${b.to}', bold: true),
           IconFact(Icons.home_outlined, h.address),
           IconFact(Icons.person_outline, '${h.name ?? ''}  ${h.phone}'),
@@ -228,6 +259,24 @@ class _BookingCard extends ConsumerWidget {
       ]),
     );
   }
+}
+
+/// One highlighted line with an icon, e.g. the check-in time.
+class _Note extends StatelessWidget {
+  const _Note(this.icon, this.text, this.color);
+  final IconData icon;
+  final String text;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Icon(icon, color: color),
+          const SizedBox(width: 10),
+          Expanded(child: Text(text, style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 15))),
+        ]),
+      );
 }
 
 /// A card with a coloured header (icon + title) over a plain body, so buttons in the body keep normal contrast.

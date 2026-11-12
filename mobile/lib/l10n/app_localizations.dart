@@ -2979,6 +2979,204 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Verification cleared. You can start again.'**
   String get verificationResetToast;
+
+  /// No description provided for @iveArrived.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'ve arrived'**
+  String get iveArrived;
+
+  /// No description provided for @checkInHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap this when you reach the space. Your phone\'s location must be within 200 m of it.'**
+  String get checkInHint;
+
+  /// No description provided for @locationNeededToCheckIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on location to check in'**
+  String get locationNeededToCheckIn;
+
+  /// No description provided for @checkedInToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked in. The host has been told.'**
+  String get checkedInToast;
+
+  /// No description provided for @checkedInAt.
+  ///
+  /// In en, this message translates to:
+  /// **'You checked in at {time}. The host and nearby buyers were told.'**
+  String checkedInAt(String time);
+
+  /// No description provided for @noShowFarmerNote.
+  ///
+  /// In en, this message translates to:
+  /// **'The host marked that you did not come.'**
+  String get noShowFarmerNote;
+
+  /// No description provided for @arrivedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Arrived at {time}'**
+  String arrivedAt(String time);
+
+  /// No description provided for @notArrivedYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not arrived yet'**
+  String get notArrivedYet;
+
+  /// No description provided for @didNotCome.
+  ///
+  /// In en, this message translates to:
+  /// **'Didn\'t come'**
+  String get didNotCome;
+
+  /// No description provided for @markNoShowQ.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark that the farmer didn\'t come?'**
+  String get markNoShowQ;
+
+  /// No description provided for @markNoShowBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Do this only if the farmer never reached your space. It is saved on the booking.'**
+  String get markNoShowBody;
+
+  /// No description provided for @noShowMarkedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Marked as not come'**
+  String get noShowMarkedToast;
+
+  /// No description provided for @nearbyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Selling near you'**
+  String get nearbyTitle;
+
+  /// No description provided for @nearbySetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Fresh produce from farmers near you'**
+  String get nearbySetupTitle;
+
+  /// No description provided for @nearbySetupBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Save where you live to see verified farmers selling close by today and tomorrow, and get an email before they come.'**
+  String get nearbySetupBody;
+
+  /// No description provided for @locationSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Location captured'**
+  String get locationSaved;
+
+  /// No description provided for @howFar.
+  ///
+  /// In en, this message translates to:
+  /// **'How far will you go?'**
+  String get howFar;
+
+  /// No description provided for @radiusKm.
+  ///
+  /// In en, this message translates to:
+  /// **'{km} km'**
+  String radiusKm(int km);
+
+  /// No description provided for @emailAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Email alerts'**
+  String get emailAlerts;
+
+  /// No description provided for @emailAlertsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The evening before, and when a farmer arrives'**
+  String get emailAlertsBody;
+
+  /// No description provided for @addEmailForAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your email in My profile to get these alerts.'**
+  String get addEmailForAlerts;
+
+  /// No description provided for @areaSavedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Area saved'**
+  String get areaSavedToast;
+
+  /// No description provided for @changeArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Change area'**
+  String get changeArea;
+
+  /// No description provided for @removeArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove my area'**
+  String get removeArea;
+
+  /// No description provided for @areaRemovedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Area removed'**
+  String get areaRemovedToast;
+
+  /// No description provided for @withinKm.
+  ///
+  /// In en, this message translates to:
+  /// **'Within {km} km of your saved place'**
+  String withinKm(int km);
+
+  /// No description provided for @sellingNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Selling now'**
+  String get sellingNow;
+
+  /// No description provided for @today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// No description provided for @tomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow'**
+  String get tomorrow;
+
+  /// No description provided for @kmAway.
+  ///
+  /// In en, this message translates to:
+  /// **'{km} km away'**
+  String kmAway(String km);
+
+  /// No description provided for @untilTime.
+  ///
+  /// In en, this message translates to:
+  /// **'until {time}'**
+  String untilTime(String time);
+
+  /// No description provided for @nearbyEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No farmers are booked near you for today or tomorrow yet. We\'ll email you when one is.'**
+  String get nearbyEmpty;
+
+  /// No description provided for @exactPlaceLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Exact place shows when the farmer arrives'**
+  String get exactPlaceLater;
 }
 
 class _AppLocalizationsDelegate
