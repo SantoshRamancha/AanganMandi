@@ -90,6 +90,21 @@ void main() {
     expect(find.widgetWithText(FilterChip, 'Kakarakaya'), findsOneWidget);
   });
 
+  testWidgets('a typed-in crop has an ✕ that removes it; list crops do not', (tester) async {
+    final selected = await _pump(tester);
+    await tester.tap(find.text('Mango'));
+    await tester.enterText(find.byType(TextField), 'Kakarakaya');
+    await tester.pump();
+    await tester.tap(find.text('Add “Kakarakaya”'));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Delete'), findsOneWidget); // only on the custom crop
+
+    await tester.tap(find.byTooltip('Delete'));
+    await tester.pumpAndSettle();
+    expect(selected, {'MANGO'});
+    expect(find.widgetWithText(FilterChip, 'Kakarakaya'), findsNothing);
+  });
+
   testWidgets('"Add another crop" asks for a valid name and closes cleanly', (tester) async {
     final selected = await _pump(tester);
     await tester.tap(find.text('Add another crop'));

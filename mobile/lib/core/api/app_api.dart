@@ -62,6 +62,11 @@ class FarmerApi {
   Future<bool> deleteEvidencePhoto() async =>
       ((await _dio.delete('/farmers/me/evidence/photo')).data as Map)['withdrawn'] as bool;
 
+  /// Clears details, crops, evidence and the evidence photo (not the name). True when this withdrew a waiting
+  /// submission. Refused once verified.
+  Future<bool> resetVerification() async =>
+      ((await _dio.delete('/farmers/me/verification')).data as Map)['withdrawn'] as bool;
+
   Future<void> submit() => _dio.post('/farmers/me/submit');
 }
 
@@ -99,6 +104,10 @@ class HostApi {
       ((await _dio.delete('/hosts/me/spaces/$spaceId/photos/$photoId')).data as Map)['withdrawn'] as bool;
 
   Future<void> submit(String spaceId) => _dio.post('/hosts/me/spaces/$spaceId/submit');
+
+  /// Deletes the space with its photos and proof; returns how many upcoming bookings were cancelled.
+  Future<int> deleteSpace(String spaceId) async =>
+      ((await _dio.delete('/hosts/me/spaces/$spaceId')).data as Map)['cancelledBookings'] as int;
 }
 
 /// API path of one of the host's space photos or proof, for preview and download.

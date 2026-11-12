@@ -35,6 +35,8 @@ role in the database on every call, so a removed verifier loses access at once.
 | Plan a trip (date up to 60 days ahead, vehicle, crops with optional kg and ₹/kg, preferred area) → find live spaces open that weekday that fit the vehicle and are free that day → request one; cancel the request, the booking or the whole trip | verified farmer | app → home → My trips |
 | Booking requests per space and day: accept (other requests for that day are declined automatically) or decline with a reason; cancel a confirmed booking with a reason. Address and both phone numbers are shared only once accepted (FR-1.9); the fee is paid to the host at the space | host | app → home → Bookings |
 | Approve space (goes Live) or reject with reason; host fixes from the space page | verifier, admin | app → Operations |
+| Delete a whole space, in any status (see [Deleting](#deleting)) | host | app → space page → delete icon |
+| Clear verification and start over, until verified; remove a typed-in crop with its ✕ | farmer | app → farmer home → "Clear and start over"; crop picker |
 
 Not built yet: in-app payment, buyer alerts and produce browsing, maps, push notifications (hosts and farmers see new requests and answers when they open the app).
 
@@ -161,14 +163,33 @@ dotnet user-secrets set StorageProvider:AccessKey "<access key>" --project backe
 dotnet user-secrets set StorageProvider:SecretKey "<secret key>" --project backend/src/AanganMandi.Api
 ```
 
-Files uploaded before the switch are still on disk; copy them once (files already in the bucket are skipped):
+Files uploaded before the switch are still on disk, and records that point at them show nothing until they are in the
+bucket. Copy them once (files already in the bucket are skipped):
 
 ```bash
 dotnet run --project backend/src/AanganMandi.Api -- copy-uploads-to-bucket
 ```
 
+If the build fails with "file is locked by AanganMandi.Api", the API is still running (e.g. from Visual Studio): stop it
+first, or add `--no-build` to reuse the build it is running.
+
 On a server use environment variables instead, e.g. `StorageProvider__SecretKey`. A missing setting fails on the
 first file request with an error naming it.
+
+## Deleting
+
+Every delete asks for confirmation in the app, and removes the files from storage (the bucket or disk) as well as the
+database.
+
+| What | Endpoint | Allowed | What happens |
+|---|---|---|---|
+| Evidence photo | `DELETE /api/v1/farmers/me/evidence/photo` | until verified | A waiting submission goes back to "not submitted" |
+| Farmer's verification | `DELETE /api/v1/farmers/me/verification` | until verified | Village, district, farm size, produce source, crops, evidence and the evidence photo are cleared; status back to "not started" (a waiting submission leaves the verifier's queue). The name stays, and so does the assigned verifier for the next submission |
+| Space photo or proof | `DELETE /api/v1/hosts/me/spaces/{id}/photos/{photoId}` | until the space is live | A waiting space with fewer than 3 photos or no proof goes back to Draft |
+| Whole space | `DELETE /api/v1/hosts/me/spaces/{id}` | any status | Photos and proof are deleted; the space leaves search, the review queue and My spaces. Waiting and confirmed bookings from today on are cancelled by the host with the reason "The host removed this space from Aangan Mandi", and each farmer gets the usual cancellation email. Returns `{ cancelledBookings }` |
+
+A deleted space is only marked `IsDeleted` (an EF query filter hides it), so past bookings still show its name. Booking
+lists and booking emails read spaces with `IgnoreQueryFilters()` for that reason; other queries never see deleted spaces.
 
 ## Still needed
 

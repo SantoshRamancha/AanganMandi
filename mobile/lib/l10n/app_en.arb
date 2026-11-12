@@ -517,5 +517,16 @@
   "emailSaved": "Email saved",
   "emailRemoved": "Email removed",
   "emailOptional": "Email (optional)",
-  "verifierEmailHint": "They get a welcome email and one for each farmer assigned to them."
+  "verifierEmailHint": "They get a welcome email and one for each farmer assigned to them.",
+  "deleteSpace": "Delete space",
+  "deleteSpaceQ": "Delete this space?",
+  "deleteSpaceBody": "Its photos and proof are deleted and it leaves search. This cannot be undone.",
+  "deleteSpaceBookings": "Waiting and confirmed bookings from today on are cancelled, and each farmer is told.",
+  "spaceDeletedToast": "{count, plural, =0{Space deleted} =1{Space deleted. 1 booking was cancelled.} other{Space deleted. {count} bookings were cancelled.}}",
+  "@spaceDeletedToast": { "placeholders": { "count": { "type": "int" } } },
+  "resetVerification": "Clear and start over",
+  "resetVerificationQ": "Clear your verification?",
+  "resetVerificationBody": "Your farming details, crops, evidence and evidence photo are deleted. Your name stays. This cannot be undone.",
+  "resetWithdrawWarning": "Your verification is waiting for review. Clearing it takes it out of the queue, so you will need to submit again.",
+  "verificationResetToast": "Verification cleared. You can start again."
 }

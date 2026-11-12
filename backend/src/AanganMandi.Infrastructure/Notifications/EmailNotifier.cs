@@ -94,7 +94,8 @@ public sealed class EmailNotifier(AppDbContext db, IEmailQueue queue, IOptions<N
     {
         var b = await db.Bookings.AsNoTracking().SingleOrDefaultAsync(x => x.Id == bookingId, ct);
         if (b is null) return;
-        var space = await db.Spaces.AsNoTracking().SingleAsync(s => s.Id == b.SpaceId, ct);
+        // A booking cancelled because its space was deleted still names the space.
+        var space = await db.Spaces.AsNoTracking().IgnoreQueryFilters().SingleAsync(s => s.Id == b.SpaceId, ct);
         var trip = await db.Trips.AsNoTracking().Include(t => t.Produce).SingleAsync(t => t.Id == b.TripId, ct);
         var farmer = await db.Users.AsNoTracking().SingleAsync(u => u.Id == b.FarmerUserId, ct);
         var host = await db.Users.AsNoTracking().SingleAsync(u => u.Id == b.HostUserId, ct);

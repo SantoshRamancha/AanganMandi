@@ -61,6 +61,9 @@ public class Booking : Entity
 
     public bool IsActive => Status is BookingStatus.Requested or BookingStatus.Accepted;
 
+    /// <summary>Waiting or confirmed for today or later: what deleting the space has to cancel.</summary>
+    public bool IsUpcoming(DateOnly today) => IsActive && Date >= today;
+
     /// <param name="by">"Farmer" or "Host".</param>
     public void Cancel(string by, string? reason)
     {

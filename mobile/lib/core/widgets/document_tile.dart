@@ -83,6 +83,31 @@ Future<void> showFilePreview(BuildContext context, String path, String name) => 
       ),
     );
 
+/// Asks before deleting something; true only when the user taps the red Delete button.
+Future<bool> confirmDelete(BuildContext context, {required String title, required String body}) async {
+  final l10n = AppLocalizations.of(context);
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (dialog) => AlertDialog(
+      icon: const Icon(Icons.delete_outline),
+      title: Text(title),
+      content: Text(body),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(dialog, false), child: Text(l10n.cancel)),
+        FilledButton(
+          style: FilledButton.styleFrom(
+            backgroundColor: Theme.of(dialog).colorScheme.error,
+            foregroundColor: Theme.of(dialog).colorScheme.onError,
+          ),
+          onPressed: () => Navigator.pop(dialog, true),
+          child: Text(l10n.delete),
+        ),
+      ],
+    ),
+  );
+  return ok == true;
+}
+
 /// A document (photo of a record, proof, space photo) with preview and download, plus reupload and
 /// delete while [canChange] (until it is approved). Without a file it offers the first upload.
 class DocumentTile extends ConsumerStatefulWidget {
@@ -147,26 +172,9 @@ class _DocumentTileState extends ConsumerState<DocumentTile> {
 
   Future<void> _delete() async {
     final l10n = AppLocalizations.of(context);
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (dialog) => AlertDialog(
-        icon: const Icon(Icons.delete_outline),
-        title: Text(l10n.deleteDocumentQ),
-        content: Text([l10n.deleteDocumentBody, ?widget.deleteWarning].join('\n\n')),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(dialog, false), child: Text(l10n.cancel)),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(dialog).colorScheme.error,
-              foregroundColor: Theme.of(dialog).colorScheme.onError,
-            ),
-            onPressed: () => Navigator.pop(dialog, true),
-            child: Text(l10n.delete),
-          ),
-        ],
-      ),
-    );
-    if (ok == true) await _run(widget.onDelete!);
+    final ok = await confirmDelete(context,
+        title: l10n.deleteDocumentQ, body: [l10n.deleteDocumentBody, ?widget.deleteWarning].join('\n\n'));
+    if (ok) await _run(widget.onDelete!);
   }
 
   @override

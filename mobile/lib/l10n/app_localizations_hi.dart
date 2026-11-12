@@ -1581,4 +1581,48 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get verifierEmailHint =>
       'उन्हें स्वागत ईमेल और सौंपे गए हर किसान के लिए एक ईमेल मिलेगा।';
+
+  @override
+  String get deleteSpace => 'जगह हटाएँ';
+
+  @override
+  String get deleteSpaceQ => 'यह जगह हटाएँ?';
+
+  @override
+  String get deleteSpaceBody =>
+      'इसकी फ़ोटो और सबूत हट जाएँगे और यह खोज में नहीं दिखेगी। इसे वापस नहीं लाया जा सकता।';
+
+  @override
+  String get deleteSpaceBookings =>
+      'आज से आगे की इंतज़ार वाली और पक्की बुकिंग रद्द होंगी, और हर किसान को बताया जाएगा।';
+
+  @override
+  String spaceDeletedToast(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'जगह हटा दी गई। $count बुकिंग रद्द हुईं।',
+      one: 'जगह हटा दी गई। 1 बुकिंग रद्द हुई।',
+      zero: 'जगह हटा दी गई',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get resetVerification => 'सब मिटाकर फिर से शुरू करें';
+
+  @override
+  String get resetVerificationQ => 'अपना सत्यापन मिटाएँ?';
+
+  @override
+  String get resetVerificationBody =>
+      'आपकी खेती की जानकारी, फ़सलें, सबूत और सबूत की फ़ोटो हट जाएँगी। आपका नाम बना रहेगा। इसे वापस नहीं लाया जा सकता।';
+
+  @override
+  String get resetWithdrawWarning =>
+      'आपका सत्यापन जाँच का इंतज़ार कर रहा है। मिटाने से यह कतार से हट जाएगा, और आपको फिर से जमा करना होगा।';
+
+  @override
+  String get verificationResetToast =>
+      'सत्यापन मिटा दिया गया। आप फिर से शुरू कर सकते हैं।';
 }

@@ -227,6 +227,24 @@ class _StatusCard extends ConsumerWidget {
   const _StatusCard({required this.farmer});
   final Farmer farmer;
 
+  /// Clears details, crops, evidence and the evidence photo (the name stays), after a confirmation.
+  Future<void> _reset(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
+    final body = [l10n.resetVerificationBody, if (farmer.status == 'Pending') l10n.resetWithdrawWarning].join('\n\n');
+    if (!await confirmDelete(context, title: l10n.resetVerificationQ, body: body)) return;
+    if (!context.mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await ref.read(farmerApiProvider).resetVerification();
+      messenger.showSnackBar(SnackBar(content: Text(l10n.verificationResetToast)));
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(apiErrorMessage(e, l10n.errorGeneric))));
+    }
+    if (!context.mounted) return;
+    ref.invalidate(farmerProvider);
+    ref.invalidate(profileProvider);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
@@ -278,6 +296,17 @@ class _StatusCard extends ConsumerWidget {
                   ref.invalidate(profileProvider);
                   ref.invalidate(farmerProvider);
                 },
+              ),
+            ),
+          ],
+          if (farmer.hasStarted || farmer.status == 'Pending' || farmer.status == 'Rejected') ...[
+            const SizedBox(height: 8),
+            Center(
+              child: TextButton.icon(
+                icon: const Icon(Icons.restart_alt),
+                label: Text(l10n.resetVerification),
+                style: TextButton.styleFrom(foregroundColor: scheme.error),
+                onPressed: () => _reset(context, ref),
               ),
             ),
           ],

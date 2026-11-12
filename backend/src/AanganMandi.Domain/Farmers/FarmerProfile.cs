@@ -46,6 +46,29 @@ public class FarmerProfile : Entity
 
     /// <summary>The evidence photo can still be replaced or deleted while waiting for review, but not once verified.</summary>
     public bool CanChangeDocuments => Status is not VerificationStatus.Verified;
+
+    /// <summary>Until verified the farmer can clear everything they entered and start over.</summary>
+    public bool CanReset => Status is not VerificationStatus.Verified;
+
+    /// <summary>
+    /// Clears the farming details, crops and evidence and goes back to "not started" (a waiting submission is
+    /// withdrawn). The verifier assignment and the last review stamp stay: the next submission goes to the same
+    /// verifier, and their review count is history. The caller removes the crop rows and the evidence photo.
+    /// </summary>
+    public void ResetVerification()
+    {
+        Village = Mandal = District = null;
+        FarmSizeAcres = null;
+        ProduceSource = null;
+        EvidenceType = null;
+        EvidenceDetails = null;
+        Crops.Clear();
+        Status = VerificationStatus.NotStarted;
+        Level = 0;
+        RejectionReason = null;
+        SubmittedAt = null;
+        UpdatedAt = DateTime.UtcNow;
+    }
 }
 
 public class FarmerCrop : Entity
