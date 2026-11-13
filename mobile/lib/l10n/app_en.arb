@@ -568,5 +568,13 @@
   "untilTime": "until {time}",
   "@untilTime": { "placeholders": { "time": { "type": "String" } } },
   "nearbyEmpty": "No farmers are booked near you for today or tomorrow yet. We'll email you when one is.",
-  "exactPlaceLater": "Exact place shows when the farmer arrives"
+  "exactPlaceLater": "Exact place shows when the farmer arrives",
+  "shareWithNeighbours": "Share with neighbours",
+  "shareSheetTitle": "Tell your neighbours",
+  "shareSheetHint": "Post this in your apartment, society or street WhatsApp group. The link shows the time and crops, and the exact place once the farmer arrives. No app or sign-up needed.",
+  "shareOnWhatsApp": "Share on WhatsApp",
+  "copyMessage": "Copy message",
+  "messageCopied": "Message copied",
+  "shareStallMessage": "Fresh produce from a verified farmer at my place!\n{date}, {time} at {space}.\nBringing: {crops}\nDetails: {url}",
+  "@shareStallMessage": { "placeholders": { "date": { "type": "String" }, "time": { "type": "String" }, "space": { "type": "String" }, "crops": { "type": "String" }, "url": { "type": "String" } } }
 }

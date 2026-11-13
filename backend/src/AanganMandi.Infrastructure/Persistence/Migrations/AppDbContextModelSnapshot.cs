@@ -1501,6 +1501,10 @@ namespace AanganMandi.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("RespondedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("ShareCode")
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
                     b.Property<bool>("SlotTaken")
                         .HasColumnType("bit");
 
@@ -1522,6 +1526,10 @@ namespace AanganMandi.Infrastructure.Persistence.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ShareCode")
+                        .IsUnique()
+                        .HasFilter("[ShareCode] IS NOT NULL");
 
                     b.HasIndex("TripId");
 

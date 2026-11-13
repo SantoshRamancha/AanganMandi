@@ -1739,4 +1739,34 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get exactPlaceLater => 'రైతు వచ్చినప్పుడు సరైన చోటు కనిపిస్తుంది';
+
+  @override
+  String get shareWithNeighbours => 'పొరుగువారికి చెప్పండి';
+
+  @override
+  String get shareSheetTitle => 'మీ పొరుగువారికి చెప్పండి';
+
+  @override
+  String get shareSheetHint =>
+      'దీన్ని మీ అపార్ట్‌మెంట్, సొసైటీ లేదా వీధి WhatsApp గ్రూప్‌లో పెట్టండి. లింక్‌లో సమయం, పంటలు, రైతు వచ్చాక సరైన చోటు కనిపిస్తాయి. యాప్ లేదా సైన్-అప్ అవసరం లేదు.';
+
+  @override
+  String get shareOnWhatsApp => 'WhatsAppలో పంపండి';
+
+  @override
+  String get copyMessage => 'సందేశం కాపీ చేయండి';
+
+  @override
+  String get messageCopied => 'సందేశం కాపీ అయింది';
+
+  @override
+  String shareStallMessage(
+    String date,
+    String time,
+    String space,
+    String crops,
+    String url,
+  ) {
+    return 'మా ఇంటి వద్ద ధృవీకరించిన రైతు తాజా పంట!\n$date, $time, $space వద్ద.\nతెస్తున్నవి: $crops\nవివరాలు: $url';
+  }
 }

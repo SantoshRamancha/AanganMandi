@@ -3177,6 +3177,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Exact place shows when the farmer arrives'**
   String get exactPlaceLater;
+
+  /// No description provided for @shareWithNeighbours.
+  ///
+  /// In en, this message translates to:
+  /// **'Share with neighbours'**
+  String get shareWithNeighbours;
+
+  /// No description provided for @shareSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell your neighbours'**
+  String get shareSheetTitle;
+
+  /// No description provided for @shareSheetHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Post this in your apartment, society or street WhatsApp group. The link shows the time and crops, and the exact place once the farmer arrives. No app or sign-up needed.'**
+  String get shareSheetHint;
+
+  /// No description provided for @shareOnWhatsApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Share on WhatsApp'**
+  String get shareOnWhatsApp;
+
+  /// No description provided for @copyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy message'**
+  String get copyMessage;
+
+  /// No description provided for @messageCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Message copied'**
+  String get messageCopied;
+
+  /// No description provided for @shareStallMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Fresh produce from a verified farmer at my place!\n{date}, {time} at {space}.\nBringing: {crops}\nDetails: {url}'**
+  String shareStallMessage(
+    String date,
+    String time,
+    String space,
+    String crops,
+    String url,
+  );
 }
 
 class _AppLocalizationsDelegate

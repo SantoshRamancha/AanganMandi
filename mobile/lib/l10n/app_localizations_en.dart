@@ -1775,4 +1775,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exactPlaceLater => 'Exact place shows when the farmer arrives';
+
+  @override
+  String get shareWithNeighbours => 'Share with neighbours';
+
+  @override
+  String get shareSheetTitle => 'Tell your neighbours';
+
+  @override
+  String get shareSheetHint =>
+      'Post this in your apartment, society or street WhatsApp group. The link shows the time and crops, and the exact place once the farmer arrives. No app or sign-up needed.';
+
+  @override
+  String get shareOnWhatsApp => 'Share on WhatsApp';
+
+  @override
+  String get copyMessage => 'Copy message';
+
+  @override
+  String get messageCopied => 'Message copied';
+
+  @override
+  String shareStallMessage(
+    String date,
+    String time,
+    String space,
+    String crops,
+    String url,
+  ) {
+    return 'Fresh produce from a verified farmer at my place!\n$date, $time at $space.\nBringing: $crops\nDetails: $url';
+  }
 }

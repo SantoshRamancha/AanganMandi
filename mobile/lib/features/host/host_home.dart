@@ -15,6 +15,7 @@ import '../../core/widgets/responsive.dart';
 import '../../l10n/app_localizations.dart';
 import '../home/home_screen.dart';
 import '../trips/trip_widgets.dart';
+import 'share_stall_sheet.dart';
 
 /// Host dashboard: requests waiting for an answer, the next confirmed farmer, numbers, and the host's spaces.
 /// With no spaces yet: how hosting works and a button to list the first one.
@@ -197,14 +198,20 @@ class _NextBookingCard extends StatelessWidget {
                   ],
                   const SizedBox(height: 8),
                   ProduceLine(b.produce),
-                  if (b.farmerPhone != null) ...[
-                    const SizedBox(height: 12),
-                    FilledButton.tonalIcon(
-                      icon: const Icon(Icons.call),
-                      label: Text(l10n.callFarmer),
-                      onPressed: () => launchUrl(Uri.parse('tel:${b.farmerPhone}')),
+                  const SizedBox(height: 12),
+                  Wrap(spacing: 8, runSpacing: 8, children: [
+                    if (b.farmerPhone != null)
+                      FilledButton.tonalIcon(
+                        icon: const Icon(Icons.call),
+                        label: Text(l10n.callFarmer),
+                        onPressed: () => launchUrl(Uri.parse('tel:${b.farmerPhone}')),
+                      ),
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.share),
+                      label: Text(l10n.shareWithNeighbours),
+                      onPressed: () => showShareStallSheet(context, b),
                     ),
-                  ],
+                  ]),
                 ]),
               ),
             ),

@@ -40,6 +40,8 @@ role in the database on every call, so a removed verifier loses access at once.
 | On the booking day, "I've arrived" check-in at the space (see [Booking day and nearby buyers](#booking-day-and-nearby-buyers)) | verified farmer | app → My trips → the trip |
 | See when the farmer arrived; mark "Didn't come" once the slot is over without a check-in | host | app → Bookings, and the host home |
 | Save a home location + radius (1, 2 or 5 km); see farmers selling nearby today and tomorrow; email alerts the evening before and when a farmer arrives | buyer | app → buyer home |
+| Share a confirmed stall with neighbours: a ready message + public link, sent to a WhatsApp group or copied (see [Sharing with neighbours](#sharing-with-neighbours)) | host | app → Bookings → Upcoming, and the host home |
+| Open a shared stall link: time, crops and prices, area; the address once the farmer arrives. No app or login | anyone | browser |
 
 Not built yet: in-app payment, produce browsing beyond the nearby list, maps, push notifications (alerts and booking news arrive by email, and in the app when it is opened).
 
@@ -171,6 +173,25 @@ table `BuyerAreas`; `DELETE` forgets it). Then:
   gets the same alert twice. The booking's own farmer and host are never alerted.
 
 Distances use SQL Server `geography` (metres). Migration: `ArrivalAndNearbyAlerts`.
+
+## Sharing with neighbours
+
+Neighbours who are not in the app hear about a stall from the host, who already belongs to their society or street
+WhatsApp group. The app never messages people who have not signed up (no consent, and SMS/WhatsApp rules forbid it).
+
+- **Host:** on a confirmed booking whose slot is not over, **Share with neighbours** opens a ready message in the host's
+  language (date, time, space, crops with prices, link) with **Share on WhatsApp** (opens WhatsApp's chat picker via
+  `wa.me`) and **Copy message**. `POST /api/v1/hosts/me/bookings/{id}/share` returns the link; the first call gives the
+  booking a random 10-character `ShareCode`, later calls return the same link.
+- **Public page:** `GET /s/{code}`, served by the API as plain HTML, no login. It shows the farmer's first name and
+  village, the time, the crops and prices, and the space name and area. The exact address and a map link appear only
+  while the farmer is checked in and the slot is running; a cancelled, no-show or finished stall says it is over.
+  English, Telugu or Hindi (`?lang=`, else the browser's language); Open Graph tags give WhatsApp a preview card;
+  `noindex`, cached for 60 seconds, no scripts.
+- **Link address:** `Sharing:PublicBaseUrl` in appsettings (e.g. `https://api.aanganmandi.in`). Empty = the address the
+  host's app used, which works on a local network (`http://<PC-IP>:5080/s/...`).
+
+Migration: `BookingShareCode`.
 
 ## File storage
 
