@@ -11,6 +11,7 @@ import '../../core/storage/prefs.dart';
 import '../../core/widgets/initials_avatar.dart';
 import '../../core/widgets/responsive.dart';
 import '../../l10n/app_localizations.dart';
+import '../buyer/buyer_home.dart';
 import '../farmer/farmer_home.dart';
 import '../host/host_home.dart';
 import '../onboarding/language_screen.dart';
@@ -40,6 +41,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ref.invalidate(tripsProvider);
     ref.invalidate(profileProvider);
     ref.invalidate(hostBookingsProvider);
+    ref.invalidate(buyerSettingsProvider);
+    ref.invalidate(nearbyStallsProvider);
     refreshOps(ref);
   }
 
@@ -74,7 +77,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         'Farmer' => const FarmerHome(),
         'Host' => const HostHome(),
         'Admin' || 'Verifier' => const OpsHome(),
-        _ => const _BuyerHome(),
+        _ => const BuyerHome(),
       },
     );
   }
@@ -149,16 +152,6 @@ class _ProfileButton extends ConsumerWidget {
         icon: InitialsAvatar(name: ref.watch(profileProvider).value?.name, radius: 17),
         onPressed: () => context.push('/profile'),
       );
-}
-
-class _BuyerHome extends StatelessWidget {
-  const _BuyerHome();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return EmptyState(icon: Icons.shopping_basket, title: l10n.comingSoon, body: l10n.buyerComingSoon);
-  }
 }
 
 /// Centered icon, title and message for empty or not-yet-built screens.

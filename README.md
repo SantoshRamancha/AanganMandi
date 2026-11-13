@@ -37,8 +37,11 @@ role in the database on every call, so a removed verifier loses access at once.
 | Approve space (goes Live) or reject with reason; host fixes from the space page | verifier, admin | app → Operations |
 | Delete a whole space, in any status (see [Deleting](#deleting)) | host | app → space page → delete icon |
 | Clear verification and start over, until verified; remove a typed-in crop with its ✕ | farmer | app → farmer home → "Clear and start over"; crop picker |
+| On the booking day, "I've arrived" check-in at the space (see [Booking day and nearby buyers](#booking-day-and-nearby-buyers)) | verified farmer | app → My trips → the trip |
+| See when the farmer arrived; mark "Didn't come" once the slot is over without a check-in | host | app → Bookings, and the host home |
+| Save a home location + radius (1, 2 or 5 km); see farmers selling nearby today and tomorrow; email alerts the evening before and when a farmer arrives | buyer | app → buyer home |
 
-Not built yet: in-app payment, buyer alerts and produce browsing, maps, push notifications (hosts and farmers see new requests and answers when they open the app).
+Not built yet: in-app payment, produce browsing beyond the nearby list, maps, push notifications (alerts and booking news arrive by email, and in the app when it is opened).
 
 ## Toolchain (installed on this machine)
 
@@ -131,6 +134,8 @@ wording, `MailLayout.cs` for the HTML).
 | Farmer requests a space | the host |
 | Host accepts (address, phone, time, fee) / declines / cancels | the farmer (others declined automatically are told the day is taken) |
 | Farmer cancels | the host |
+| Farmer checks in at the space | the host ("your farmer is here"), and buyers whose area covers the space ("selling now", with the address) |
+| Every evening at 18:00 India time | each buyer with tomorrow's confirmed stalls inside their area: one email listing time, area, distance, farmer and crops |
 
 Emails are **queued** in this database (`dbo.EmailQueueItems`, created on first use) and a **Hangfire** job sends them
 every 15 seconds, retrying failures (1, 5, 15, 60 min). A failed email never fails the action that triggered it.
@@ -141,6 +146,31 @@ every 15 seconds, retrying failures (1, 5, 15, 60 min). A failed email never fai
   `Email:Smtp:Host`, `Username`, `Password` (port 587), or to `SendGrid` with `Email:SendGrid:ApiKey`, plus
   `Email:FromAddress` and `Notifications:AppUrl`. Keep passwords and keys out of git, e.g.
   `dotnet user-secrets set Email:Smtp:Password "<app password>" --project backend/src/AanganMandi.Api`.
+
+## Booking day and nearby buyers
+
+**Check-in.** On the booking day the farmer's trip shows **I've arrived**. The app sends the phone's GPS position, and
+`POST /api/v1/farmers/me/trips/{id}/bookings/{bookingId}/arrive` accepts it only when (rules in `ArrivalRules`):
+
+- the booking is confirmed (Accepted) and not checked in yet;
+- it is the booking's date, from 1 hour before the slot starts until the slot ends (India time);
+- the phone is within **200 m** of the space; otherwise the answer says how far it is ("about 1400 m").
+
+The booking keeps `ArrivedAt` and `ArrivalDistanceMeters`. The host gets an email and sees "Arrived at 12:17" on the
+booking and the host home. Once the slot is over without a check-in, the host can mark **Didn't come**
+(`POST /api/v1/hosts/me/bookings/{id}/no-show`, saved as `NoShowAt`; no email).
+
+**Nearby buyers.** A buyer saves a home location (GPS) and a radius of 1, 2 or 5 km (`PUT /api/v1/buyers/me/area`,
+table `BuyerAreas`; `DELETE` forgets it). Then:
+
+- the buyer home lists confirmed stalls inside that radius for the rest of today and tomorrow
+  (`GET /api/v1/buyers/me/nearby`), farmers who have checked in first as **Selling now**;
+- the exact address shows only while the farmer is there; before that, only the area and distance;
+- with email alerts on and an email in My profile, they get the evening digest (Hangfire job `nearby-day-before`, 12:30
+  UTC = 18:00 India) and a "selling now" email when a farmer checks in. `NearbyAlerts` records each one, so a buyer never
+  gets the same alert twice. The booking's own farmer and host are never alerted.
+
+Distances use SQL Server `geography` (metres). Migration: `ArrivalAndNearbyAlerts`.
 
 ## File storage
 

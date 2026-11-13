@@ -75,18 +75,35 @@ class Booking {
         slotTaken = j['slotTaken'] as bool,
         cancelledBy = j['cancelledBy'] as String?,
         space = SpaceCard.fromJson(j['space'] as Map<String, dynamic>),
-        host = j['host'] == null ? null : HostContact.fromJson(j['host'] as Map<String, dynamic>);
+        host = j['host'] == null ? null : HostContact.fromJson(j['host'] as Map<String, dynamic>),
+        arrivedAt = _instant(j['arrivedAt']),
+        noShow = j['noShow'] as bool? ?? false;
 
   final String id, status, from, to;
   final DateTime date;
   final double fee;
   final String? message, reason, cancelledBy;
-  final bool slotTaken;
+  final bool slotTaken, noShow;
   final SpaceCard space;
   final HostContact? host;
 
+  /// When the farmer checked in at the space (local time), or null.
+  final DateTime? arrivedAt;
+
   bool get isActive => status == 'Requested' || status == 'Accepted';
+
+  /// A confirmed booking for today that has not been checked in yet (the server checks the time and distance).
+  bool canCheckIn(DateTime now) =>
+      status == 'Accepted' &&
+      arrivedAt == null &&
+      !noShow &&
+      date.year == now.year &&
+      date.month == now.month &&
+      date.day == now.day;
 }
+
+/// A UTC timestamp from the API, in the phone's local time.
+DateTime? _instant(Object? v) => v == null ? null : DateTime.parse(v as String).toLocal();
 
 /// status: Planned, Cancelled or Completed (planned, date passed). [booking] is the latest one.
 class Trip {
@@ -131,12 +148,72 @@ class HostBooking {
         farmerName = (j['farmer'] as Map)['name'] as String?,
         farmerVillage = (j['farmer'] as Map)['village'] as String?,
         farmerDistrict = (j['farmer'] as Map)['district'] as String?,
-        farmerPhone = (j['farmer'] as Map)['phone'] as String?;
+        farmerPhone = (j['farmer'] as Map)['phone'] as String?,
+        arrivedAt = _instant(j['arrivedAt']),
+        noShow = j['noShow'] as bool? ?? false,
+        canMarkNoShow = j['canMarkNoShow'] as bool? ?? false;
 
   final String id, status, from, to, spaceTitle, vehicle;
   final DateTime date;
   final double fee;
   final String? message, reason, cancelledBy, farmerName, farmerVillage, farmerDistrict, farmerPhone;
-  final bool slotTaken;
+  final bool slotTaken, noShow, canMarkNoShow;
   final List<ProduceItem> produce;
+
+  /// When the farmer checked in at the space (local time), or null.
+  final DateTime? arrivedAt;
+}
+
+/// A farmer selling inside the buyer's saved area. [address] and the position only while [sellingNow].
+class NearbyStall {
+  NearbyStall.fromJson(Map<String, dynamic> j)
+      : bookingId = j['bookingId'] as String,
+        date = _date(j['date']),
+        from = _time(j['from']),
+        to = _time(j['to']),
+        sellingNow = j['sellingNow'] as bool,
+        farmerName = j['farmerName'] as String?,
+        village = j['village'] as String?,
+        produce = [for (final p in j['produce'] as List) ProduceItem.fromJson(p as Map<String, dynamic>)],
+        spaceTitle = j['spaceTitle'] as String,
+        locality = j['locality'] as String,
+        address = j['address'] as String?,
+        latitude = (j['latitude'] as num?)?.toDouble(),
+        longitude = (j['longitude'] as num?)?.toDouble(),
+        distanceKm = (j['distanceKm'] as num).toDouble();
+
+  final String bookingId, from, to, spaceTitle, locality;
+  final DateTime date;
+  final bool sellingNow;
+  final String? farmerName, village, address;
+  final List<ProduceItem> produce;
+  final double? latitude, longitude;
+  final double distanceKm;
+}
+
+/// The buyer's saved area; null until they set one. [hasEmail]: email alerts need an address in the profile.
+class BuyerSettings {
+  BuyerSettings.fromJson(Map<String, dynamic> j)
+      : area = j['area'] == null ? null : BuyerArea.fromJson(j['area'] as Map<String, dynamic>),
+        hasEmail = j['hasEmail'] as bool;
+
+  final BuyerArea? area;
+  final bool hasEmail;
+}
+
+class BuyerArea {
+  const BuyerArea({required this.latitude, required this.longitude, required this.radiusKm, required this.alertsOn});
+
+  BuyerArea.fromJson(Map<String, dynamic> j)
+      : latitude = (j['latitude'] as num).toDouble(),
+        longitude = (j['longitude'] as num).toDouble(),
+        radiusKm = j['radiusKm'] as int,
+        alertsOn = j['alertsOn'] as bool;
+
+  final double latitude, longitude;
+  final int radiusKm;
+  final bool alertsOn;
+
+  Map<String, dynamic> toJson() =>
+      {'latitude': latitude, 'longitude': longitude, 'radiusKm': radiusKm, 'alertsOn': alertsOn};
 }

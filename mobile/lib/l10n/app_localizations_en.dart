@@ -1659,4 +1659,120 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get verificationResetToast =>
       'Verification cleared. You can start again.';
+
+  @override
+  String get iveArrived => 'I\'ve arrived';
+
+  @override
+  String get checkInHint =>
+      'Tap this when you reach the space. Your phone\'s location must be within 200 m of it.';
+
+  @override
+  String get locationNeededToCheckIn => 'Turn on location to check in';
+
+  @override
+  String get checkedInToast => 'Checked in. The host has been told.';
+
+  @override
+  String checkedInAt(String time) {
+    return 'You checked in at $time. The host and nearby buyers were told.';
+  }
+
+  @override
+  String get noShowFarmerNote => 'The host marked that you did not come.';
+
+  @override
+  String arrivedAt(String time) {
+    return 'Arrived at $time';
+  }
+
+  @override
+  String get notArrivedYet => 'Not arrived yet';
+
+  @override
+  String get didNotCome => 'Didn\'t come';
+
+  @override
+  String get markNoShowQ => 'Mark that the farmer didn\'t come?';
+
+  @override
+  String get markNoShowBody =>
+      'Do this only if the farmer never reached your space. It is saved on the booking.';
+
+  @override
+  String get noShowMarkedToast => 'Marked as not come';
+
+  @override
+  String get nearbyTitle => 'Selling near you';
+
+  @override
+  String get nearbySetupTitle => 'Fresh produce from farmers near you';
+
+  @override
+  String get nearbySetupBody =>
+      'Save where you live to see verified farmers selling close by today and tomorrow, and get an email before they come.';
+
+  @override
+  String get locationSaved => 'Location captured';
+
+  @override
+  String get howFar => 'How far will you go?';
+
+  @override
+  String radiusKm(int km) {
+    return '$km km';
+  }
+
+  @override
+  String get emailAlerts => 'Email alerts';
+
+  @override
+  String get emailAlertsBody => 'The evening before, and when a farmer arrives';
+
+  @override
+  String get addEmailForAlerts =>
+      'Add your email in My profile to get these alerts.';
+
+  @override
+  String get areaSavedToast => 'Area saved';
+
+  @override
+  String get changeArea => 'Change area';
+
+  @override
+  String get removeArea => 'Remove my area';
+
+  @override
+  String get areaRemovedToast => 'Area removed';
+
+  @override
+  String withinKm(int km) {
+    return 'Within $km km of your saved place';
+  }
+
+  @override
+  String get sellingNow => 'Selling now';
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String get tomorrow => 'Tomorrow';
+
+  @override
+  String kmAway(String km) {
+    return '$km km away';
+  }
+
+  @override
+  String untilTime(String time) {
+    return 'until $time';
+  }
+
+  @override
+  String get nearbyEmpty =>
+      'No farmers are booked near you for today or tomorrow yet. We\'ll email you when one is.';
+
+  @override
+  String get exactPlaceLater => 'Exact place shows when the farmer arrives';
 }

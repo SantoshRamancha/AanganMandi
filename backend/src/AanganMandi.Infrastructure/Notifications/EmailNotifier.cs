@@ -1,6 +1,8 @@
 using System.Globalization;
 using AanganMandi.Application.Master;
 using AanganMandi.Application.Notifications;
+using AanganMandi.Application.Trips;
+using AanganMandi.Domain.Buyers;
 using AanganMandi.Domain.Farmers;
 using AanganMandi.Domain.Identity;
 using AanganMandi.Domain.Spaces;
@@ -157,6 +159,105 @@ public sealed class EmailNotifier(AppDbContext db, IEmailQueue queue, IOptions<N
         }
     });
 
+    public Task FarmerArrivedAsync(Guid bookingId, CancellationToken ct) => Safe("farmer arrived", async () =>
+    {
+        var b = await db.Bookings.AsNoTracking().SingleOrDefaultAsync(x => x.Id == bookingId, ct);
+        if (b?.ArrivedAt is not { } arrivedAt) return;
+        var space = await db.Spaces.AsNoTracking().SingleOrDefaultAsync(s => s.Id == b.SpaceId, ct);
+        if (space is null) return;
+        var trip = await db.Trips.AsNoTracking().Include(t => t.Produce).SingleAsync(t => t.Id == b.TripId, ct);
+        var farmer = await db.Users.AsNoTracking().SingleAsync(u => u.Id == b.FarmerUserId, ct);
+        var host = await db.Users.AsNoTracking().SingleAsync(u => u.Id == b.HostUserId, ct);
+        var farmerName = farmer.Name ?? farmer.Phone;
+
+        await SendAsync(host, MailText.BookingArrived, new()
+        {
+            ["farmer"] = farmerName, ["space"] = space.Title, ["time"] = $"{ArrivalRules.IndiaTime(arrivedAt):HH\\:mm}",
+        },
+        [
+            new(MailText.Time, $"{b.From:HH\\:mm} – {b.To:HH\\:mm}"),
+            new(MailText.Farmer, $"{farmerName} · {farmer.Phone}"),
+        ], ct: ct);
+
+        var buyers = await BuyersNearAsync(space, b, NearbyAlertKind.SellingNow, ct);
+        foreach (var (buyer, meters) in buyers)
+        {
+            var lang = Lang(buyer);
+            await SendAsync(buyer, MailText.NearbySellingNow, new()
+            {
+                ["farmer"] = farmerName, ["space"] = space.Title, ["locality"] = space.Locality, ["until"] = $"{b.To:HH\\:mm}",
+            },
+            [
+                new(MailText.Address, $"{space.Address}, {space.Locality}"),
+                new(MailText.Distance, Km(meters, lang)),
+                new(MailText.Until, $"{b.To:HH\\:mm}"),
+                new(MailText.Crops, await CropNamesAsync(trip.Produce, lang, ct, withPrices: true)),
+            ], ct: ct);
+            db.NearbyAlerts.Add(new NearbyAlert { BuyerUserId = buyer.Id, BookingId = b.Id, Kind = NearbyAlertKind.SellingNow });
+        }
+        if (buyers.Count > 0) await db.SaveChangesAsync(ct);
+    });
+
+    public Task NearbyTomorrowAsync(CancellationToken ct) => Safe("nearby tomorrow", async () =>
+    {
+        var tomorrow = TripRules.TodayInIndia(DateTime.UtcNow).AddDays(1);
+        var stalls = await (
+            from b in db.Bookings.AsNoTracking()
+            where b.Date == tomorrow && b.Status == BookingStatus.Accepted && b.NoShowAt == null
+            join s in db.Spaces.AsNoTracking() on b.SpaceId equals s.Id
+            join t in db.Trips.AsNoTracking().Include(t => t.Produce) on b.TripId equals t.Id
+            join f in db.Users.AsNoTracking() on b.FarmerUserId equals f.Id
+            orderby b.From
+            select new { b, s, t, f }).ToListAsync(ct);
+
+        // Buyer → the stalls inside their area they have not heard about yet.
+        var perBuyer = new Dictionary<Guid, (User Buyer, List<(int Stall, double Meters)> Stalls)>();
+        foreach (var (stall, i) in stalls.Select((x, i) => (x, i)))
+            foreach (var (buyer, meters) in await BuyersNearAsync(stall.s, stall.b, NearbyAlertKind.DayBefore, ct))
+            {
+                if (!perBuyer.TryGetValue(buyer.Id, out var entry)) perBuyer[buyer.Id] = entry = (buyer, []);
+                entry.Stalls.Add((i, meters));
+            }
+
+        foreach (var (buyer, mine) in perBuyer.Values)
+        {
+            var lang = Lang(buyer);
+            var rows = new List<MailDetail>();
+            foreach (var (i, meters) in mine.Take(10))
+            {
+                var x = stalls[i];
+                var when = $"{x.b.From:HH\\:mm} – {x.b.To:HH\\:mm} · {x.s.Locality} · {Km(meters, lang)}";
+                rows.Add(new(new L(when, when, when), $"{x.f.Name ?? "–"}: {await CropNamesAsync(x.t.Produce, lang, ct, withPrices: true)}"));
+            }
+            await SendAsync(buyer, MailText.NearbyTomorrow, new() { ["date"] = FormatDate(tomorrow, lang) }, rows, ct: ct);
+            foreach (var (i, _) in mine)
+                db.NearbyAlerts.Add(new NearbyAlert { BuyerUserId = buyer.Id, BookingId = stalls[i].b.Id, Kind = NearbyAlertKind.DayBefore });
+        }
+        if (perBuyer.Count > 0) await db.SaveChangesAsync(ct);
+    });
+
+    /// <summary>
+    /// Buyers (with the Buyer role and an email) whose saved area covers the space, with alerts on, who have not had
+    /// this kind of alert for this booking. Never the booking's own farmer or host. Distances in metres (geography).
+    /// </summary>
+    private async Task<List<(User Buyer, double Meters)>> BuyersNearAsync(Space space, Booking b, NearbyAlertKind kind, CancellationToken ct)
+    {
+        var point = space.Location;
+        var rows = await (
+            from a in db.BuyerAreas.AsNoTracking()
+            join u in db.Users.AsNoTracking() on a.UserId equals u.Id
+            where a.AlertsOn && u.Email != null && u.Id != b.FarmerUserId && u.Id != b.HostUserId
+                && db.UserRoles.Any(r => r.UserId == u.Id && r.Role == Role.Buyer)
+                && a.Location.Distance(point) <= a.RadiusKm * 1000
+                && !db.NearbyAlerts.Any(n => n.BuyerUserId == u.Id && n.BookingId == b.Id && n.Kind == kind)
+            select new { u, Meters = a.Location.Distance(point) }).ToListAsync(ct);
+        return rows.Select(r => (r.u, r.Meters)).ToList();
+    }
+
+    /// <summary>"1.2 km from you" in the reader's language.</summary>
+    private static string Km(double meters, string lang) => MessageTemplate.Render(MailText.KmAway.For(lang),
+        new Dictionary<string, string?> { ["km"] = (meters / 1000).ToString("0.0", CultureInfo.InvariantCulture) });
+
     // ---------------------------------------------------------------------------------------------
 
     private async Task<(User?, FarmerProfile?)> FarmerAsync(Guid userId, CancellationToken ct) => (
@@ -181,17 +282,24 @@ public sealed class EmailNotifier(AppDbContext db, IEmailQueue queue, IOptions<N
     {
         if (string.IsNullOrWhiteSpace(to.Email)) return;
         var mail = MailLayout.Render(template, Lang(to), to.Name, values, details, note, options.Value.AppUrl);
-        var category = template.Key.Split('-')[0] switch { "farmer" or "verifier" => "verification", "space" => "spaces", _ => "bookings" };
+        var category = template.Key.Split('-')[0] switch
+        {
+            "farmer" or "verifier" => "verification", "space" => "spaces", "nearby" => "nearby", _ => "bookings",
+        };
         await queue.EnqueueAsync(new EmailMessage([new EmailAddress(to.Email, to.Name)], mail.Subject) { HtmlBody = mail.Html },
             category, template.Key, ct: ct);
     }
 
-    private async Task<string> CropNamesAsync(IEnumerable<TripProduce> produce, string lang, CancellationToken ct)
+    /// <summary>"Tomato, Onion"; with prices "Tomato ₹30/kg, Onion" (a price only where the farmer gave one).</summary>
+    private async Task<string> CropNamesAsync(IEnumerable<TripProduce> produce, string lang, CancellationToken ct, bool withPrices = false)
     {
-        var codes = produce.Select(p => p.CropCode).ToList();
+        var items = produce.ToList();
+        var codes = items.Select(p => p.CropCode).ToList();
         var names = await db.Crops.AsNoTracking().Where(c => codes.Contains(c.Code))
             .ToDictionaryAsync(c => c.Code, c => lang switch { "te" => c.NameTe, "hi" => c.NameHi, _ => c.NameEn }, ct);
-        return string.Join(", ", codes.Select(c => CropCodes.IsCustom(c) ? CropCodes.CustomName(c) : names.GetValueOrDefault(c, c)));
+        string Name(string c) => CropCodes.IsCustom(c) ? CropCodes.CustomName(c) : names.GetValueOrDefault(c, c);
+        return string.Join(", ", items.Select(p =>
+            withPrices && p.PricePerKg is { } price ? $"{Name(p.CropCode)} ₹{price:0.##}/kg" : Name(p.CropCode)));
     }
 
     private static MailNote? Note(L title, string? text) => string.IsNullOrWhiteSpace(text) ? null : new(title, text);

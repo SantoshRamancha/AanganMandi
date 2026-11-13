@@ -268,7 +268,7 @@ class AppLocalizationsTe extends AppLocalizations {
   String get cropsYouGrow => 'మీరు పండించే పంటలు';
 
   @override
-  String get useMyLocation => 'నా ప్రస్తుత స్థానం వాడండి';
+  String get useMyLocation => 'నా ప్రస్తుత లొకేషన్ తీసుకోండి';
 
   @override
   String get locationDenied => 'కొనసాగడానికి లొకేషన్ అనుమతి ఇవ్వండి';
@@ -1623,4 +1623,120 @@ class AppLocalizationsTe extends AppLocalizations {
   @override
   String get verificationResetToast =>
       'ధృవీకరణ తొలగించబడింది. మీరు మళ్లీ ప్రారంభించవచ్చు.';
+
+  @override
+  String get iveArrived => 'నేను చేరుకున్నాను';
+
+  @override
+  String get checkInHint =>
+      'స్థలానికి చేరుకున్నాక దీన్ని నొక్కండి. మీ ఫోన్ లొకేషన్ స్థలానికి 200 మీటర్ల లోపల ఉండాలి.';
+
+  @override
+  String get locationNeededToCheckIn => 'చెక్ ఇన్ చేయడానికి లొకేషన్ ఆన్ చేయండి';
+
+  @override
+  String get checkedInToast => 'చెక్ ఇన్ అయింది. యజమానికి తెలియజేశాము.';
+
+  @override
+  String checkedInAt(String time) {
+    return 'మీరు $timeకు చెక్ ఇన్ చేశారు. యజమానికి, దగ్గరి కొనుగోలుదారులకు తెలియజేశాము.';
+  }
+
+  @override
+  String get noShowFarmerNote => 'మీరు రాలేదని యజమాని నమోదు చేశారు.';
+
+  @override
+  String arrivedAt(String time) {
+    return '$timeకు వచ్చారు';
+  }
+
+  @override
+  String get notArrivedYet => 'ఇంకా రాలేదు';
+
+  @override
+  String get didNotCome => 'రాలేదు';
+
+  @override
+  String get markNoShowQ => 'రైతు రాలేదని నమోదు చేయాలా?';
+
+  @override
+  String get markNoShowBody =>
+      'రైతు మీ స్థలానికి అసలు రాకపోతే మాత్రమే ఇది చేయండి. ఇది బుకింగ్‌లో సేవ్ అవుతుంది.';
+
+  @override
+  String get noShowMarkedToast => 'రాలేదని నమోదు చేశాము';
+
+  @override
+  String get nearbyTitle => 'మీ దగ్గర అమ్ముతున్నారు';
+
+  @override
+  String get nearbySetupTitle => 'మీ దగ్గరి రైతుల తాజా పంట';
+
+  @override
+  String get nearbySetupBody =>
+      'మీరు ఎక్కడ ఉంటారో సేవ్ చేయండి, ఈరోజు, రేపు దగ్గరలో అమ్మే ధృవీకరించిన రైతులు కనిపిస్తారు, వారు వచ్చే ముందు ఈమెయిల్ వస్తుంది.';
+
+  @override
+  String get locationSaved => 'లొకేషన్ తీసుకున్నాము';
+
+  @override
+  String get howFar => 'మీరు ఎంత దూరం వెళ్తారు?';
+
+  @override
+  String radiusKm(int km) {
+    return '$km కి.మీ.';
+  }
+
+  @override
+  String get emailAlerts => 'ఈమెయిల్ హెచ్చరికలు';
+
+  @override
+  String get emailAlertsBody => 'ముందు రోజు సాయంత్రం, రైతు వచ్చినప్పుడు';
+
+  @override
+  String get addEmailForAlerts =>
+      'ఈ హెచ్చరికలు పొందడానికి నా ప్రొఫైల్‌లో మీ ఈమెయిల్ జోడించండి.';
+
+  @override
+  String get areaSavedToast => 'ప్రాంతం సేవ్ అయింది';
+
+  @override
+  String get changeArea => 'ప్రాంతం మార్చండి';
+
+  @override
+  String get removeArea => 'నా ప్రాంతం తీసివేయండి';
+
+  @override
+  String get areaRemovedToast => 'ప్రాంతం తీసివేశాము';
+
+  @override
+  String withinKm(int km) {
+    return 'మీరు సేవ్ చేసిన చోటుకు $km కి.మీ. లోపల';
+  }
+
+  @override
+  String get sellingNow => 'ఇప్పుడు అమ్ముతున్నారు';
+
+  @override
+  String get today => 'ఈరోజు';
+
+  @override
+  String get tomorrow => 'రేపు';
+
+  @override
+  String kmAway(String km) {
+    return '$km కి.మీ. దూరం';
+  }
+
+  @override
+  String untilTime(String time) {
+    return '$time వరకు';
+  }
+
+  @override
+  String get nearbyEmpty =>
+      'ఈరోజు లేదా రేపు మీ దగ్గర ఇంకా ఏ రైతూ బుక్ కాలేదు. బుక్ అయినప్పుడు మీకు ఈమెయిల్ చేస్తాము.';
+
+  @override
+  String get exactPlaceLater => 'రైతు వచ్చినప్పుడు సరైన చోటు కనిపిస్తుంది';
 }

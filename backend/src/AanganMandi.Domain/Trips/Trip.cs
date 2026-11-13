@@ -58,6 +58,12 @@ public class Booking : Entity
     /// <summary>"Farmer" or "Host" for a cancelled booking.</summary>
     public string? CancelledBy { get; set; }
     public DateTime? RespondedAt { get; set; }
+    /// <summary>When the farmer checked in at the space (UTC), from within <see cref="ArrivalRules.MaxDistanceMeters"/>.</summary>
+    public DateTime? ArrivedAt { get; set; }
+    /// <summary>How far from the space the farmer's phone was at check-in, in metres.</summary>
+    public int? ArrivalDistanceMeters { get; set; }
+    /// <summary>When the host marked that the farmer did not come (only after the slot ended without a check-in).</summary>
+    public DateTime? NoShowAt { get; set; }
 
     public bool IsActive => Status is BookingStatus.Requested or BookingStatus.Accepted;
 

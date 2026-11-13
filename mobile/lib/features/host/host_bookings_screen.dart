@@ -120,6 +120,40 @@ class _HostBookingCard extends ConsumerWidget {
           if (b.farmerPhone != null) IconFact(Icons.phone_outlined, b.farmerPhone!, bold: true),
           if (b.message != null) IconFact(Icons.chat_bubble_outline, '“${b.message}”'),
           ProduceChips(b.produce),
+          // The booking day: did the farmer check in at the space?
+          if (b.status == 'Accepted') ...[
+            const SizedBox(height: 8),
+            if (b.arrivedAt case final at?)
+              _ArrivalLine(Icons.where_to_vote, l10n.arrivedAt(TimeOfDay.fromDateTime(at).format(context)), scheme.primary)
+            else if (b.noShow)
+              _ArrivalLine(Icons.person_off_outlined, l10n.didNotCome, scheme.error)
+            else if (DateUtils.isSameDay(b.date, DateTime.now()))
+              _ArrivalLine(Icons.schedule, l10n.notArrivedYet, scheme.onSurfaceVariant),
+            if (b.canMarkNoShow)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton.icon(
+                  icon: const Icon(Icons.person_off_outlined),
+                  label: Text(l10n.didNotCome),
+                  style: OutlinedButton.styleFrom(foregroundColor: scheme.error),
+                  onPressed: () async {
+                    final ok = await showDialog<bool>(
+                      context: context,
+                      builder: (dialog) => AlertDialog(
+                        title: Text(l10n.markNoShowQ),
+                        content: Text(l10n.markNoShowBody),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(dialog, false), child: Text(l10n.back)),
+                          FilledButton(onPressed: () => Navigator.pop(dialog, true), child: Text(l10n.didNotCome)),
+                        ],
+                      ),
+                    );
+                    if (ok != true || !context.mounted) return;
+                    if (await runWithToast(context, () => api.markNoShow(b.id), success: l10n.noShowMarkedToast)) refresh();
+                  },
+                ),
+              ),
+          ],
           if (b.status == 'Declined' || b.status == 'Cancelled') ...[
             const SizedBox(height: 8),
             Text(
@@ -180,6 +214,24 @@ class _HostBookingCard extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Whether the farmer has arrived, as one coloured line.
+class _ArrivalLine extends StatelessWidget {
+  const _ArrivalLine(this.icon, this.text, this.color);
+  final IconData icon;
+  final String text;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Row(children: [
+          Icon(icon, size: 20, color: color),
+          const SizedBox(width: 8),
+          Expanded(child: Text(text, style: TextStyle(color: color, fontWeight: FontWeight.w600))),
+        ]),
+      );
 }
 
 /// Reason for declining or cancelling, with quick picks. Pops with the reason, or null for Back.

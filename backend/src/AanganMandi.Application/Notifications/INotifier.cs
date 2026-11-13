@@ -30,4 +30,16 @@ public interface INotifier
     /// cancelled → the other side.
     /// </summary>
     Task BookingChangedAsync(Guid bookingId, CancellationToken ct = default);
+
+    /// <summary>
+    /// The farmer checked in at the space: to the host ("your farmer is here"), and to every buyer whose saved area
+    /// covers the space and who has alerts on ("selling now"). Each buyer gets it once per booking.
+    /// </summary>
+    Task FarmerArrivedAsync(Guid bookingId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Daily job, the evening before: one email per buyer listing tomorrow's confirmed stalls inside their area.
+    /// A booking already announced to a buyer is skipped, so running it twice sends nothing new.
+    /// </summary>
+    Task NearbyTomorrowAsync(CancellationToken ct = default);
 }

@@ -186,6 +186,15 @@ class _NextBookingCard extends StatelessWidget {
                   Text(b.farmerName ?? l10n.noName, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 4),
                   Text('${b.spaceTitle} · ${b.from} – ${b.to}', style: TextStyle(color: scheme.onSurfaceVariant)),
+                  if (b.arrivedAt case final at?) ...[
+                    const SizedBox(height: 6),
+                    Row(children: [
+                      Icon(Icons.where_to_vote, size: 18, color: scheme.primary),
+                      const SizedBox(width: 6),
+                      Text(l10n.arrivedAt(TimeOfDay.fromDateTime(at).format(context)),
+                          style: TextStyle(color: scheme.primary, fontWeight: FontWeight.w600)),
+                    ]),
+                  ],
                   const SizedBox(height: 8),
                   ProduceLine(b.produce),
                   if (b.farmerPhone != null) ...[

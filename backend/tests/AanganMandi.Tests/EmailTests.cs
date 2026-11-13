@@ -10,6 +10,7 @@ public class EmailTests
     {
         ["farmer"] = "Ramesh Reddy", ["host"] = "Lakshmi Prasad", ["space"] = "Green villa courtyard",
         ["locality"] = "Ameerpet", ["date"] = "Sat, 7 Nov 2026", ["admin"] = "Ops Admin", ["phone"] = "+919000000009",
+        ["time"] = "16:05", ["until"] = "20:00",
     };
 
     public static TheoryData<string, string> EveryTemplateInEveryLanguage()
