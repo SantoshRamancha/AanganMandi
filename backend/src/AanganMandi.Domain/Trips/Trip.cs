@@ -64,6 +64,11 @@ public class Booking : Entity
     public int? ArrivalDistanceMeters { get; set; }
     /// <summary>When the host marked that the farmer did not come (only after the slot ended without a check-in).</summary>
     public DateTime? NoShowAt { get; set; }
+    /// <summary>
+    /// Random code in the public link the host shares with neighbours (/s/{code}); made the first time they share.
+    /// Random rather than the booking id, so links cannot be guessed or listed.
+    /// </summary>
+    public string? ShareCode { get; set; }
 
     public bool IsActive => Status is BookingStatus.Requested or BookingStatus.Accepted;
 

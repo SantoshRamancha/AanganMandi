@@ -89,6 +89,10 @@ class HostBookingApi {
 
   /// The farmer did not come; allowed once the slot is over without a check-in.
   Future<void> markNoShow(String id) => _dio.post('/hosts/me/bookings/$id/no-show');
+
+  /// The public stall page to share with neighbours (same link every time for a booking).
+  Future<String> shareLink(String id) async =>
+      ((await _dio.post('/hosts/me/bookings/$id/share')).data as Map)['url'] as String;
 }
 
 final tripApiProvider = Provider((ref) => TripApi(ref.watch(dioProvider)));

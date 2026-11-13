@@ -9,6 +9,7 @@ import '../../core/labels.dart';
 import '../../core/widgets/responsive.dart';
 import '../../l10n/app_localizations.dart';
 import '../trips/trip_widgets.dart';
+import 'share_stall_sheet.dart';
 
 /// Farmers' requests for the host's spaces (accept / decline), confirmed upcoming bookings, and past ones.
 class HostBookingsScreen extends ConsumerWidget {
@@ -196,6 +197,12 @@ class _HostBookingCard extends ConsumerWidget {
                   icon: const Icon(Icons.call),
                   label: Text(l10n.callFarmer),
                   onPressed: () => launchUrl(Uri.parse('tel:${b.farmerPhone}')),
+                ),
+              if (b.status == 'Accepted' && !b.noShow && !b.canMarkNoShow)
+                FilledButton.tonalIcon(
+                  icon: const Icon(Icons.share),
+                  label: Text(l10n.shareWithNeighbours),
+                  onPressed: () => showShareStallSheet(context, b),
                 ),
               TextButton(
                 style: TextButton.styleFrom(foregroundColor: scheme.error),

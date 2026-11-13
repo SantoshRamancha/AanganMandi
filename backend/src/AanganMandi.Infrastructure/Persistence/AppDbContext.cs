@@ -198,6 +198,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.Property(x => x.Message).HasMaxLength(200);
             e.Property(x => x.Reason).HasMaxLength(200);
             e.Property(x => x.CancelledBy).HasMaxLength(8);
+            e.Property(x => x.ShareCode).HasMaxLength(16);
+            e.HasIndex(x => x.ShareCode).IsUnique().HasFilter("[ShareCode] IS NOT NULL");
             e.HasOne<Trip>().WithMany().HasForeignKey(x => x.TripId).OnDelete(DeleteBehavior.NoAction);
             e.HasOne<Space>().WithMany().HasForeignKey(x => x.SpaceId).OnDelete(DeleteBehavior.NoAction);
             e.HasQueryFilter(x => !x.IsDeleted);

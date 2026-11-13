@@ -31,6 +31,8 @@ public class HostBookingsController(AppDbContext db, INotifier notifier) : Contr
         VehicleType Vehicle, ProduceItem[] Produce, FarmerCard Farmer, DateTime RequestedAt,
         DateTime? ArrivedAt, bool NoShow, bool CanMarkNoShow);
     public record ReasonRequest(string? Reason);
+    /// <summary>The public stall page, e.g. https://aanganmandi.in/s/7kQ2mNp4xR.</summary>
+    public record ShareLink(string Url);
 
     /// <summary>view: "requests" (waiting for you), "upcoming" (accepted, today or later) or "past" (everything else).</summary>
     [HttpGet]
@@ -61,6 +63,31 @@ public class HostBookingsController(AppDbContext db, INotifier notifier) : Contr
             r.t.Produce.Select(p => new ProduceItem(p.CropCode, p.QuantityKg, p.PricePerKg)).ToArray(),
             new FarmerCard(r.Name, r.Village, r.District, r.b.Status == BookingStatus.Accepted ? r.Phone : null),
             r.b.CreatedAt, ArrivalRules.AsUtc(r.b.ArrivedAt), r.b.NoShowAt is not null, ArrivalRules.CanMarkNoShow(r.b, indiaNow))).ToList();
+    }
+
+    /// <summary>
+    /// The public link to this stall for the host to share with neighbours (e.g. their society's WhatsApp group).
+    /// The first call makes a random code; later calls return the same link. Only while the booking is confirmed and
+    /// its slot is not over. The address in <c>Sharing:PublicBaseUrl</c> is used when set (production), else this
+    /// API's own address.
+    /// </summary>
+    [HttpPost("{id:guid}/share")]
+    public async Task<ActionResult<ShareLink>> Share(Guid id, [FromServices] IConfiguration config, CancellationToken ct)
+    {
+        var booking = await FindAsync(id, ct);
+        if (booking is null) return NotFound();
+        if (StallStatus.StateOf(booking, ArrivalRules.IndiaTime(DateTime.UtcNow)) == StallState.Over)
+            return Problem(statusCode: 409, title: "Only a confirmed booking that is not over can be shared");
+        if (booking.ShareCode is null)
+        {
+            booking.ShareCode = StallStatus.NewCode();
+            booking.UpdatedAt = DateTime.UtcNow;
+            await db.SaveChangesAsync(ct);
+        }
+        var origin = config["Sharing:PublicBaseUrl"] is { Length: > 0 } configured
+            ? configured.TrimEnd('/')
+            : $"{Request.Scheme}://{Request.Host}";
+        return new ShareLink($"{origin}/s/{booking.ShareCode}");
     }
 
     /// <summary>
