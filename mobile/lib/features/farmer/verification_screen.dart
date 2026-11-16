@@ -12,6 +12,7 @@ import '../../core/storage/prefs.dart';
 import '../../core/widgets/crop_picker.dart';
 import '../../core/widgets/document_tile.dart';
 import '../../core/widgets/responsive.dart';
+import '../../core/widgets/feedback.dart';
 import '../../l10n/app_localizations.dart';
 
 /// The phone is already OTP-verified at login, so verification is 3 steps:
@@ -66,10 +67,14 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
     _photoAt = f.evidencePhotoAt;
   }
 
+  /// A form message (a String, e.g. "complete all steps") or an API failure, as an error pop-up.
   void _error(Object e) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(apiErrorMessage(e, AppLocalizations.of(context).errorGeneric))));
+    if (e is String) {
+      showError(context, e);
+    } else {
+      showApiError(context, e);
+    }
   }
 
   Future<void> _run(Future<void> Function() action, {required int next}) async {
@@ -133,8 +138,7 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
     try {
       await ref.read(farmerApiProvider).submit();
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).submittedMessage)));
+      showSuccess(context, AppLocalizations.of(context).submittedMessage);
       Navigator.of(context).pop();
     } catch (e) {
       _error(e);

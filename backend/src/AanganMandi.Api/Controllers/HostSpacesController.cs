@@ -4,6 +4,7 @@ using AanganMandi.Application.Notifications;
 using AanganMandi.Application.Storage;
 using AanganMandi.Application.Trips;
 using AanganMandi.Domain.Spaces;
+using AanganMandi.Infrastructure.Accounts;
 using AanganMandi.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -178,17 +179,9 @@ public class HostSpacesController(AppDbContext db, IFileStorage storage, INotifi
     {
         var space = await FindAsync(id, ct);
         if (space is null) return NotFound();
-        var today = TripRules.TodayInIndia(DateTime.UtcNow);
-        var cancelled = (await db.Bookings.Where(b => b.SpaceId == id && b.Date >= today).ToListAsync(ct))
-            .Where(b => b.IsUpcoming(today)).ToList();
-        foreach (var b in cancelled) b.Cancel("Host", SpaceDeletedReason);
-
-        var files = space.Photos.ToList();
-        db.SpacePhotos.RemoveRange(files);
-        space.IsDeleted = true;
-        space.UpdatedAt = DateTime.UtcNow;
+        var (files, cancelled) = await SpaceRemoval.PrepareAsync(db, space, SpaceDeletedReason, ct);
         await db.SaveChangesAsync(ct);
-        foreach (var f in files) await storage.DeleteAsync(f.FilePath, ct);
+        foreach (var f in files) await storage.DeleteAsync(f, ct);
         foreach (var b in cancelled) await notifier.BookingChangedAsync(b.Id, ct);
         return new SpaceDeleted(cancelled.Count);
     }

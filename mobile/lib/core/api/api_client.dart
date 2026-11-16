@@ -108,6 +108,9 @@ class AuthApi {
     return (res.data['roles'] as List).cast<String>();
   }
 
+  /// Deletes the signed-in account and its personal data on the server; the caller then logs out locally.
+  Future<void> deleteAccount() => _dio.delete('/users/me');
+
   /// Adds Farmer, Host or Buyer to the account; the new tokens carry the role.
   Future<void> chooseRole(String role) async {
     final res = await _dio.post('/users/me/role', data: {'role': role});

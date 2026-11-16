@@ -5,11 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
-import '../../core/api/api_client.dart';
 import '../../core/api/app_api.dart';
 import '../../core/location.dart';
 import '../../core/widgets/photo_tile.dart';
 import '../../core/widgets/responsive.dart';
+import '../../core/widgets/feedback.dart';
 import '../../l10n/app_localizations.dart';
 
 /// Monday..Sunday as the API's DayOfWeek names.
@@ -61,8 +61,8 @@ class _SpaceFormScreenState extends ConsumerState<SpaceFormScreen> {
     super.dispose();
   }
 
-  void _toast(String message) =>
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  /// A form problem (missing location, photos, slot) as an error pop-up.
+  void _toast(String message) => showError(context, message);
 
   Future<void> _useLocation() async {
     setState(() => _busy = true);
@@ -154,10 +154,10 @@ class _SpaceFormScreenState extends ConsumerState<SpaceFormScreen> {
       await api.addPhoto(id, _proof!.$1, isProof: true);
       await api.submit(id);
       if (!mounted) return;
-      _toast(l10n.spaceSubmitted);
+      showSuccess(context, l10n.spaceSubmitted);
       Navigator.of(context).pop();
     } catch (e) {
-      if (mounted) _toast(apiErrorMessage(e, l10n.errorGeneric));
+      if (mounted) await showApiError(context, e);
     } finally {
       if (mounted) setState(() => _busy = false);
     }

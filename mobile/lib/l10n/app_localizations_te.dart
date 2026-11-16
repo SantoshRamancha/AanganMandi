@@ -1769,4 +1769,38 @@ class AppLocalizationsTe extends AppLocalizations {
   ) {
     return 'మా ఇంటి వద్ద ధృవీకరించిన రైతు తాజా పంట!\n$date, $time, $space వద్ద.\nతెస్తున్నవి: $crops\nవివరాలు: $url';
   }
+
+  @override
+  String get errorTitle => 'అది జరగలేదు';
+
+  @override
+  String get ok => 'సరే';
+
+  @override
+  String get noConnection =>
+      'ఆంగన్ మండికి కనెక్ట్ కాలేకపోతున్నాము. మీ ఇంటర్నెట్ చూసి మళ్లీ ప్రయత్నించండి.';
+
+  @override
+  String get serverProblem =>
+      'మా వైపు ఏదో పొరపాటు జరిగింది. కొన్ని నిమిషాల తర్వాత మళ్లీ ప్రయత్నించండి.';
+
+  @override
+  String get deleteAccount => 'నా ఖాతాను తొలగించు';
+
+  @override
+  String get deleteAccountSubtitle => 'మీ వివరాలను శాశ్వతంగా తొలగిస్తుంది';
+
+  @override
+  String get deleteAccountQ => 'మీ ఖాతాను తొలగించాలా?';
+
+  @override
+  String get deleteAccountBody =>
+      'దీనితో మీ పేరు, మొబైల్ నంబర్, ఈమెయిల్, వ్యవసాయ వివరాలు, రుజువు ఫోటో, మీ స్థలాలు, వాటి ఫోటోలు, మీరు సేవ్ చేసిన ప్రాంతం తొలగించబడతాయి. రాబోయే బుకింగ్‌లు రద్దవుతాయి, అవతలి వ్యక్తికి తెలియజేయబడుతుంది.';
+
+  @override
+  String get deleteAccountUnderstand =>
+      'దీన్ని తిరిగి పొందలేమని నాకు అర్థమైంది';
+
+  @override
+  String get accountDeletedToast => 'మీ ఖాతా తొలగించబడింది';
 }

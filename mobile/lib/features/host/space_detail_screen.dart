@@ -8,6 +8,7 @@ import '../../core/api/trip_api.dart';
 import '../../core/widgets/document_tile.dart';
 import '../../core/widgets/photo_tile.dart';
 import '../../core/widgets/responsive.dart';
+import '../../core/widgets/feedback.dart';
 import '../../l10n/app_localizations.dart';
 import 'host_home.dart';
 import 'space_form_screen.dart';
@@ -31,14 +32,9 @@ class _SpaceDetailScreenState extends ConsumerState<SpaceDetailScreen> {
     try {
       await action();
       ref.invalidate(_spaceProvider(widget.id));
-      if (mounted && success != null) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(success)));
-      }
+      if (mounted && success != null) showSuccess(context, success);
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(apiErrorMessage(e, AppLocalizations.of(context).errorGeneric))));
-      }
+      if (mounted) await showApiError(context, e);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -48,10 +44,7 @@ class _SpaceDetailScreenState extends ConsumerState<SpaceDetailScreen> {
     final l10n = AppLocalizations.of(context);
     final withdrawn = await ref.read(hostApiProvider).deletePhoto(s.id, f.id);
     ref.invalidate(_spaceProvider(widget.id));
-    if (mounted) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(withdrawn ? l10n.spaceWithdrawnToast : l10n.photoDeletedToast)));
-    }
+    if (mounted) showSuccess(context, withdrawn ? l10n.spaceWithdrawnToast : l10n.photoDeletedToast);
   }
 
   /// Deletes the whole space after a confirmation, then goes back to the host's spaces.
@@ -59,16 +52,15 @@ class _SpaceDetailScreenState extends ConsumerState<SpaceDetailScreen> {
     final l10n = AppLocalizations.of(context);
     final body = '${l10n.deleteSpaceBody}\n\n${l10n.deleteSpaceBookings}';
     if (!await confirmDelete(context, title: l10n.deleteSpaceQ, body: body) || !mounted) return;
-    final messenger = ScaffoldMessenger.of(context);
     setState(() => _busy = true);
     try {
       final cancelled = await ref.read(hostApiProvider).deleteSpace(s.id);
       ref.invalidate(mySpacesProvider);
       ref.invalidate(hostBookingsProvider);
-      messenger.showSnackBar(SnackBar(content: Text(l10n.spaceDeletedToast(cancelled))));
+      if (mounted) showSuccess(context, l10n.spaceDeletedToast(cancelled));
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text(apiErrorMessage(e, l10n.errorGeneric))));
+      if (mounted) await showApiError(context, e);
       if (mounted) setState(() => _busy = false);
     }
   }

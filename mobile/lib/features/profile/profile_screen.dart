@@ -10,7 +10,9 @@ import '../../core/districts.dart';
 import '../../core/labels.dart';
 import '../../core/storage/prefs.dart';
 import '../../core/widgets/initials_avatar.dart';
+import '../../core/router/app_router.dart';
 import '../../core/widgets/responsive.dart';
+import '../../core/widgets/feedback.dart';
 import '../../l10n/app_localizations.dart';
 import '../home/home_screen.dart';
 import '../onboarding/language_screen.dart';
@@ -51,6 +53,11 @@ class ProfileScreen extends ConsumerWidget {
               const _LanguageCard(),
               const SizedBox(height: 8),
               _LogoutCard(phone: profile.value?.phone),
+              // Staff accounts are removed by an admin, so their waiting farmers get reassigned.
+              if (profile.value case final p? when !p.roles.contains('Admin') && !p.roles.contains('Verifier')) ...[
+                const SizedBox(height: 12),
+                const _DeleteAccountTile(),
+              ],
               const SizedBox(height: 24),
             ]),
           ),
@@ -241,6 +248,79 @@ extension on String {
 }
 
 /// Log out as a clear, separate row at the end of the profile; asks before logging out.
+/// "Delete my account" (Play Store requirement): asks first, with a tick box, then deletes on the server, logs out
+/// and goes back to the login screen.
+class _DeleteAccountTile extends ConsumerWidget {
+  const _DeleteAccountTile();
+
+  Future<void> _delete(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
+    final ok = await showDialog<bool>(context: context, builder: (_) => const _DeleteAccountDialog());
+    if (ok != true || !context.mounted) return;
+    try {
+      await ref.read(authApiProvider).deleteAccount();
+      await Session.clear();
+      ref.read(routerProvider).go('/login');
+      if (context.mounted) showSuccess(context, l10n.accountDeletedToast);
+    } catch (e) {
+      if (context.mounted) await showApiError(context, e);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    return ListTile(
+      leading: Icon(Icons.person_remove_outlined, color: scheme.error),
+      title: Text(l10n.deleteAccount, style: TextStyle(color: scheme.error, fontWeight: FontWeight.w600)),
+      subtitle: Text(l10n.deleteAccountSubtitle),
+      onTap: () => _delete(context, ref),
+    );
+  }
+}
+
+/// The confirmation: what is deleted, and a tick box before the red button works. Pops true to delete.
+class _DeleteAccountDialog extends StatefulWidget {
+  const _DeleteAccountDialog();
+
+  @override
+  State<_DeleteAccountDialog> createState() => _DeleteAccountDialogState();
+}
+
+class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
+  bool _understood = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    return AlertDialog(
+      icon: Icon(Icons.person_remove_outlined, color: scheme.error, size: 32),
+      title: Text(l10n.deleteAccountQ),
+      content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(l10n.deleteAccountBody, style: const TextStyle(height: 1.4)),
+        const SizedBox(height: 12),
+        CheckboxListTile(
+          contentPadding: EdgeInsets.zero,
+          controlAffinity: ListTileControlAffinity.leading,
+          value: _understood,
+          title: Text(l10n.deleteAccountUnderstand),
+          onChanged: (v) => setState(() => _understood = v ?? false),
+        ),
+      ]),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.cancel)),
+        FilledButton(
+          style: FilledButton.styleFrom(backgroundColor: scheme.error, foregroundColor: scheme.onError),
+          onPressed: _understood ? () => Navigator.pop(context, true) : null,
+          child: Text(l10n.deleteAccount),
+        ),
+      ],
+    );
+  }
+}
+
 class _LogoutCard extends ConsumerWidget {
   const _LogoutCard({required this.phone});
   final String? phone;
@@ -334,7 +414,7 @@ class _EmailDialogState extends ConsumerState<_EmailDialog> {
     try {
       await ref.read(authApiProvider).setEmail(email.isEmpty ? null : email);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(email.isEmpty ? l10n.emailRemoved : l10n.emailSaved)));
+      showSuccess(context, email.isEmpty ? l10n.emailRemoved : l10n.emailSaved);
       Navigator.pop(context, true);
     } catch (e) {
       if (mounted) setState(() => _error = apiErrorMessage(e, l10n.errorGeneric));

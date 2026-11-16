@@ -576,5 +576,15 @@
   "copyMessage": "Copy message",
   "messageCopied": "Message copied",
   "shareStallMessage": "Fresh produce from a verified farmer at my place!\n{date}, {time} at {space}.\nBringing: {crops}\nDetails: {url}",
-  "@shareStallMessage": { "placeholders": { "date": { "type": "String" }, "time": { "type": "String" }, "space": { "type": "String" }, "crops": { "type": "String" }, "url": { "type": "String" } } }
+  "@shareStallMessage": { "placeholders": { "date": { "type": "String" }, "time": { "type": "String" }, "space": { "type": "String" }, "crops": { "type": "String" }, "url": { "type": "String" } } },
+  "errorTitle": "That didn't work",
+  "ok": "OK",
+  "noConnection": "Can't reach Aangan Mandi. Check your internet connection and try again.",
+  "serverProblem": "Something went wrong on our side. Please try again in a few minutes.",
+  "deleteAccount": "Delete my account",
+  "deleteAccountSubtitle": "Removes your details for good",
+  "deleteAccountQ": "Delete your account?",
+  "deleteAccountBody": "This deletes your name, mobile number and email, your farming details and proof photo, your spaces with their photos, and your saved area. Upcoming bookings are cancelled and the other person is told.",
+  "deleteAccountUnderstand": "I understand this cannot be undone",
+  "accountDeletedToast": "Your account was deleted"
 }

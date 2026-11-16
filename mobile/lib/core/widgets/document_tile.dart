@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
+import 'feedback.dart';
 import '../../l10n/app_localizations.dart';
 import '../api/api_client.dart';
 import 'photo_tile.dart';
@@ -32,15 +33,14 @@ Future<bool> saveFileBytes(FileBytes file, String name) async {
   return await FileSaver.instance.saveAs(name: name, bytes: file.bytes, fileExtension: ext, mimeType: mime) != null;
 }
 
-/// Downloads [path] and reports the result in a snack bar.
+/// Downloads [path] and reports the result in a success or error pop-up.
 Future<void> downloadFile(BuildContext context, WidgetRef ref, String path, String name) async {
   final l10n = AppLocalizations.of(context);
-  final messenger = ScaffoldMessenger.of(context);
   try {
     final file = await ref.read(authFileProvider(path).future);
-    if (await saveFileBytes(file, name)) messenger.showSnackBar(SnackBar(content: Text(l10n.downloadSaved)));
+    if (await saveFileBytes(file, name) && context.mounted) showSuccess(context, l10n.downloadSaved);
   } catch (_) {
-    messenger.showSnackBar(SnackBar(content: Text(l10n.downloadFailed)));
+    if (context.mounted) await showError(context, l10n.downloadFailed);
   }
 }
 
@@ -156,10 +156,7 @@ class _DocumentTileState extends ConsumerState<DocumentTile> {
     try {
       await action();
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(apiErrorMessage(e, AppLocalizations.of(context).errorGeneric))));
-      }
+      if (mounted) await showApiError(context, e);
     } finally {
       if (mounted) setState(() => _busy = false);
     }

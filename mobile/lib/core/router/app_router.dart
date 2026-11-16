@@ -17,9 +17,11 @@ import '../../features/trips/space_search_screen.dart';
 import '../../features/trips/trip_detail_screen.dart';
 import '../../features/trips/trip_form_screen.dart';
 import '../storage/prefs.dart';
+import '../widgets/feedback.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: Prefs.languageCode == null
         ? '/language'
         : Prefs.role == null

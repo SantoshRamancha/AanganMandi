@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../core/api/api_client.dart';
 import '../../core/api/app_api.dart';
 import '../../core/api/trip_models.dart';
 import '../../core/crops.dart';
 import '../../core/labels.dart';
 import '../../core/storage/prefs.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/feedback.dart';
 import '../../core/widgets/responsive.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -162,16 +162,19 @@ class IconFact extends StatelessWidget {
       );
 }
 
-/// Runs [action], shows [success] or the API's error, and returns whether it worked.
+/// Runs [action], then shows [success] as a success pop-up or the failure as an error pop-up; returns whether it
+/// worked.
 Future<bool> runWithToast(BuildContext context, Future<void> Function() action, {String? success}) async {
-  final messenger = ScaffoldMessenger.of(context);
-  final l10n = AppLocalizations.of(context);
   try {
     await action();
-    if (success != null) messenger.showSnackBar(SnackBar(content: Text(success)));
+    // The pop-ups use the app's root navigator, so they still show if this screen closed meanwhile; the context
+    // is only a fallback (e.g. in tests) and is checked for mounted inside.
+    // ignore: use_build_context_synchronously
+    if (success != null) showSuccess(context, success);
     return true;
   } catch (e) {
-    messenger.showSnackBar(SnackBar(content: Text(apiErrorMessage(e, l10n.errorGeneric))));
+    // ignore: use_build_context_synchronously
+    await showApiError(context, e);
     return false;
   }
 }

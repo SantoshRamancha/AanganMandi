@@ -3225,6 +3225,66 @@ abstract class AppLocalizations {
     String crops,
     String url,
   );
+
+  /// No description provided for @errorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'That didn\'t work'**
+  String get errorTitle;
+
+  /// No description provided for @ok.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get ok;
+
+  /// No description provided for @noConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t reach Aangan Mandi. Check your internet connection and try again.'**
+  String get noConnection;
+
+  /// No description provided for @serverProblem.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong on our side. Please try again in a few minutes.'**
+  String get serverProblem;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete my account'**
+  String get deleteAccount;
+
+  /// No description provided for @deleteAccountSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Removes your details for good'**
+  String get deleteAccountSubtitle;
+
+  /// No description provided for @deleteAccountQ.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete your account?'**
+  String get deleteAccountQ;
+
+  /// No description provided for @deleteAccountBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This deletes your name, mobile number and email, your farming details and proof photo, your spaces with their photos, and your saved area. Upcoming bookings are cancelled and the other person is told.'**
+  String get deleteAccountBody;
+
+  /// No description provided for @deleteAccountUnderstand.
+  ///
+  /// In en, this message translates to:
+  /// **'I understand this cannot be undone'**
+  String get deleteAccountUnderstand;
+
+  /// No description provided for @accountDeletedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account was deleted'**
+  String get accountDeletedToast;
 }
 
 class _AppLocalizationsDelegate

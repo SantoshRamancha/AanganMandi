@@ -10,6 +10,7 @@ import '../../core/api/trip_api.dart';
 import '../../core/api/trip_models.dart';
 import '../../core/crops.dart';
 import '../../core/storage/prefs.dart';
+import '../../core/widgets/feedback.dart';
 import '../../l10n/app_localizations.dart';
 import '../trips/trip_widgets.dart';
 
@@ -79,9 +80,8 @@ class _ShareStallSheetState extends ConsumerState<ShareStallSheet> {
               icon: const Icon(Icons.copy),
               label: Text(l10n.copyMessage),
               onPressed: () async {
-                final messenger = ScaffoldMessenger.of(context);
                 await Clipboard.setData(ClipboardData(text: message));
-                messenger.showSnackBar(SnackBar(content: Text(l10n.messageCopied)));
+                if (context.mounted) showSuccess(context, l10n.messageCopied);
               },
             ),
           ]);

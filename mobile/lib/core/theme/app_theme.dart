@@ -110,4 +110,8 @@ extension StatusColors on ColorScheme {
   /// Soft amber for highlighted cards and pills.
   Color get warningContainer => _dark ? const Color(0xFF3F3000) : const Color(0xFFFFEDB8);
   Color get onWarningContainer => _dark ? const Color(0xFFFFE08A) : const Color(0xFF5C3D00);
+
+  /// Solid green for "it worked" pop-ups, with readable text on it.
+  Color get success => _dark ? const Color(0xFF7BD88F) : const Color(0xFF1E6B34);
+  Color get onSuccess => _dark ? const Color(0xFF00391A) : Colors.white;
 }

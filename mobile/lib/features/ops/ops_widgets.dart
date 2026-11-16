@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../core/api/api_client.dart';
 import '../../core/widgets/document_tile.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/feedback.dart';
 import '../../l10n/app_localizations.dart';
 
 /// Date and time in the app language (Intl.defaultLocale follows it).
@@ -223,10 +223,7 @@ class _DecisionPanelState extends State<DecisionPanel> {
     try {
       await widget.onDecide(approve, approve ? null : _reason.text.trim());
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(apiErrorMessage(e, AppLocalizations.of(context).couldNotSave))));
-      }
+      if (mounted) await showApiError(context, e);
     } finally {
       if (mounted) setState(() => _busy = false);
     }

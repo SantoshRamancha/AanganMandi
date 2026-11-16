@@ -12,6 +12,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/widgets/dashboard.dart';
 import '../../core/widgets/document_tile.dart';
 import '../../core/widgets/responsive.dart';
+import '../../core/widgets/feedback.dart';
 import '../../l10n/app_localizations.dart';
 import '../home/home_screen.dart';
 import '../trips/trip_widgets.dart';
@@ -233,12 +234,11 @@ class _StatusCard extends ConsumerWidget {
     final body = [l10n.resetVerificationBody, if (farmer.status == 'Pending') l10n.resetWithdrawWarning].join('\n\n');
     if (!await confirmDelete(context, title: l10n.resetVerificationQ, body: body)) return;
     if (!context.mounted) return;
-    final messenger = ScaffoldMessenger.of(context);
     try {
       await ref.read(farmerApiProvider).resetVerification();
-      messenger.showSnackBar(SnackBar(content: Text(l10n.verificationResetToast)));
+      if (context.mounted) showSuccess(context, l10n.verificationResetToast);
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text(apiErrorMessage(e, l10n.errorGeneric))));
+      if (context.mounted) await showApiError(context, e);
     }
     if (!context.mounted) return;
     ref.invalidate(farmerProvider);
@@ -352,8 +352,7 @@ class _EvidenceCard extends ConsumerWidget {
               onDelete: () async {
                 final withdrawn = await api.deleteEvidencePhoto();
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(withdrawn ? l10n.evidenceWithdrawnToast : l10n.photoDeletedToast)));
+                  showSuccess(context, withdrawn ? l10n.evidenceWithdrawnToast : l10n.photoDeletedToast);
                 }
                 ref.invalidate(farmerProvider);
               },

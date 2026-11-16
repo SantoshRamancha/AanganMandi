@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/api/api_client.dart';
 import '../../core/storage/prefs.dart';
 import '../../core/widgets/responsive.dart';
+import '../../core/widgets/feedback.dart';
 import '../../l10n/app_localizations.dart';
 
 /// One app, three roles (Section 4): farmer, host, buyer. The choice is saved on the server.
@@ -25,10 +26,7 @@ class _RoleScreenState extends ConsumerState<RoleScreen> {
       await Prefs.setRole(role);
       if (mounted) context.go('/home');
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(apiErrorMessage(e, AppLocalizations.of(context).errorGeneric))));
-      }
+      if (mounted) await showApiError(context, e);
     } finally {
       if (mounted) setState(() => _saving = null);
     }

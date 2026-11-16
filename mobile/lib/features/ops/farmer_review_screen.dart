@@ -10,6 +10,7 @@ import '../../core/districts.dart';
 import '../../core/labels.dart';
 import '../../core/storage/prefs.dart';
 import '../../core/widgets/responsive.dart';
+import '../../core/widgets/feedback.dart';
 import '../../l10n/app_localizations.dart';
 import 'ops_widgets.dart';
 
@@ -85,8 +86,7 @@ class FarmerReviewScreen extends ConsumerWidget {
                   onDecide: (approve, reason) async {
                     await ref.read(opsApiProvider).decideFarmer(id, approve: approve, reason: reason);
                     if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(approve ? l10n.farmerApprovedToast(f.name ?? f.phone) : l10n.farmerRejectedToast)));
+                    showSuccess(context, approve ? l10n.farmerApprovedToast(f.name ?? f.phone) : l10n.farmerRejectedToast);
                     Navigator.of(context).pop();
                   },
                 ),
@@ -116,9 +116,9 @@ class _VerifierCardState extends ConsumerState<_VerifierCard> {
     try {
       await ref.read(opsApiProvider).assignFarmer(widget.farmer.id, _choice!);
       ref.invalidate(opsFarmerProvider(widget.farmer.id));
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.verifierAssignedToast)));
+      if (mounted) showSuccess(context, l10n.verifierAssignedToast);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(apiErrorMessage(e, l10n.couldNotSave))));
+      if (mounted) await showApiError(context, e);
     } finally {
       if (mounted) setState(() => _busy = false);
     }

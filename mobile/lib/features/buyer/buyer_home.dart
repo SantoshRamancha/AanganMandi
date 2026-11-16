@@ -7,6 +7,7 @@ import '../../core/api/trip_api.dart';
 import '../../core/api/trip_models.dart';
 import '../../core/location.dart';
 import '../../core/widgets/responsive.dart';
+import '../../core/widgets/feedback.dart';
 import '../../l10n/app_localizations.dart';
 import '../trips/trip_widgets.dart';
 
@@ -208,25 +209,20 @@ class _AreaFormState extends ConsumerState<AreaForm> {
         _lng = pos.longitude;
       }
     });
-    if (pos == null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).locationDenied)));
-    }
+    if (pos == null) await showError(context, AppLocalizations.of(context).locationDenied);
   }
 
   Future<void> _run(Future<void> Function() action, String success) async {
-    final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
-    final l10n = AppLocalizations.of(context);
     setState(() => _busy = true);
     try {
       await action();
       ref.invalidate(buyerSettingsProvider);
       ref.invalidate(nearbyStallsProvider);
-      messenger.showSnackBar(SnackBar(content: Text(success)));
+      if (mounted) showSuccess(context, success);
       if (widget.inSheet) navigator.pop();
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text(apiErrorMessage(e, l10n.errorGeneric))));
+      if (mounted) await showApiError(context, e);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
