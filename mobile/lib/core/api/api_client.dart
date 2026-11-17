@@ -12,8 +12,8 @@ const _apiBaseUrlOverride = String.fromEnvironment('API_BASE_URL');
 const apiBaseUrl = _apiBaseUrlOverride != ''
     ? _apiBaseUrlOverride
     : kIsWeb
-        ? 'http://localhost:5080/api/v1'
-        : 'http://10.0.2.2:5080/api/v1';
+    ? 'http://localhost:5080/api/v1'
+    : 'http://10.0.2.2:5080/api/v1';
 
 /// Scheme + host + port of the API, for absolute photo URLs the API returns as "/api/v1/files/...".
 final apiOrigin = Uri.parse(apiBaseUrl).replace(path: '').toString().replaceAll(RegExp(r'/$'), '');
@@ -40,45 +40,49 @@ Future<void> logout(Ref ref) async {
 }
 
 final dioProvider = Provider<Dio>((ref) {
-  final dio = Dio(BaseOptions(
-    baseUrl: apiBaseUrl,
-    connectTimeout: const Duration(seconds: 15),
-    receiveTimeout: const Duration(seconds: 60),
-  ));
-  dio.interceptors.add(QueuedInterceptorsWrapper(
-    onRequest: (options, handler) async {
-      // Localised server messages, alerts and SMS follow the user's language (FR-5.1).
-      options.headers['Accept-Language'] = ref.read(localeProvider);
-      final token = await _secure.read(key: 'access_token');
-      if (token != null && !options.path.startsWith('/auth/')) {
-        options.headers['Authorization'] = 'Bearer $token';
-      }
-      handler.next(options);
-    },
-    onError: (error, handler) async {
-      final isAuthCall = error.requestOptions.path.startsWith('/auth/');
-      if (error.response?.statusCode != 401 || isAuthCall || error.requestOptions.extra['retried'] == true) {
-        return handler.next(error);
-      }
-      // Access tokens last 15 minutes: rotate with the refresh token, then retry once.
-      final refresh = await _secure.read(key: 'refresh_token');
-      if (refresh != null) {
-        try {
-          final res = await Dio(BaseOptions(baseUrl: apiBaseUrl))
-              .post('/auth/refresh', data: {'refreshToken': refresh});
-          await Session.save(res.data as Map<String, dynamic>);
-          final retry = error.requestOptions
-            ..headers['Authorization'] = 'Bearer ${res.data['accessToken']}'
-            ..extra['retried'] = true;
-          return handler.resolve(await dio.fetch(retry));
-        } on DioException {
-          // Refresh token expired or revoked: fall through to logout.
+  final dio = Dio(
+    BaseOptions(
+      baseUrl: apiBaseUrl,
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 60),
+    ),
+  );
+  dio.interceptors.add(
+    QueuedInterceptorsWrapper(
+      onRequest: (options, handler) async {
+        // Localised server messages, alerts and SMS follow the user's language (FR-5.1).
+        options.headers['Accept-Language'] = ref.read(localeProvider);
+        final token = await _secure.read(key: 'access_token');
+        if (token != null && !options.path.startsWith('/auth/')) {
+          options.headers['Authorization'] = 'Bearer $token';
         }
-      }
-      await logout(ref);
-      handler.next(error);
-    },
-  ));
+        handler.next(options);
+      },
+      onError: (error, handler) async {
+        final isAuthCall = error.requestOptions.path.startsWith('/auth/');
+        if (error.response?.statusCode != 401 || isAuthCall || error.requestOptions.extra['retried'] == true) {
+          return handler.next(error);
+        }
+        // Access tokens last 15 minutes: rotate with the refresh token, then retry once.
+        final refresh = await _secure.read(key: 'refresh_token');
+        if (refresh != null) {
+          try {
+            final res = await Dio(BaseOptions(baseUrl: apiBaseUrl))
+                .post('/auth/refresh', data: {'refreshToken': refresh});
+            await Session.save(res.data as Map<String, dynamic>);
+            final retry = error.requestOptions
+              ..headers['Authorization'] = 'Bearer ${res.data['accessToken']}'
+              ..extra['retried'] = true;
+            return handler.resolve(await dio.fetch(retry));
+          } on DioException {
+            // Refresh token expired or revoked: fall through to logout.
+          }
+        }
+        await logout(ref);
+        handler.next(error);
+      },
+    ),
+  );
   return dio;
 });
 
@@ -89,6 +93,13 @@ String apiErrorMessage(Object error, String fallback) {
     if (data is Map && data['title'] is String) return data['title'] as String;
   }
   return fallback;
+}
+
+/// The roles the account already has (empty for a new user), and whether the current terms are accepted.
+class LoginResult {
+  const LoginResult(this.roles, this.termsAccepted);
+  final List<String> roles;
+  final bool termsAccepted;
 }
 
 class AuthApi {
@@ -102,11 +113,14 @@ class AuthApi {
   }
 
   /// Returns the roles the account already has (empty for a new user).
-  Future<List<String>> verifyOtp(String phone, String code) async {
+  Future<LoginResult> verifyOtp(String phone, String code) async {
     final res = await _dio.post('/auth/otp/verify', data: {'phone': phone, 'code': code});
     await Session.save(res.data as Map<String, dynamic>);
-    return (res.data['roles'] as List).cast<String>();
+    return LoginResult((res.data['roles'] as List).cast<String>(), res.data['termsAccepted'] as bool? ?? false);
   }
+
+  /// Records that the user accepted the terms and privacy policy of [version] (the one the server reported).
+  Future<void> acceptTerms(String version) => _dio.post('/users/me/consent', data: {'version': version});
 
   /// Deletes the signed-in account and its personal data on the server; the caller then logs out locally.
   Future<void> deleteAccount() => _dio.delete('/users/me');

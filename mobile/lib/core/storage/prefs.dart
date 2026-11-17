@@ -13,6 +13,13 @@ class Prefs {
     _box = await Hive.openBox<dynamic>(_boxName);
   }
 
+  /// Tests: real storage in a temporary folder (no Flutter plugins needed).
+  @visibleForTesting
+  static Future<void> initAt(String folder) async {
+    Hive.init(folder);
+    _box = await Hive.openBox<dynamic>(_boxName);
+  }
+
   static String? get languageCode => _box.get('lang') as String?;
   static Future<void> setLanguageCode(String code) => _box.put('lang', code);
 

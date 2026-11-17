@@ -81,11 +81,11 @@ public class FarmerTripsController(AppDbContext db, INotifier notifier) : Contro
         var trip = await FindAsync(id, ct);
         if (trip is null) return NotFound();
         if (trip.Status != TripStatus.Planned || trip.Date < Today)
-            return Problem(statusCode: 409, title: "This trip can no longer be changed");
+            return this.Fail(409, "trip_locked");
         if (await ValidateAsync(req, ct) is { } error) return error;
         var active = await db.Bookings.AnyAsync(b => b.TripId == id && (b.Status == BookingStatus.Requested || b.Status == BookingStatus.Accepted), ct);
         if (active && (req.Date != trip.Date || req.Vehicle != trip.Vehicle))
-            return Problem(statusCode: 409, title: "Cancel the space booking first to change the date or vehicle");
+            return this.Fail(409, "trip_cancel_booking_first");
         db.TripProduce.RemoveRange(trip.Produce);
         Apply(trip, req);
         await db.SaveChangesAsync(ct);
@@ -99,7 +99,7 @@ public class FarmerTripsController(AppDbContext db, INotifier notifier) : Contro
     {
         var trip = await FindAsync(id, ct);
         if (trip is null) return NotFound();
-        if (trip.Status != TripStatus.Planned) return Problem(statusCode: 409, title: "Trip is already cancelled");
+        if (trip.Status != TripStatus.Planned) return this.Fail(409, "trip_already_cancelled");
         trip.Status = TripStatus.Cancelled;
         trip.UpdatedAt = DateTime.UtcNow;
         var cancelled = (await db.Bookings.Where(b => b.TripId == id).ToListAsync(ct)).Where(b => b.IsActive).ToList();
@@ -142,20 +142,20 @@ public class FarmerTripsController(AppDbContext db, INotifier notifier) : Contro
         var trip = await FindAsync(id, ct);
         if (trip is null) return NotFound();
         if (trip.Status != TripStatus.Planned || trip.Date < Today)
-            return Problem(statusCode: 409, title: "This trip can no longer be booked");
+            return this.Fail(409, "trip_not_bookable");
         if (await db.Bookings.AnyAsync(b => b.TripId == id && (b.Status == BookingStatus.Requested || b.Status == BookingStatus.Accepted), ct))
-            return Problem(statusCode: 409, title: "This trip already has a space requested or booked");
+            return this.Fail(409, "trip_has_booking");
         var message = Trim(req.Message);
-        if (message?.Length > 200) return Problem(statusCode: 400, title: "Keep the message under 200 characters");
+        if (message?.Length > 200) return this.Fail(400, "message_too_long", ("max", 200));
 
         var space = await db.Spaces.Include(s => s.Photos).SingleOrDefaultAsync(s => s.Id == req.SpaceId, ct);
         if (space is null || space.Status != SpaceStatus.Live || space.HostUserId == User.UserId()) return NotFound();
         if (!TripRules.OpenOn(space.AvailableDays, trip.Date))
-            return Problem(statusCode: 409, title: "The space is not open on that day");
+            return this.Fail(409, "space_closed_that_day");
         if (!TripRules.VehicleFits(space.MaxVehicle, trip.Vehicle))
-            return Problem(statusCode: 409, title: "Your vehicle is too big for this space");
+            return this.Fail(409, "vehicle_too_big");
         if (await db.Bookings.AnyAsync(b => b.SpaceId == space.Id && b.Date == trip.Date && b.Status == BookingStatus.Accepted, ct))
-            return Problem(statusCode: 409, title: "Another farmer has this space on that day");
+            return this.Fail(409, "space_taken");
 
         var booking = new Booking
         {
@@ -181,8 +181,8 @@ public class FarmerTripsController(AppDbContext db, INotifier notifier) : Contro
         var booking = await db.Bookings.SingleOrDefaultAsync(
             b => b.Id == bookingId && b.TripId == id && b.FarmerUserId == User.UserId(), ct);
         if (booking is null) return NotFound();
-        if (!booking.IsActive) return Problem(statusCode: 409, title: "This booking is already closed");
-        if (booking.Date < Today) return Problem(statusCode: 409, title: "This booking date has passed");
+        if (!booking.IsActive) return this.Fail(409, "booking_closed");
+        if (booking.Date < Today) return this.Fail(409, "booking_date_passed");
         booking.Cancel("Farmer", Trim(req.Reason));
         await db.SaveChangesAsync(ct);
         await notifier.BookingChangedAsync(booking.Id, ct);
@@ -198,7 +198,7 @@ public class FarmerTripsController(AppDbContext db, INotifier notifier) : Contro
     public async Task<ActionResult<BookingDto>> Arrive(Guid id, Guid bookingId, ArriveRequest req, CancellationToken ct)
     {
         if (req.Latitude is < -90 or > 90 || req.Longitude is < -180 or > 180 || (req.Latitude == 0 && req.Longitude == 0))
-            return Problem(statusCode: 400, title: "Turn on location to check in");
+            return this.Fail(400, "checkin_location_required");
         var booking = await db.Bookings.SingleOrDefaultAsync(
             b => b.Id == bookingId && b.TripId == id && b.FarmerUserId == User.UserId(), ct);
         if (booking is null) return NotFound();
@@ -207,7 +207,7 @@ public class FarmerTripsController(AppDbContext db, INotifier notifier) : Contro
 
         var meters = ArrivalRules.DistanceMeters(req.Latitude, req.Longitude, space.Location.Y, space.Location.X);
         if (ArrivalRules.CheckArrival(booking, ArrivalRules.IndiaTime(DateTime.UtcNow), meters) is { } error)
-            return Problem(statusCode: 409, title: error);
+            return this.Fail(409, error);
 
         booking.ArrivedAt = DateTime.UtcNow;
         booking.ArrivalDistanceMeters = (int)Math.Round(meters);
@@ -234,24 +234,24 @@ public class FarmerTripsController(AppDbContext db, INotifier notifier) : Contro
     {
         var me = User.UserId();
         var verified = await db.FarmerProfiles.AnyAsync(f => f.UserId == me && f.Status == VerificationStatus.Verified, ct);
-        return verified ? null : Problem(statusCode: 403, title: "Get verified before planning trips");
+        return verified ? null : this.Fail(403, "not_verified");
     }
 
     private async Task<ObjectResult?> ValidateAsync(TripRequest req, CancellationToken ct)
     {
-        if (TripRules.CheckDate(req.Date, Today) is { } dateError) return Problem(statusCode: 400, title: dateError);
-        if (!Enum.IsDefined(req.Vehicle)) return Problem(statusCode: 400, title: "Choose your vehicle");
-        if (req.PreferredArea?.Trim().Length > 80) return Problem(statusCode: 400, title: "Keep the area under 80 characters");
-        if (req.Notes?.Trim().Length > 200) return Problem(statusCode: 400, title: "Keep the notes under 200 characters");
-        if (req.Produce.Length == 0) return Problem(statusCode: 400, title: "Add at least one crop you will bring");
+        if (TripRules.CheckDate(req.Date, Today) is { } dateError) return this.Fail(400, dateError);
+        if (!Enum.IsDefined(req.Vehicle)) return this.Fail(400, "vehicle_required");
+        if (req.PreferredArea?.Trim().Length > 80) return this.Fail(400, "area_too_long", ("max", 80));
+        if (req.Notes?.Trim().Length > 200) return this.Fail(400, "notes_too_long", ("max", 200));
+        if (req.Produce.Length == 0) return this.Fail(400, "produce_required");
         if (req.Produce.Any(p => p.QuantityKg is <= 0 or > 100_000 || p.PricePerKg is <= 0 or > 100_000))
-            return Problem(statusCode: 400, title: "Quantity and price must be positive numbers");
+            return this.Fail(400, "produce_numbers_invalid");
         // Master crops by code, or the farmer's own "custom:<name>" crops; each once.
         var requested = req.Produce.Select(p => p.CropCode.Trim()).ToArray();
         var master = await db.Crops.Where(c => requested.Contains(c.Code)).Select(c => c.Code).ToListAsync(ct);
         var (codes, cropError) = CropCodes.Normalize(requested, master.ToHashSet());
-        if (cropError is not null) return Problem(statusCode: 400, title: cropError);
-        if (codes!.Length != req.Produce.Length) return Problem(statusCode: 400, title: "Each crop can be added once");
+        if (cropError is not null) return this.Fail(400, cropError);
+        if (codes!.Length != req.Produce.Length) return this.Fail(400, "crop_duplicate");
         // Store the tidied custom names.
         for (var i = 0; i < codes.Length; i++) req.Produce[i] = req.Produce[i] with { CropCode = codes[i] };
         return null;
@@ -288,7 +288,7 @@ public class FarmerTripsController(AppDbContext db, INotifier notifier) : Contro
 
     private BookingDto ToBookingDto(Booking b, Space s, HostContact? host) =>
         new(b.Id, b.Status, b.Date, b.From, b.To, b.Fee, b.Message, b.Reason, b.SlotTaken, b.CancelledBy, ToCard(s), host,
-            ArrivalRules.AsUtc(b.ArrivedAt), b.NoShowAt is not null);
+            b.ArrivedAt, b.NoShowAt is not null);
 
     private static TripDto ToDto(Trip t, BookingDto? booking, DateOnly today) => new(t.Id, t.Date, t.Vehicle,
         t.PreferredArea, t.Notes,

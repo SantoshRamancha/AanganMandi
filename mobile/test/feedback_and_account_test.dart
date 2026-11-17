@@ -25,22 +25,22 @@ class _SystemTheme extends ThemeModeNotifier {
 /// A screen with one button that runs [action] through runWithToast, inside an app wired like the real one
 /// (root navigator and messenger keys).
 Widget _app(Future<void> Function() action, {String? success}) => ProviderScope(
-      overrides: [localeProvider.overrideWith(_English.new)],
-      child: MaterialApp(
-        navigatorKey: rootNavigatorKey,
-        scaffoldMessengerKey: rootMessengerKey,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          body: Builder(
-            builder: (context) => TextButton(
-              onPressed: () => runWithToast(context, action, success: success),
-              child: const Text('Go'),
-            ),
-          ),
+  overrides: [localeProvider.overrideWith(_English.new)],
+  child: MaterialApp(
+    navigatorKey: rootNavigatorKey,
+    scaffoldMessengerKey: rootMessengerKey,
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: Scaffold(
+      body: Builder(
+        builder: (context) => TextButton(
+          onPressed: () => runWithToast(context, action, success: success),
+          child: const Text('Go'),
         ),
       ),
-    );
+    ),
+  ),
+);
 
 DioException _dioError({DioExceptionType type = DioExceptionType.badResponse, int? status, String? title}) {
   final options = RequestOptions(path: '/x');
@@ -54,13 +54,13 @@ DioException _dioError({DioExceptionType type = DioExceptionType.badResponse, in
 }
 
 Profile _profile(List<String> roles) => Profile.fromJson({
-      'name': 'Anjali Sharma',
-      'phone': '+919000000003',
-      'email': null,
-      'language': 'en',
-      'roles': roles,
-      'memberSince': '2026-11-01T10:00:00',
-    });
+  'name': 'Anjali Sharma',
+  'phone': '+919000000003',
+  'email': null,
+  'language': 'en',
+  'roles': roles,
+  'memberSince': '2026-11-01T10:00:00',
+});
 
 void main() {
   testWidgets('no internet shows an error pop-up that is closed with OK', (tester) async {
@@ -77,7 +77,9 @@ void main() {
   });
 
   testWidgets("the server's reason is shown, but not the details of a server crash", (tester) async {
-    await tester.pumpWidget(_app(() async => throw _dioError(status: 429, title: 'Please wait 30 seconds before asking for a new OTP')));
+    await tester.pumpWidget(
+      _app(() async => throw _dioError(status: 429, title: 'Please wait 30 seconds before asking for a new OTP')),
+    );
     await tester.tap(find.text('Go'));
     await tester.pumpAndSettle();
     expect(find.text('Please wait 30 seconds before asking for a new OTP'), findsOneWidget);
@@ -102,18 +104,20 @@ void main() {
 
   Future<void> pumpProfile(WidgetTester tester, List<String> roles) async {
     await tester.binding.setSurfaceSize(const Size(420, 2000));
-    await tester.pumpWidget(ProviderScope(
-      overrides: [
-        localeProvider.overrideWith(_English.new),
-        themeModeProvider.overrideWith(_SystemTheme.new),
-        profileProvider.overrideWith((ref) async => _profile(roles)),
-      ],
-      child: const MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: ProfileScreen(),
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          localeProvider.overrideWith(_English.new),
+          themeModeProvider.overrideWith(_SystemTheme.new),
+          profileProvider.overrideWith((ref) async => _profile(roles)),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: ProfileScreen(),
+        ),
       ),
-    ));
+    );
     await tester.pumpAndSettle();
   }
 

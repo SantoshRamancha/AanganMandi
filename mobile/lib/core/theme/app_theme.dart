@@ -44,14 +44,25 @@ class AppTheme {
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(minimumSize: minSize, shape: shape, textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+        style: FilledButton.styleFrom(
+          minimumSize: minSize,
+          shape: shape,
+          textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+        ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(minimumSize: minSize, shape: shape, textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+        style: OutlinedButton.styleFrom(
+          minimumSize: minSize,
+          shape: shape,
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        ),
       ),
       textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(minimumSize: const Size(48, 48))),
       segmentedButtonTheme: SegmentedButtonThemeData(
-        style: SegmentedButton.styleFrom(minimumSize: const Size(48, 52), textStyle: const TextStyle(fontWeight: FontWeight.w600)),
+        style: SegmentedButton.styleFrom(
+          minimumSize: const Size(48, 52),
+          textStyle: const TextStyle(fontWeight: FontWeight.w600),
+        ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -72,7 +83,9 @@ class AppTheme {
         backgroundColor: card,
         surfaceTintColor: Colors.transparent,
         indicatorColor: scheme.primaryContainer,
-        labelTextStyle: WidgetStatePropertyAll(TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: scheme.onSurface)),
+        labelTextStyle: WidgetStatePropertyAll(
+          TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: scheme.onSurface),
+        ),
       ),
       navigationRailTheme: NavigationRailThemeData(
         backgroundColor: card,
@@ -92,9 +105,9 @@ class AppTheme {
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       ),
-      pageTransitionsTheme: const PageTransitionsTheme(builders: {
-        TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
-      }),
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {TargetPlatform.android: FadeForwardsPageTransitionsBuilder()},
+      ),
     );
   }
 }

@@ -12,6 +12,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/widgets/responsive.dart';
 import '../../core/widgets/feedback.dart';
 import '../../l10n/app_localizations.dart';
+import '../support/report_problem.dart';
 import 'trip_widgets.dart';
 
 /// One trip: what and when, then its space booking — find a space, waiting for the host, or booked
@@ -82,31 +83,40 @@ class TripDetailScreen extends ConsumerWidget {
         error: (e, _) => Center(child: Text(apiErrorMessage(e, l10n.couldNotLoad))),
         data: (t) => RefreshIndicator(
           onRefresh: () => ref.refresh(tripProvider(id).future),
-          child: ListView(padding: EdgeInsets.all(Breakpoints.gutter(context)), children: [
-            MaxWidth(
-              maxWidth: 760,
-              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                FormSection(
-                  title: l10n.tripDetails,
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                    Row(children: [
-                      Expanded(
-                        child: Text(tripDate(t.date), style: Theme.of(context).textTheme.titleLarge),
+          child: ListView(
+            padding: EdgeInsets.all(Breakpoints.gutter(context)),
+            children: [
+              MaxWidth(
+                maxWidth: 760,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    FormSection(
+                      title: l10n.tripDetails,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(child: Text(tripDate(t.date), style: Theme.of(context).textTheme.titleLarge)),
+                              BookingStatusChip(t.status),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          IconFact(vehicleIcon(t.vehicle), l10n.vehicle(t.vehicle)),
+                          if (t.preferredArea != null) IconFact(Icons.place_outlined, t.preferredArea!),
+                          if (t.notes != null) IconFact(Icons.notes, t.notes!),
+                          const SizedBox(height: 4),
+                          ProduceChips(t.produce),
+                        ],
                       ),
-                      BookingStatusChip(t.status),
-                    ]),
-                    const SizedBox(height: 12),
-                    IconFact(vehicleIcon(t.vehicle), l10n.vehicle(t.vehicle)),
-                    if (t.preferredArea != null) IconFact(Icons.place_outlined, t.preferredArea!),
-                    if (t.notes != null) IconFact(Icons.notes, t.notes!),
-                    const SizedBox(height: 4),
-                    ProduceChips(t.produce),
-                  ]),
+                    ),
+                    _BookingCard(trip: t, onChanged: () => _refresh(ref), confirm: _confirm),
+                  ],
                 ),
-                _BookingCard(trip: t, onChanged: () => _refresh(ref), confirm: _confirm),
-              ]),
-            ),
-          ]),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -142,8 +152,11 @@ class _BookingCard extends ConsumerWidget {
         await showError(context, l10n.locationNeededToCheckIn);
         return;
       }
-      if (await runWithToast(context, () => api.arrive(trip.id, b!.id, pos.latitude, pos.longitude),
-          success: l10n.checkedInToast)) {
+      if (await runWithToast(
+        context,
+        () => api.arrive(trip.id, b!.id, pos.latitude, pos.longitude),
+        success: l10n.checkedInToast,
+      )) {
         onChanged();
       }
     }
@@ -179,25 +192,36 @@ class _BookingCard extends ConsumerWidget {
           IconFact(Icons.person_outline, '${h.name ?? ''}  ${h.phone}'),
           IconFact(Icons.currency_rupee, '${feeLabel(l10n, b.fee == 0, b.fee)} · ${l10n.payAtSpace}'),
           const SizedBox(height: 8),
-          Wrap(spacing: 8, runSpacing: 8, children: [
-            FilledButton.icon(
-              icon: const Icon(Icons.call),
-              label: Text(l10n.callHost),
-              onPressed: () => launchUrl(Uri.parse('tel:${h.phone}')),
-            ),
-            OutlinedButton.icon(
-              icon: const Icon(Icons.map_outlined),
-              label: Text(l10n.openInMaps),
-              onPressed: () => launchUrl(Uri.parse('https://www.google.com/maps?q=${h.latitude},${h.longitude}'),
-                  mode: LaunchMode.externalApplication),
-            ),
-            if (trip.isPlanned)
-              TextButton(
-                style: TextButton.styleFrom(foregroundColor: scheme.error),
-                onPressed: cancelBooking,
-                child: Text(l10n.cancelBooking),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              FilledButton.icon(
+                icon: const Icon(Icons.call),
+                label: Text(l10n.callHost),
+                onPressed: () => launchUrl(Uri.parse('tel:${h.phone}')),
               ),
-          ]),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.map_outlined),
+                label: Text(l10n.openInMaps),
+                onPressed: () => launchUrl(
+                  Uri.parse('https://www.google.com/maps?q=${h.latitude},${h.longitude}'),
+                  mode: LaunchMode.externalApplication,
+                ),
+              ),
+              if (trip.isPlanned)
+                TextButton(
+                  style: TextButton.styleFrom(foregroundColor: scheme.error),
+                  onPressed: cancelBooking,
+                  child: Text(l10n.cancelBooking),
+                ),
+              TextButton.icon(
+                icon: const Icon(Icons.report_outlined),
+                label: Text(l10n.reportProblem),
+                onPressed: () => showReportProblemSheet(context, bookingId: b.id),
+              ),
+            ],
+          ),
         ],
       );
     }
@@ -231,32 +255,40 @@ class _BookingCard extends ConsumerWidget {
     final outcome = b == null ? null : bookingOutcome(l10n, b);
     return FormSection(
       title: l10n.spaceForTrip,
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        if (outcome != null)
-          Card(
-            margin: const EdgeInsets.only(bottom: 12),
-            color: scheme.errorContainer,
-            child: ListTile(
-              leading: Icon(Icons.info_outline, color: scheme.onErrorContainer),
-              title: Text(b!.space.title, style: TextStyle(color: scheme.onErrorContainer, fontWeight: FontWeight.w600)),
-              subtitle: Text(outcome, style: TextStyle(color: scheme.onErrorContainer)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (outcome != null)
+            Card(
+              margin: const EdgeInsets.only(bottom: 12),
+              color: scheme.errorContainer,
+              child: ListTile(
+                leading: Icon(Icons.info_outline, color: scheme.onErrorContainer),
+                title: Text(
+                  b!.space.title,
+                  style: TextStyle(color: scheme.onErrorContainer, fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(outcome, style: TextStyle(color: scheme.onErrorContainer)),
+              ),
             ),
-          ),
-        if (trip.canBook) ...[
-          Text(outcome == null ? l10n.findSpaceIntro : l10n.findAnotherSpaceIntro),
-          const SizedBox(height: 12),
-          FilledButton.icon(
-            icon: const Icon(Icons.search),
-            label: Text(outcome == null ? l10n.findSpace : l10n.findAnotherSpace),
-            onPressed: () async {
-              await context.push('/farmer/trips/${trip.id}/spaces');
-              onChanged();
-            },
-          ),
-        ] else
-          Text(trip.status == 'Cancelled' ? l10n.tripWasCancelled : l10n.tripIsOver,
-              style: TextStyle(color: scheme.onSurfaceVariant)),
-      ]),
+          if (trip.canBook) ...[
+            Text(outcome == null ? l10n.findSpaceIntro : l10n.findAnotherSpaceIntro),
+            const SizedBox(height: 12),
+            FilledButton.icon(
+              icon: const Icon(Icons.search),
+              label: Text(outcome == null ? l10n.findSpace : l10n.findAnotherSpace),
+              onPressed: () async {
+                await context.push('/farmer/trips/${trip.id}/spaces');
+                onChanged();
+              },
+            ),
+          ] else
+            Text(
+              trip.status == 'Cancelled' ? l10n.tripWasCancelled : l10n.tripIsOver,
+              style: TextStyle(color: scheme.onSurfaceVariant),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -270,13 +302,21 @@ class _Note extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Icon(icon, color: color),
-          const SizedBox(width: 10),
-          Expanded(child: Text(text, style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 15))),
-        ]),
-      );
+    padding: const EdgeInsets.only(bottom: 12),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: color),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 15),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 /// A card with a coloured header (icon + title) over a plain body, so buttons in the body keep normal contrast.
@@ -295,25 +335,33 @@ class _StatusPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-        clipBehavior: Clip.antiAlias,
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          ColoredBox(
-            color: background,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-              child: Row(children: [
+    clipBehavior: Clip.antiAlias,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ColoredBox(
+          color: background,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            child: Row(
+              children: [
                 Icon(icon, color: foreground),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: Text(title, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: foreground)),
+                  child: Text(
+                    title,
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: foreground),
+                  ),
                 ),
-              ]),
+              ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
-          ),
-        ]),
-      );
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
+        ),
+      ],
+    ),
+  );
 }

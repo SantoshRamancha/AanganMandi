@@ -39,5 +39,9 @@ const telanganaDistricts = <(String en, String te, String hi)>[
 String districtName(String en, String lang) {
   final d = telanganaDistricts.where((d) => d.$1 == en).firstOrNull;
   if (d == null) return en;
-  return switch (lang) { 'te' => d.$2, 'hi' => d.$3, _ => d.$1 };
+  return switch (lang) {
+    'te' => d.$2,
+    'hi' => d.$3,
+    _ => d.$1,
+  };
 }

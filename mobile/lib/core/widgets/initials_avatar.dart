@@ -25,7 +25,10 @@ class InitialsAvatar extends StatelessWidget {
       foregroundColor: scheme.onPrimaryContainer,
       child: initials == null
           ? Icon(Icons.person, size: radius * 1.1)
-          : Text(initials, style: TextStyle(fontSize: radius * .75, fontWeight: FontWeight.w700)),
+          : Text(
+              initials,
+              style: TextStyle(fontSize: radius * .75, fontWeight: FontWeight.w700),
+            ),
     );
   }
 }

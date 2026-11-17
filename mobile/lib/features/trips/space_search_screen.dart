@@ -54,7 +54,12 @@ class _SpaceSearchScreenState extends ConsumerState<SpaceSearchScreen> {
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final trip = ref.watch(tripProvider(widget.tripId)).value;
-    if (trip == null) return Scaffold(appBar: AppBar(), body: const Center(child: CircularProgressIndicator()));
+    if (trip == null) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
     // Start with the trip's preferred area, once.
     if (!_seeded) {
       _seeded = true;
@@ -66,60 +71,83 @@ class _SpaceSearchScreenState extends ConsumerState<SpaceSearchScreen> {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.spacesFor(tripDate(trip.date)))),
-      body: ListView(padding: EdgeInsets.all(gutter), children: [
-        MaxWidth(
-          maxWidth: 960,
-          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            TextField(
-              controller: _area,
-              textInputAction: TextInputAction.search,
-              onSubmitted: (_) => _search(),
-              decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.search),
-                labelText: l10n.searchArea,
-                suffixIcon: _area.text.isEmpty
-                    ? null
-                    : IconButton(
-                        icon: const Icon(Icons.clear),
-                        tooltip: l10n.clear,
-                        onPressed: () {
-                          _area.clear();
-                          _search();
-                        },
-                      ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(l10n.spacesMatchHint(l10n.vehicle(trip.vehicle)), style: Theme.of(context).textTheme.bodySmall),
-            const SizedBox(height: 16),
-            spaces.when(
-              loading: () => const Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator())),
-              error: (e, _) => Text(apiErrorMessage(e, l10n.couldNotLoad)),
-              data: (list) => list.isEmpty
-                  ? Padding(
-                      padding: const EdgeInsets.all(32),
-                      child: Column(children: [
-                        Icon(Icons.search_off, size: 48, color: scheme.outline),
-                        const SizedBox(height: 8),
-                        Text(_filter == null ? l10n.noSpacesThatDay : l10n.noSpacesInArea,
-                            textAlign: TextAlign.center, style: TextStyle(color: scheme.onSurfaceVariant)),
-                      ]),
-                    )
-                  : LayoutBuilder(builder: (context, c) {
-                      final cols = c.maxWidth >= 640 ? 2 : 1;
-                      final width = (c.maxWidth - 16 * (cols - 1)) / cols;
-                      return Wrap(spacing: 16, runSpacing: 16, children: [
-                        for (final s in list)
-                          SizedBox(
-                            width: width,
-                            child: _SpaceResult(space: s, onRequest: trip.canBook ? () => _request(trip, s) : null),
+      body: ListView(
+        padding: EdgeInsets.all(gutter),
+        children: [
+          MaxWidth(
+            maxWidth: 960,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextField(
+                  controller: _area,
+                  textInputAction: TextInputAction.search,
+                  onSubmitted: (_) => _search(),
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.search),
+                    labelText: l10n.searchArea,
+                    suffixIcon: _area.text.isEmpty
+                        ? null
+                        : IconButton(
+                            icon: const Icon(Icons.clear),
+                            tooltip: l10n.clear,
+                            onPressed: () {
+                              _area.clear();
+                              _search();
+                            },
                           ),
-                      ]);
-                    }),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(l10n.spacesMatchHint(l10n.vehicle(trip.vehicle)), style: Theme.of(context).textTheme.bodySmall),
+                const SizedBox(height: 16),
+                spaces.when(
+                  loading: () => const Padding(
+                    padding: EdgeInsets.all(32),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                  error: (e, _) => Text(apiErrorMessage(e, l10n.couldNotLoad)),
+                  data: (list) => list.isEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.all(32),
+                          child: Column(
+                            children: [
+                              Icon(Icons.search_off, size: 48, color: scheme.outline),
+                              const SizedBox(height: 8),
+                              Text(
+                                _filter == null ? l10n.noSpacesThatDay : l10n.noSpacesInArea,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(color: scheme.onSurfaceVariant),
+                              ),
+                            ],
+                          ),
+                        )
+                      : LayoutBuilder(
+                          builder: (context, c) {
+                            final cols = c.maxWidth >= 640 ? 2 : 1;
+                            final width = (c.maxWidth - 16 * (cols - 1)) / cols;
+                            return Wrap(
+                              spacing: 16,
+                              runSpacing: 16,
+                              children: [
+                                for (final s in list)
+                                  SizedBox(
+                                    width: width,
+                                    child: _SpaceResult(
+                                      space: s,
+                                      onRequest: trip.canBook ? () => _request(trip, s) : null,
+                                    ),
+                                  ),
+                              ],
+                            );
+                          },
+                        ),
+                ),
+              ],
             ),
-          ]),
-        ),
-      ]),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -130,24 +158,28 @@ class _SpaceResult extends StatelessWidget {
   final VoidCallback? onRequest;
 
   void _gallery(BuildContext context) => showDialog<void>(
-        context: context,
-        builder: (dialog) => Dialog.fullscreen(
-          backgroundColor: Colors.black,
-          child: Stack(children: [
-            PageView(children: [
+    context: context,
+    builder: (dialog) => Dialog.fullscreen(
+      backgroundColor: Colors.black,
+      child: Stack(
+        children: [
+          PageView(
+            children: [
               for (final url in space.photoUrls)
                 InteractiveViewer(child: Center(child: Image.network('$apiOrigin$url'))),
-            ]),
-            Positioned(
-              top: 12,
-              right: 12,
-              child: SafeArea(
-                child: IconButton.filledTonal(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(dialog)),
-              ),
+            ],
+          ),
+          Positioned(
+            top: 12,
+            right: 12,
+            child: SafeArea(
+              child: IconButton.filledTonal(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(dialog)),
             ),
-          ]),
-        ),
-      );
+          ),
+        ],
+      ),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -157,49 +189,67 @@ class _SpaceResult extends StatelessWidget {
     return Card(
       margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        AspectRatio(
-          aspectRatio: 16 / 9,
-          child: s.photoUrls.isEmpty
-              ? ColoredBox(color: scheme.surfaceContainerHighest, child: Icon(Icons.home_work, size: 48, color: scheme.outline))
-              : InkWell(
-                  onTap: () => _gallery(context),
-                  child: Stack(fit: StackFit.expand, children: [
-                    Image.network('$apiOrigin${s.photoUrls.first}', fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => ColoredBox(color: scheme.surfaceContainerHighest)),
-                    if (s.photoUrls.length > 1)
-                      Positioned(
-                        right: 10,
-                        bottom: 10,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(12)),
-                          child: Row(mainAxisSize: MainAxisSize.min, children: [
-                            const Icon(Icons.photo_library_outlined, size: 16, color: Colors.white),
-                            const SizedBox(width: 4),
-                            Text('${s.photoUrls.length}', style: const TextStyle(color: Colors.white)),
-                          ]),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AspectRatio(
+            aspectRatio: 16 / 9,
+            child: s.photoUrls.isEmpty
+                ? ColoredBox(
+                    color: scheme.surfaceContainerHighest,
+                    child: Icon(Icons.home_work, size: 48, color: scheme.outline),
+                  )
+                : InkWell(
+                    onTap: () => _gallery(context),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Image.network(
+                          '$apiOrigin${s.photoUrls.first}',
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => ColoredBox(color: scheme.surfaceContainerHighest),
                         ),
-                      ),
-                  ]),
+                        if (s.photoUrls.length > 1)
+                          Positioned(
+                            right: 10,
+                            bottom: 10,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(12)),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.photo_library_outlined, size: 16, color: Colors.white),
+                                  const SizedBox(width: 4),
+                                  Text('${s.photoUrls.length}', style: const TextStyle(color: Colors.white)),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(s.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 10),
+                ...spaceFacts(l10n, s),
+                if (s.rules != null) IconFact(Icons.rule, s.rules!),
+                const SizedBox(height: 8),
+                FilledButton.icon(
+                  icon: const Icon(Icons.send),
+                  label: Text(l10n.requestThisSpace),
+                  onPressed: onRequest,
                 ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Text(s.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 10),
-            ...spaceFacts(l10n, s),
-            if (s.rules != null) IconFact(Icons.rule, s.rules!),
-            const SizedBox(height: 8),
-            FilledButton.icon(
-              icon: const Icon(Icons.send),
-              label: Text(l10n.requestThisSpace),
-              onPressed: onRequest,
+              ],
             ),
-          ]),
-        ),
-      ]),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -229,24 +279,28 @@ class _RequestSheetState extends State<_RequestSheet> {
     final s = widget.space;
     return Padding(
       padding: EdgeInsets.fromLTRB(24, 0, 24, 24 + MediaQuery.viewInsetsOf(context).bottom),
-      child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Text(l10n.requestSpaceTitle(s.title), style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 8),
-        Text('${tripDate(widget.trip.date)} · ${s.openFrom} – ${s.openTo} · ${feeLabel(l10n, s.isFree, s.fee)}'),
-        const SizedBox(height: 16),
-        TextField(
-          controller: _message,
-          maxLength: 200,
-          maxLines: 3,
-          decoration: InputDecoration(labelText: l10n.messageToHost, hintText: l10n.messageToHostHint),
-        ),
-        const SizedBox(height: 8),
-        FilledButton.icon(
-          icon: const Icon(Icons.send),
-          label: Text(l10n.sendRequest),
-          onPressed: () => Navigator.pop(context, _message.text.trim()),
-        ),
-      ]),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(l10n.requestSpaceTitle(s.title), style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 8),
+          Text('${tripDate(widget.trip.date)} · ${s.openFrom} – ${s.openTo} · ${feeLabel(l10n, s.isFree, s.fee)}'),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _message,
+            maxLength: 200,
+            maxLines: 3,
+            decoration: InputDecoration(labelText: l10n.messageToHost, hintText: l10n.messageToHostHint),
+          ),
+          const SizedBox(height: 8),
+          FilledButton.icon(
+            icon: const Icon(Icons.send),
+            label: Text(l10n.sendRequest),
+            onPressed: () => Navigator.pop(context, _message.text.trim()),
+          ),
+        ],
+      ),
     );
   }
 }

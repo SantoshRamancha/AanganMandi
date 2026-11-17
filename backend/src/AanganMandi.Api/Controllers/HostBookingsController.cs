@@ -62,7 +62,7 @@ public class HostBookingsController(AppDbContext db, INotifier notifier) : Contr
             r.b.Reason, r.b.SlotTaken, r.b.CancelledBy, r.b.SpaceId, r.Title, r.t.Vehicle,
             r.t.Produce.Select(p => new ProduceItem(p.CropCode, p.QuantityKg, p.PricePerKg)).ToArray(),
             new FarmerCard(r.Name, r.Village, r.District, r.b.Status == BookingStatus.Accepted ? r.Phone : null),
-            r.b.CreatedAt, ArrivalRules.AsUtc(r.b.ArrivedAt), r.b.NoShowAt is not null, ArrivalRules.CanMarkNoShow(r.b, indiaNow))).ToList();
+            r.b.CreatedAt, r.b.ArrivedAt, r.b.NoShowAt is not null, ArrivalRules.CanMarkNoShow(r.b, indiaNow))).ToList();
     }
 
     /// <summary>
@@ -77,7 +77,7 @@ public class HostBookingsController(AppDbContext db, INotifier notifier) : Contr
         var booking = await FindAsync(id, ct);
         if (booking is null) return NotFound();
         if (StallStatus.StateOf(booking, ArrivalRules.IndiaTime(DateTime.UtcNow)) == StallState.Over)
-            return Problem(statusCode: 409, title: "Only a confirmed booking that is not over can be shared");
+            return this.Fail(409, "share_not_allowed");
         if (booking.ShareCode is null)
         {
             booking.ShareCode = StallStatus.NewCode();
@@ -100,9 +100,7 @@ public class HostBookingsController(AppDbContext db, INotifier notifier) : Contr
         var booking = await FindAsync(id, ct);
         if (booking is null) return NotFound();
         if (!ArrivalRules.CanMarkNoShow(booking, ArrivalRules.IndiaTime(DateTime.UtcNow)))
-            return Problem(statusCode: 409, title: booking.ArrivedAt is not null
-                ? "The farmer checked in for this booking"
-                : "You can mark this once the slot has ended");
+            return this.Fail(409, booking.ArrivedAt is not null ? "no_show_checked_in" : "no_show_too_early");
         booking.NoShowAt = booking.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
         return NoContent();
@@ -114,15 +112,15 @@ public class HostBookingsController(AppDbContext db, INotifier notifier) : Contr
     {
         var booking = await FindAsync(id, ct);
         if (booking is null) return NotFound();
-        if (booking.Status != BookingStatus.Requested) return Problem(statusCode: 409, title: "This request is already answered");
-        if (booking.Date < TripRules.TodayInIndia(DateTime.UtcNow)) return Problem(statusCode: 409, title: "This date has passed");
+        if (booking.Status != BookingStatus.Requested) return this.Fail(409, "request_answered");
+        if (booking.Date < TripRules.TodayInIndia(DateTime.UtcNow)) return this.Fail(409, "date_passed");
         var space = await db.Spaces.SingleAsync(s => s.Id == booking.SpaceId, ct);
-        if (space.Status != SpaceStatus.Live) return Problem(statusCode: 409, title: "The space is not live");
+        if (space.Status != SpaceStatus.Live) return this.Fail(409, "space_not_live");
 
         var sameDay = await db.Bookings.Where(b => b.SpaceId == booking.SpaceId && b.Date == booking.Date && b.Id != id
             && (b.Status == BookingStatus.Requested || b.Status == BookingStatus.Accepted)).ToListAsync(ct);
         if (sameDay.Any(b => b.Status == BookingStatus.Accepted))
-            return Problem(statusCode: 409, title: "You already confirmed another farmer for this day");
+            return this.Fail(409, "farmer_already_confirmed");
 
         var now = DateTime.UtcNow;
         booking.Status = BookingStatus.Accepted;
@@ -142,7 +140,7 @@ public class HostBookingsController(AppDbContext db, INotifier notifier) : Contr
         catch (DbUpdateException)
         {
             // The unique "one accepted per space and day" index caught a race with another accept.
-            return Problem(statusCode: 409, title: "You already confirmed another farmer for this day");
+            return this.Fail(409, "farmer_already_confirmed");
         }
         await notifier.BookingChangedAsync(booking.Id, ct);
         foreach (var other in sameDay) await notifier.BookingChangedAsync(other.Id, ct); // declined: slot taken
@@ -154,7 +152,7 @@ public class HostBookingsController(AppDbContext db, INotifier notifier) : Contr
     {
         var booking = await FindAsync(id, ct);
         if (booking is null) return NotFound();
-        if (booking.Status != BookingStatus.Requested) return Problem(statusCode: 409, title: "This request is already answered");
+        if (booking.Status != BookingStatus.Requested) return this.Fail(409, "request_answered");
         if (ReasonError(req.Reason) is { } error) return error;
         booking.Status = BookingStatus.Declined;
         booking.Reason = req.Reason!.Trim();
@@ -170,8 +168,8 @@ public class HostBookingsController(AppDbContext db, INotifier notifier) : Contr
     {
         var booking = await FindAsync(id, ct);
         if (booking is null) return NotFound();
-        if (booking.Status != BookingStatus.Accepted) return Problem(statusCode: 409, title: "Only a confirmed booking can be cancelled");
-        if (booking.Date < TripRules.TodayInIndia(DateTime.UtcNow)) return Problem(statusCode: 409, title: "This date has passed");
+        if (booking.Status != BookingStatus.Accepted) return this.Fail(409, "cancel_not_confirmed");
+        if (booking.Date < TripRules.TodayInIndia(DateTime.UtcNow)) return this.Fail(409, "date_passed");
         if (ReasonError(req.Reason) is { } error) return error;
         booking.Cancel("Host", req.Reason!.Trim());
         await db.SaveChangesAsync(ct);
@@ -184,7 +182,7 @@ public class HostBookingsController(AppDbContext db, INotifier notifier) : Contr
 
     /// <summary>The farmer needs to know why, so a reason is required.</summary>
     private ObjectResult? ReasonError(string? reason) =>
-        string.IsNullOrWhiteSpace(reason) ? Problem(statusCode: 400, title: "Give the farmer a reason") :
-        reason.Trim().Length > 200 ? Problem(statusCode: 400, title: "Keep the reason under 200 characters") :
+        string.IsNullOrWhiteSpace(reason) ? this.Fail(400, "reason_required_farmer") :
+        reason.Trim().Length > 200 ? this.Fail(400, "reason_too_long", ("max", 200)) :
         null;
 }

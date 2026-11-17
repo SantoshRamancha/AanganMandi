@@ -4,6 +4,8 @@ using System.Threading.RateLimiting;
 using AanganMandi.Api.Auth;
 using AanganMandi.Infrastructure;
 using AanganMandi.Infrastructure.Accounts;
+using AanganMandi.Domain.Common;
+using AanganMandi.Infrastructure.Errors;
 using AanganMandi.Infrastructure.Logging;
 using AanganMandi.Infrastructure.Persistence;
 using Hangfire;
@@ -97,9 +99,11 @@ builder.Services.AddRateLimiter(o =>
     o.OnRejected = async (ctx, ct) =>
     {
         ctx.HttpContext.Response.Headers.RetryAfter = "600";
+        var lang = ErrorText.LanguageOf(ctx.HttpContext.Request.Headers.AcceptLanguage.ToString());
         await ctx.HttpContext.Response.WriteAsJsonAsync(new
         {
-            status = 429, title = "Too many login attempts from this network. Try again in 10 minutes",
+            status = 429, code = "too_many_attempts",
+            title = ErrorText.Render(new ApiError("too_many_attempts"), lang),
         }, ct);
     };
 });

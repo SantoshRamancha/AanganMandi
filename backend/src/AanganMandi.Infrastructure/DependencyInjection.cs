@@ -97,7 +97,7 @@ public static class DependencyInjection
 
     /// <summary>
     /// Recurring Hangfire jobs (times in UTC): send queued emails every 15 seconds, clear old ones daily at 03:00, and
-    /// tell buyers about tomorrow's stalls near them at 12:30 UTC = 18:00 in India.
+    /// tell buyers about tomorrow's stalls near them, and remind farmers and hosts of tomorrow's bookings, at 12:30 UTC = 18:00 India.
     /// </summary>
     public static void ScheduleBackgroundJobs(this IServiceProvider services)
     {
@@ -105,5 +105,6 @@ public static class DependencyInjection
         jobs.AddOrUpdate<EmailQueueProcessor>("email-queue", p => p.ProcessAsync(CancellationToken.None), "*/15 * * * * *");
         jobs.AddOrUpdate<EmailQueueProcessor>("email-queue-cleanup", p => p.CleanUpAsync(CancellationToken.None), Cron.Daily(3));
         jobs.AddOrUpdate<INotifier>("nearby-day-before", n => n.NearbyTomorrowAsync(CancellationToken.None), "30 12 * * *");
+        jobs.AddOrUpdate<INotifier>("booking-reminders", n => n.BookingRemindersAsync(CancellationToken.None), "30 12 * * *");
     }
 }

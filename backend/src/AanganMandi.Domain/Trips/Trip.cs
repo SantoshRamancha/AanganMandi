@@ -69,6 +69,8 @@ public class Booking : Entity
     /// Random rather than the booking id, so links cannot be guessed or listed.
     /// </summary>
     public string? ShareCode { get; set; }
+    /// <summary>When the evening-before reminder went to the farmer and the host (so it is sent once).</summary>
+    public DateTime? ReminderSentAt { get; set; }
 
     public bool IsActive => Status is BookingStatus.Requested or BookingStatus.Accepted;
 

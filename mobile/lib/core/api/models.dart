@@ -1,20 +1,26 @@
 /// Plain JSON models for the v1 API. Enum values travel as their C# names (e.g. "Pending").
 library;
 
+import 'api_dates.dart';
+
 class Crop {
   Crop.fromJson(Map<String, dynamic> j)
-      : code = j['code'] as String,
-        nameEn = j['nameEn'] as String,
-        nameTe = j['nameTe'] as String,
-        nameHi = j['nameHi'] as String,
-        category = j['category'] as String? ?? 'Other';
+    : code = j['code'] as String,
+      nameEn = j['nameEn'] as String,
+      nameTe = j['nameTe'] as String,
+      nameHi = j['nameHi'] as String,
+      category = j['category'] as String? ?? 'Other';
 
   final String code, nameEn, nameTe, nameHi;
 
   /// Vegetable, Leafy, Fruit, Grain, Pulse, Oilseed, Spice, Flower (or Other).
   final String category;
 
-  String name(String lang) => switch (lang) { 'te' => nameTe, 'hi' => nameHi, _ => nameEn };
+  String name(String lang) => switch (lang) {
+    'te' => nameTe,
+    'hi' => nameHi,
+    _ => nameEn,
+  };
 
   /// Whether [query] is part of the name in any language (search works whatever the app language).
   bool matches(String query) {
@@ -28,20 +34,20 @@ class Crop {
 /// evidenceType: AgriStackFarmerId, LandRecord, FpoMembership or OfficerReference.
 class Farmer {
   Farmer.fromJson(Map<String, dynamic> j)
-      : name = j['name'] as String?,
-        village = j['village'] as String?,
-        district = j['district'] as String?,
-        cropCodes = (j['cropCodes'] as List).cast<String>(),
-        farmSizeAcres = (j['farmSizeAcres'] as num?)?.toDouble(),
-        produceSource = j['produceSource'] as String?,
-        evidenceType = j['evidenceType'] as String?,
-        evidenceDetails = j['evidenceDetails'] as String?,
-        hasEvidencePhoto = j['hasEvidencePhoto'] as bool,
-        evidencePhotoAt = j['evidencePhotoAt'] as String?,
-        status = j['status'] as String,
-        level = j['level'] as int,
-        rejectionReason = j['rejectionReason'] as String?,
-        missing = (j['missing'] as List).cast<String>();
+    : name = j['name'] as String?,
+      village = j['village'] as String?,
+      district = j['district'] as String?,
+      cropCodes = (j['cropCodes'] as List).cast<String>(),
+      farmSizeAcres = (j['farmSizeAcres'] as num?)?.toDouble(),
+      produceSource = j['produceSource'] as String?,
+      evidenceType = j['evidenceType'] as String?,
+      evidenceDetails = j['evidenceDetails'] as String?,
+      hasEvidencePhoto = j['hasEvidencePhoto'] as bool,
+      evidencePhotoAt = j['evidencePhotoAt'] as String?,
+      status = j['status'] as String,
+      level = j['level'] as int,
+      rejectionReason = j['rejectionReason'] as String?,
+      missing = (j['missing'] as List).cast<String>();
 
   final String? name, village, district, produceSource, evidenceType, evidenceDetails, rejectionReason;
 
@@ -55,6 +61,7 @@ class Farmer {
   final List<String> missing;
 
   bool get canEdit => status == 'NotStarted' || status == 'Rejected';
+
   /// True once any verification step was saved (the name alone may come from sign-up).
   bool get hasStarted => village != null || evidenceType != null || hasEvidencePhoto;
 }
@@ -62,23 +69,23 @@ class Farmer {
 /// Space status: Draft, PendingReview, Live or Rejected.
 class Space {
   Space.fromJson(Map<String, dynamic> j)
-      : id = j['id'] as String,
-        title = j['title'] as String,
-        type = j['type'] as String,
-        address = j['address'] as String,
-        locality = j['locality'] as String,
-        areaSqFt = j['areaSqFt'] as int,
-        isFree = j['isFree'] as bool,
-        fee = (j['fee'] as num).toDouble(),
-        availableDays = (j['availableDays'] as List).cast<String>(),
-        openFrom = j['openFrom'] as String,
-        openTo = j['openTo'] as String,
-        status = j['status'] as String,
-        rejectionReason = j['rejectionReason'] as String?,
-        photoUrls = (j['photoUrls'] as List).cast<String>(),
-        hasProof = j['hasProof'] as bool,
-        photos = [for (final p in j['photos'] as List) SpaceFile.fromJson(p as Map<String, dynamic>)],
-        proof = j['proof'] == null ? null : SpaceFile.fromJson(j['proof'] as Map<String, dynamic>);
+    : id = j['id'] as String,
+      title = j['title'] as String,
+      type = j['type'] as String,
+      address = j['address'] as String,
+      locality = j['locality'] as String,
+      areaSqFt = j['areaSqFt'] as int,
+      isFree = j['isFree'] as bool,
+      fee = (j['fee'] as num).toDouble(),
+      availableDays = (j['availableDays'] as List).cast<String>(),
+      openFrom = j['openFrom'] as String,
+      openTo = j['openTo'] as String,
+      status = j['status'] as String,
+      rejectionReason = j['rejectionReason'] as String?,
+      photoUrls = (j['photoUrls'] as List).cast<String>(),
+      hasProof = j['hasProof'] as bool,
+      photos = [for (final p in j['photos'] as List) SpaceFile.fromJson(p as Map<String, dynamic>)],
+      proof = j['proof'] == null ? null : SpaceFile.fromJson(j['proof'] as Map<String, dynamic>);
 
   final String id, title, type, address, locality, openFrom, openTo, status;
   final String? rejectionReason;
@@ -97,9 +104,7 @@ class Space {
 
 /// One stored space photo or the proof; uploadedAt doubles as its cache key.
 class SpaceFile {
-  SpaceFile.fromJson(Map<String, dynamic> j)
-      : id = j['id'] as String,
-        uploadedAt = j['uploadedAt'] as String;
+  SpaceFile.fromJson(Map<String, dynamic> j) : id = j['id'] as String, uploadedAt = j['uploadedAt'] as String;
 
   final String id, uploadedAt;
 }
@@ -107,13 +112,14 @@ class SpaceFile {
 /// The signed-in user's own account (GET /users/me). roles: Farmer, Host, Buyer, Verifier, Admin.
 class Profile {
   Profile.fromJson(Map<String, dynamic> j)
-      : name = j['name'] as String?,
-        phone = j['phone'] as String,
-        email = j['email'] as String?,
-        language = j['language'] as String,
-        roles = (j['roles'] as List).cast<String>(),
-        // The API stores UTC without a "Z".
-        memberSince = DateTime.parse('${(j['memberSince'] as String).replaceAll('Z', '')}Z').toLocal();
+    : name = j['name'] as String?,
+      phone = j['phone'] as String,
+      email = j['email'] as String?,
+      language = j['language'] as String,
+      roles = (j['roles'] as List).cast<String>(),
+      memberSince = apiInstant(j['memberSince'])!,
+      termsAccepted = j['termsAccepted'] as bool? ?? true,
+      termsVersion = j['termsVersion'] as String? ?? '';
 
   final String? name;
 
@@ -122,4 +128,8 @@ class Profile {
   final String phone, language;
   final List<String> roles;
   final DateTime memberSince;
+
+  /// Whether the current terms and privacy policy ([termsVersion]) are accepted; the app asks first when not.
+  final bool termsAccepted;
+  final String termsVersion;
 }

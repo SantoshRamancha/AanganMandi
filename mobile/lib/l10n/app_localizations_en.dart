@@ -92,12 +92,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tagline => 'Fresh from the farm, at your gate';
 
   @override
-  String get featureVerified =>
-      'Only verified farmers selling their own produce';
+  String get featureVerified => 'Only verified farmers selling their own produce';
 
   @override
-  String get featureSpaces =>
-      'Neighbours lend a driveway or courtyard for a few hours';
+  String get featureSpaces => 'Neighbours lend a driveway or courtyard for a few hours';
 
   @override
   String get featureAlerts => 'Buyers nearby get an alert when a stall opens';
@@ -136,15 +134,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get verifyPendingTitle => 'Under review';
 
   @override
-  String get verifyPendingBody =>
-      'Our team is checking your details. This usually takes up to 48 hours.';
+  String get verifyPendingBody => 'Our team is checking your details. This usually takes up to 48 hours.';
 
   @override
   String get verifiedTitle => 'Verified farmer';
 
   @override
-  String get verifiedBody =>
-      'You are verified. Plan a trip and book a space to start selling.';
+  String get verifiedBody => 'You are verified. Plan a trip and book a space to start selling.';
 
   @override
   String get rejectedTitle => 'Verification needs changes';
@@ -196,8 +192,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get evidenceQuestion => 'Choose one proof that you are a farmer';
 
   @override
-  String get evidenceSubtitle =>
-      'A verifier checks it and approves you, usually within 48 hours.';
+  String get evidenceSubtitle => 'A verifier checks it and approves you, usually within 48 hours.';
 
   @override
   String get evidenceAgriStack => 'AgriStack Farmer ID';
@@ -209,15 +204,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get evidenceLandRecord => 'Land or cultivation record';
 
   @override
-  String get evidenceLandRecordHint =>
-      'Pattadar passbook, ROR-1B, lease agreement or crop record';
+  String get evidenceLandRecordHint => 'Pattadar passbook, ROR-1B, lease agreement or crop record';
 
   @override
   String get evidenceFpo => 'FPO membership or referral';
 
   @override
-  String get evidenceFpoHint =>
-      'Membership card or letter from your farmer producer organisation';
+  String get evidenceFpoHint => 'Membership card or letter from your farmer producer organisation';
 
   @override
   String get evidenceOfficer => 'Reference from an agriculture officer';
@@ -284,8 +277,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get completeAllSteps => 'Complete every step before submitting';
 
   @override
-  String get submittedMessage =>
-      'Submitted. We will review it within 48 hours.';
+  String get submittedMessage => 'Submitted. We will review it within 48 hours.';
 
   @override
   String get addSpace => 'Add a space';
@@ -325,8 +317,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get address => 'Full address';
 
   @override
-  String get addressHint =>
-      'Shown to the farmer only after you approve a booking';
+  String get addressHint => 'Shown to the farmer only after you approve a booking';
 
   @override
   String get locality => 'Locality / area';
@@ -410,8 +401,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get houseRules => 'House rules (optional)';
 
   @override
-  String get houseRulesHint =>
-      'For example: no fish or meat, clean up after selling';
+  String get houseRulesHint => 'For example: no fish or meat, clean up after selling';
 
   @override
   String get spacePhotos => 'Photos of the space (3 to 8)';
@@ -423,15 +413,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get proofOfRight => 'Proof you can use this space';
 
   @override
-  String get proofHint =>
-      'Ownership document, rent agreement or society letter. Never shown to buyers.';
+  String get proofHint => 'Ownership document, rent agreement or society letter. Never shown to buyers.';
 
   @override
   String get submitSpace => 'Submit for approval';
 
   @override
-  String get spaceSubmitted =>
-      'Sent for approval. We usually review within 48 hours.';
+  String get spaceSubmitted => 'Sent for approval. We usually review within 48 hours.';
 
   @override
   String get statusDraft => 'Draft';
@@ -463,8 +451,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addMorePhotos => 'Add more photos';
 
   @override
-  String get buyerComingSoon =>
-      'Live stalls near you will appear here once farmers start selling.';
+  String get buyerComingSoon => 'Live stalls near you will appear here once farmers start selling.';
 
   @override
   String get profileTitle => 'My profile';
@@ -532,8 +519,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get themeDark => 'Dark';
 
   @override
-  String get themeSystemHint =>
-      'System follows your phone or computer setting.';
+  String get themeSystemHint => 'System follows your phone or computer setting.';
 
   @override
   String get staffAccessRevokedTitle => 'You no longer have staff access';
@@ -563,12 +549,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get opsHelloNoName => 'Hello';
 
   @override
-  String get opsAdminSubtitle =>
-      'Admin · you see every farmer and manage verifiers';
+  String get opsAdminSubtitle => 'Admin · you see every farmer and manage verifiers';
 
   @override
-  String get opsVerifierSubtitle =>
-      'Verifier · you review the farmers assigned to you';
+  String get opsVerifierSubtitle => 'Verifier · you review the farmers assigned to you';
 
   @override
   String get statFarmersWaitingAll => 'Farmers waiting for review';
@@ -592,8 +576,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statSpacesLive => 'Live spaces';
 
   @override
-  String get couldNotLoad =>
-      'Could not load. Pull down or tap refresh to try again.';
+  String get couldNotLoad => 'Could not load. Pull down or tap refresh to try again.';
 
   @override
   String get couldNotSave => 'Could not save. Try again.';
@@ -637,12 +620,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get farmerVerificationTitle => 'Farmer verification';
 
   @override
-  String get farmerQueueAdminHint =>
-      'All farmers. Each submission goes to the verifier with the fewest waiting.';
+  String get farmerQueueAdminHint => 'All farmers. Each submission goes to the verifier with the fewest waiting.';
 
   @override
-  String get farmerQueueVerifierHint =>
-      'Farmers assigned to you, oldest first.';
+  String get farmerQueueVerifierHint => 'Farmers assigned to you, oldest first.';
 
   @override
   String get noVerifierWarnTitle => 'Some farmers have no verifier';
@@ -665,8 +646,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reviewFarmer => 'Review farmer';
 
   @override
-  String get qrFarmerPhotoUnclear =>
-      'Evidence photo is unclear — please retake it';
+  String get qrFarmerPhotoUnclear => 'Evidence photo is unclear — please retake it';
 
   @override
   String get qrFarmerNameMismatch => 'Name on the evidence does not match';
@@ -678,8 +658,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get qrFarmerRefereeNo => 'The referee did not confirm you';
 
   @override
-  String get qrFarmerNotGrower =>
-      'You sell only produce bought from other farmers';
+  String get qrFarmerNotGrower => 'You sell only produce bought from other farmers';
 
   @override
   String phoneOtpVerified(String phone) {
@@ -728,20 +707,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get olderDocuments => 'Documents from the earlier verification flow';
 
   @override
-  String get howCheckAgriStack =>
-      'Check the Farmer ID number and name in the AgriStack farmer registry.';
+  String get howCheckAgriStack => 'Check the Farmer ID number and name in the AgriStack farmer registry.';
 
   @override
-  String get howCheckLandRecord =>
-      'Check the owner or cultivator name and survey number on the Bhu Bharati portal.';
+  String get howCheckLandRecord => 'Check the owner or cultivator name and survey number on the Bhu Bharati portal.';
 
   @override
-  String get howCheckFpo =>
-      'Call the FPO (or the person who referred them) and confirm they know this farmer.';
+  String get howCheckFpo => 'Call the FPO (or the person who referred them) and confirm they know this farmer.';
 
   @override
-  String get howCheckOfficer =>
-      'Call the officer or organisation and confirm they know this farmer.';
+  String get howCheckOfficer => 'Call the officer or organisation and confirm they know this farmer.';
 
   @override
   String get farmerApproveGuidance =>
@@ -756,8 +731,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get farmerRejectedToast =>
-      'Rejected. The farmer will see your reason.';
+  String get farmerRejectedToast => 'Rejected. The farmer will see your reason.';
 
   @override
   String get assignedTo => 'Assigned to';
@@ -772,8 +746,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get verifierAssignedToast => 'Verifier assigned';
 
   @override
-  String get noVerifiersYetAssign =>
-      'There are no verifiers yet. Add one on the Verifiers tab.';
+  String get noVerifiersYetAssign => 'There are no verifiers yet. Add one on the Verifiers tab.';
 
   @override
   String get chooseVerifier => 'Choose a verifier';
@@ -807,8 +780,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get qrSpacePhotos => 'Photos are unclear or do not show the space';
 
   @override
-  String get qrSpaceProof =>
-      'Proof document does not show the right to use this space';
+  String get qrSpaceProof => 'Proof document does not show the right to use this space';
 
   @override
   String get qrSpacePin => 'Location pin does not match the address';
@@ -909,8 +881,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get removeVerifierBody =>
-      'They can no longer review farmers or spaces.';
+  String get removeVerifierBody => 'They can no longer review farmers or spaces.';
 
   @override
   String removeVerifierMoves(int count) {
@@ -950,16 +921,14 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other:
-          '$count farmers are now unassigned: add a verifier to pick them up.',
+      other: '$count farmers are now unassigned: add a verifier to pick them up.',
       one: '1 farmer is now unassigned: add a verifier to pick them up.',
     );
     return '$_temp0';
   }
 
   @override
-  String get noVerifiersBody =>
-      'No verifiers yet. Farmers who submit stay unassigned until you add one.';
+  String get noVerifiersBody => 'No verifiers yet. Farmers who submit stay unassigned until you add one.';
 
   @override
   String verifierAddedOn(String phone, String when) {
@@ -1012,8 +981,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your verification is waiting for review. Deleting the evidence takes it out of the queue: upload a new photo and submit again.';
 
   @override
-  String get evidenceWithdrawnToast =>
-      'Photo deleted. Upload a new one and submit again.';
+  String get evidenceWithdrawnToast => 'Photo deleted. Upload a new one and submit again.';
 
   @override
   String get spaceWithdrawWarning =>
@@ -1035,8 +1003,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get yourDocument => 'Your document';
 
   @override
-  String get yourDocumentPendingHint =>
-      'You can still replace or delete it while it waits for review.';
+  String get yourDocumentPendingHint => 'You can still replace or delete it while it waits for review.';
 
   @override
   String get bookingRequested => 'Waiting for host';
@@ -1067,8 +1034,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get bookingSlotTaken =>
-      'The host confirmed another farmer for this day.';
+  String get bookingSlotTaken => 'The host confirmed another farmer for this day.';
 
   @override
   String bookingDeclinedBecause(String reason) {
@@ -1098,8 +1064,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noTripsTitle => 'No trips yet';
 
   @override
-  String get noTripsBody =>
-      'Plan the day you will come to the city to sell, then book a space near your buyers.';
+  String get noTripsBody => 'Plan the day you will come to the city to sell, then book a space near your buyers.';
 
   @override
   String get noSpaceYet => 'No space booked yet';
@@ -1127,8 +1092,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tripProduce => 'What will you bring?';
 
   @override
-  String get tripProduceHint =>
-      'Choose the crops. Quantity and price are optional and help the host.';
+  String get tripProduceHint => 'Choose the crops. Quantity and price are optional and help the host.';
 
   @override
   String get quantityKg => 'kg';
@@ -1161,8 +1125,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancelTripQ => 'Cancel this trip?';
 
   @override
-  String get cancelTripBody =>
-      'Any space you requested or booked for it is cancelled too, and the host is told.';
+  String get cancelTripBody => 'Any space you requested or booked for it is cancelled too, and the host is told.';
 
   @override
   String get tripCancelledToast => 'Trip cancelled';
@@ -1174,8 +1137,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancelBookingQ => 'Cancel this booking?';
 
   @override
-  String get cancelBookingBody =>
-      'The other side is told and the slot opens again.';
+  String get cancelBookingBody => 'The other side is told and the slot opens again.';
 
   @override
   String get cancelBooking => 'Cancel booking';
@@ -1206,12 +1168,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get spaceForTrip => 'Space for this trip';
 
   @override
-  String get findSpaceIntro =>
-      'Find a space that is open on this day and fits your vehicle.';
+  String get findSpaceIntro => 'Find a space that is open on this day and fits your vehicle.';
 
   @override
-  String get findAnotherSpaceIntro =>
-      'You can request another space for this day.';
+  String get findAnotherSpaceIntro => 'You can request another space for this day.';
 
   @override
   String get findSpace => 'Find a space';
@@ -1234,15 +1194,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get messageToHost => 'Message to the host (optional)';
 
   @override
-  String get messageToHostHint =>
-      'e.g. I will come in an auto with 3 crates of tomatoes';
+  String get messageToHostHint => 'e.g. I will come in an auto with 3 crates of tomatoes';
 
   @override
   String get sendRequest => 'Send request';
 
   @override
-  String get requestSentToast =>
-      'Request sent. You will see the answer on your trip.';
+  String get requestSentToast => 'Request sent. You will see the answer on your trip.';
 
   @override
   String spacesFor(String date) {
@@ -1261,12 +1219,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get noSpacesThatDay =>
-      'No free spaces fit your vehicle on this day. Try another date.';
+  String get noSpacesThatDay => 'No free spaces fit your vehicle on this day. Try another date.';
 
   @override
-  String get noSpacesInArea =>
-      'No free spaces in this area on this day. Clear the search to see all areas.';
+  String get noSpacesInArea => 'No free spaces in this area on this day. Clear the search to see all areas.';
 
   @override
   String get requestThisSpace => 'Request this space';
@@ -1303,8 +1259,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pastTab => 'Past';
 
   @override
-  String get noRequests =>
-      'No new requests. Farmers\' requests for your spaces appear here.';
+  String get noRequests => 'No new requests. Farmers\' requests for your spaces appear here.';
 
   @override
   String get noUpcoming => 'No confirmed bookings coming up.';
@@ -1319,8 +1274,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get verifiedFarmerTag => 'verified farmer';
 
   @override
-  String get hostAutoDeclined =>
-      'Declined automatically: you confirmed another farmer for this day.';
+  String get hostAutoDeclined => 'Declined automatically: you confirmed another farmer for this day.';
 
   @override
   String get farmerCancelled => 'The farmer cancelled.';
@@ -1337,8 +1291,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get decline => 'Decline';
 
   @override
-  String get acceptedToast =>
-      'Accepted. The farmer can now see your address and phone.';
+  String get acceptedToast => 'Accepted. The farmer can now see your address and phone.';
 
   @override
   String get declineQ => 'Decline this request?';
@@ -1370,12 +1323,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get greetingNoName => 'Namaste';
 
   @override
-  String get farmerBannerVerified =>
-      'You are a verified farmer. Plan your next selling day.';
+  String get farmerBannerVerified => 'You are a verified farmer. Plan your next selling day.';
 
   @override
-  String get farmerBannerNotVerified =>
-      'Get verified once, then sell your fresh produce in the city.';
+  String get farmerBannerNotVerified => 'Get verified once, then sell your fresh produce in the city.';
 
   @override
   String get statUpcomingTrips => 'Upcoming trips';
@@ -1396,8 +1347,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noUpcomingTitle => 'No trip planned';
 
   @override
-  String get noUpcomingBody =>
-      'Choose a day to come to the city, then book a space near buyers.';
+  String get noUpcomingBody => 'Choose a day to come to the city, then book a space near buyers.';
 
   @override
   String get viewTrip => 'View trip';
@@ -1415,29 +1365,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get howStepVerify => 'Get verified';
 
   @override
-  String get howStepVerifyBody =>
-      'Tell us about your farming and add one proof. A verifier checks it.';
+  String get howStepVerifyBody => 'Tell us about your farming and add one proof. A verifier checks it.';
 
   @override
   String get howStepTrip => 'Plan a trip';
 
   @override
-  String get howStepTripBody =>
-      'Pick the day, your vehicle and what you will bring.';
+  String get howStepTripBody => 'Pick the day, your vehicle and what you will bring.';
 
   @override
   String get howStepBook => 'Book a space';
 
   @override
-  String get howStepBookBody =>
-      'Request a driveway or courtyard near buyers. The host accepts.';
+  String get howStepBookBody => 'Request a driveway or courtyard near buyers. The host accepts.';
 
   @override
   String get howStepSell => 'Sell fresh';
 
   @override
-  String get howStepSellBody =>
-      'Set up your stall and sell straight to families nearby.';
+  String get howStepSellBody => 'Set up your stall and sell straight to families nearby.';
 
   @override
   String bookedAt(String space) {
@@ -1455,8 +1401,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get hostBannerNew =>
-      'List your driveway or courtyard and earn when farmers sell there.';
+  String get hostBannerNew => 'List your driveway or courtyard and earn when farmers sell there.';
 
   @override
   String get statNewRequests => 'New requests';
@@ -1474,8 +1419,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nextBooking => 'Next booking';
 
   @override
-  String get noBookingYet =>
-      'No confirmed bookings yet. Accepted requests show here.';
+  String get noBookingYet => 'No confirmed bookings yet. Accepted requests show here.';
 
   @override
   String get answer => 'Answer';
@@ -1484,29 +1428,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hostHowList => 'List your space';
 
   @override
-  String get hostHowListBody =>
-      'Photos, days and hours, fee, and proof you can use the space.';
+  String get hostHowListBody => 'Photos, days and hours, fee, and proof you can use the space.';
 
   @override
   String get hostHowApproved => 'Get approved';
 
   @override
-  String get hostHowApprovedBody =>
-      'Our team checks the photos, location and proof.';
+  String get hostHowApprovedBody => 'Our team checks the photos, location and proof.';
 
   @override
   String get hostHowRequests => 'Farmers request a day';
 
   @override
-  String get hostHowRequestsBody =>
-      'Verified farmers ask for your space for their selling day.';
+  String get hostHowRequestsBody => 'Verified farmers ask for your space for their selling day.';
 
   @override
   String get hostHowAccept => 'Accept and host';
 
   @override
-  String get hostHowAcceptBody =>
-      'Accept, share your address, and collect the fee at the space.';
+  String get hostHowAcceptBody => 'Accept, share your address, and collect the fee at the space.';
 
   @override
   String get catVegetable => 'Vegetables';
@@ -1551,8 +1491,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addCropTitle => 'Add a crop';
 
   @override
-  String get addCropBody =>
-      'Not in the list? Type its name in any language. It is shown exactly as you type it.';
+  String get addCropBody => 'Not in the list? Type its name in any language. It is shown exactly as you type it.';
 
   @override
   String get addCropHint => 'Crop name';
@@ -1575,8 +1514,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logoutQ => 'Log out?';
 
   @override
-  String get logoutBody =>
-      'To come back, you will sign in again with your mobile number and an OTP.';
+  String get logoutBody => 'To come back, you will sign in again with your mobile number and an OTP.';
 
   @override
   String signedInAs(String phone) {
@@ -1600,8 +1538,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'We email you about your verification, spaces and bookings, in your app language. Leave it empty to stop emails.';
 
   @override
-  String get emailInvalid =>
-      'Enter a valid email address, like name@example.com';
+  String get emailInvalid => 'Enter a valid email address, like name@example.com';
 
   @override
   String get emailSaved => 'Email saved';
@@ -1613,8 +1550,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emailOptional => 'Email (optional)';
 
   @override
-  String get verifierEmailHint =>
-      'They get a welcome email and one for each farmer assigned to them.';
+  String get verifierEmailHint => 'They get a welcome email and one for each farmer assigned to them.';
 
   @override
   String get deleteSpace => 'Delete space';
@@ -1623,8 +1559,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteSpaceQ => 'Delete this space?';
 
   @override
-  String get deleteSpaceBody =>
-      'Its photos and proof are deleted and it leaves search. This cannot be undone.';
+  String get deleteSpaceBody => 'Its photos and proof are deleted and it leaves search. This cannot be undone.';
 
   @override
   String get deleteSpaceBookings =>
@@ -1657,15 +1592,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your verification is waiting for review. Clearing it takes it out of the queue, so you will need to submit again.';
 
   @override
-  String get verificationResetToast =>
-      'Verification cleared. You can start again.';
+  String get verificationResetToast => 'Verification cleared. You can start again.';
 
   @override
   String get iveArrived => 'I\'ve arrived';
 
   @override
-  String get checkInHint =>
-      'Tap this when you reach the space. Your phone\'s location must be within 200 m of it.';
+  String get checkInHint => 'Tap this when you reach the space. Your phone\'s location must be within 200 m of it.';
 
   @override
   String get locationNeededToCheckIn => 'Turn on location to check in';
@@ -1696,8 +1629,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get markNoShowQ => 'Mark that the farmer didn\'t come?';
 
   @override
-  String get markNoShowBody =>
-      'Do this only if the farmer never reached your space. It is saved on the booking.';
+  String get markNoShowBody => 'Do this only if the farmer never reached your space. It is saved on the booking.';
 
   @override
   String get noShowMarkedToast => 'Marked as not come';
@@ -1730,8 +1662,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emailAlertsBody => 'The evening before, and when a farmer arrives';
 
   @override
-  String get addEmailForAlerts =>
-      'Add your email in My profile to get these alerts.';
+  String get addEmailForAlerts => 'Add your email in My profile to get these alerts.';
 
   @override
   String get areaSavedToast => 'Area saved';
@@ -1770,8 +1701,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get nearbyEmpty =>
-      'No farmers are booked near you for today or tomorrow yet. We\'ll email you when one is.';
+  String get nearbyEmpty => 'No farmers are booked near you for today or tomorrow yet. We\'ll email you when one is.';
 
   @override
   String get exactPlaceLater => 'Exact place shows when the farmer arrives';
@@ -1796,13 +1726,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get messageCopied => 'Message copied';
 
   @override
-  String shareStallMessage(
-    String date,
-    String time,
-    String space,
-    String crops,
-    String url,
-  ) {
+  String shareStallMessage(String date, String time, String space, String crops, String url) {
     return 'Fresh produce from a verified farmer at my place!\n$date, $time at $space.\nBringing: $crops\nDetails: $url';
   }
 
@@ -1813,12 +1737,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ok => 'OK';
 
   @override
-  String get noConnection =>
-      'Can\'t reach Aangan Mandi. Check your internet connection and try again.';
+  String get noConnection => 'Can\'t reach Aangan Mandi. Check your internet connection and try again.';
 
   @override
-  String get serverProblem =>
-      'Something went wrong on our side. Please try again in a few minutes.';
+  String get serverProblem => 'Something went wrong on our side. Please try again in a few minutes.';
 
   @override
   String get deleteAccount => 'Delete my account';
@@ -1838,4 +1760,138 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountDeletedToast => 'Your account was deleted';
+
+  @override
+  String get reportProblem => 'Report a problem';
+
+  @override
+  String get reportProblemTitle => 'What went wrong?';
+
+  @override
+  String get reportCatNoShow => 'Someone did not come';
+
+  @override
+  String get reportCatSpaceProblem => 'Problem with the space';
+
+  @override
+  String get reportCatPaymentDispute => 'Payment or fee';
+
+  @override
+  String get reportCatBehaviour => 'Behaviour or safety';
+
+  @override
+  String get reportCatAppProblem => 'Problem with the app';
+
+  @override
+  String get reportCatOther => 'Something else';
+
+  @override
+  String get reportDescribe => 'Tell us what happened';
+
+  @override
+  String get reportDescribeHint => 'At least 10 characters. Our team reads every report and replies.';
+
+  @override
+  String get reportSend => 'Send report';
+
+  @override
+  String get reportSentToast => 'Report sent. We will get back to you.';
+
+  @override
+  String get myReports => 'My reports';
+
+  @override
+  String get myReportsEmpty => 'You have not reported any problems.';
+
+  @override
+  String get reportOpen => 'Waiting for the team';
+
+  @override
+  String get reportResolved => 'Answered';
+
+  @override
+  String reportAbout(String space, String date) {
+    return 'About the booking at $space on $date';
+  }
+
+  @override
+  String reportAnswer(String text) {
+    return 'Our answer: $text';
+  }
+
+  @override
+  String get opsTabReports => 'Reports';
+
+  @override
+  String get opsReportsOpen => 'Open';
+
+  @override
+  String get opsReportsResolved => 'Resolved';
+
+  @override
+  String get opsNoReports => 'No reports here.';
+
+  @override
+  String get resolveReport => 'Resolve';
+
+  @override
+  String get resolveReportQ => 'Resolve this report?';
+
+  @override
+  String get resolveReportHint => 'What was done (the person who reported sees this)';
+
+  @override
+  String get reportResolvedToast => 'Report resolved';
+
+  @override
+  String get roleWordFarmer => 'Farmer';
+
+  @override
+  String get roleWordHost => 'Host';
+
+  @override
+  String get roleWordBuyer => 'Buyer';
+
+  @override
+  String get roleWordVerifier => 'Verifier';
+
+  @override
+  String get roleWordAdmin => 'Admin';
+
+  @override
+  String get consentTitle => 'Before you start';
+
+  @override
+  String get consentIntro => 'Aangan Mandi connects farmers, hosts and buyers. To do that we use:';
+
+  @override
+  String get consentData1 => 'Your mobile number and name, and your email if you add one';
+
+  @override
+  String get consentData2 => 'Farmers: farming details and a photo of your proof, seen only by our verifiers';
+
+  @override
+  String get consentData3 =>
+      'Hosts: your space\'s address, location and photos; the address is shared only after you accept a booking';
+
+  @override
+  String get consentData4 => 'Your location when you check in or save your area, only for that';
+
+  @override
+  String get consentPromise => 'We do not sell your data. You can delete your account at any time in My profile.';
+
+  @override
+  String get readTerms => 'Terms of use';
+
+  @override
+  String get readPrivacy => 'Privacy policy';
+
+  @override
+  String get consentAgree => 'I have read and agree to the Terms of use and the Privacy policy';
+
+  @override
+  String get consentContinue => 'Agree and continue';
+
+  @override
+  String get consentDecline => 'Not now (log out)';
 }

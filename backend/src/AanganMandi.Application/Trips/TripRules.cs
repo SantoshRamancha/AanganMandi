@@ -12,9 +12,9 @@ public static class TripRules
     public static DateOnly TodayInIndia(DateTime utcNow) => DateOnly.FromDateTime(utcNow.AddHours(5.5));
 
     /// <summary>Null when the date can be planned, else the reason it cannot.</summary>
-    public static string? CheckDate(DateOnly date, DateOnly today) =>
-        date < today ? "Choose today or a later date" :
-        date > today.AddDays(MaxDaysAhead) ? $"Trips can be planned up to {MaxDaysAhead} days ahead" :
+    public static Domain.Common.ApiError? CheckDate(DateOnly date, DateOnly today) =>
+        date < today ? new Domain.Common.ApiError("trip_date_past") :
+        date > today.AddDays(MaxDaysAhead) ? Domain.Common.ApiError.Of("trip_date_too_far", ("days", MaxDaysAhead)) :
         null;
 
     /// <summary>The space's "largest vehicle that can enter" is at least the trip's vehicle (enum order is size order).</summary>

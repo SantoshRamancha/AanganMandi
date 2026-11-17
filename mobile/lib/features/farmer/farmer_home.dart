@@ -48,40 +48,54 @@ class FarmerHome extends ConsumerWidget {
             ref.invalidate(tripsProvider);
             return ref.refresh(farmerProvider.future);
           },
-          child: ListView(padding: EdgeInsets.all(Breakpoints.gutter(context)), children: [
-            MaxWidth(
-              maxWidth: 960,
-              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                DashboardBanner(
-                  title: firstName == null || firstName.isEmpty ? l10n.greetingNoName : l10n.greetingName(firstName),
-                  subtitle: verified ? l10n.farmerBannerVerified : l10n.farmerBannerNotVerified,
-                  icon: verified ? Icons.verified : Icons.agriculture,
-                  action: verified
-                      ? BannerButton(icon: Icons.add, label: l10n.planTrip, onPressed: () => _planTrip(context, ref))
-                      : null,
+          child: ListView(
+            padding: EdgeInsets.all(Breakpoints.gutter(context)),
+            children: [
+              MaxWidth(
+                maxWidth: 960,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    DashboardBanner(
+                      title: firstName == null || firstName.isEmpty
+                          ? l10n.greetingNoName
+                          : l10n.greetingName(firstName),
+                      subtitle: verified ? l10n.farmerBannerVerified : l10n.farmerBannerNotVerified,
+                      icon: verified ? Icons.verified : Icons.agriculture,
+                      action: verified
+                          ? BannerButton(
+                              icon: Icons.add,
+                              label: l10n.planTrip,
+                              onPressed: () => _planTrip(context, ref),
+                            )
+                          : null,
+                    ),
+                    if (verified)
+                      _VerifiedDashboard(onPlan: () => _planTrip(context, ref))
+                    else ...[
+                      SectionHeader(l10n.yourVerification),
+                      _StatusCard(farmer: f),
+                      SectionHeader(l10n.howItWorks),
+                      HowItWorks(
+                        steps: [
+                          (Icons.badge_outlined, l10n.howStepVerify, l10n.howStepVerifyBody),
+                          (Icons.event_outlined, l10n.howStepTrip, l10n.howStepTripBody),
+                          (Icons.home_work_outlined, l10n.howStepBook, l10n.howStepBookBody),
+                          (Icons.storefront_outlined, l10n.howStepSell, l10n.howStepSellBody),
+                        ],
+                      ),
+                    ],
+                    // While editing, the photo is managed in the verification form; after submitting, here.
+                    if (f.hasEvidencePhoto && (f.status == 'Pending' || verified)) ...[
+                      SectionHeader(l10n.yourDocument),
+                      _EvidenceCard(farmer: f),
+                    ],
+                    const SizedBox(height: 16),
+                  ],
                 ),
-                if (verified)
-                  _VerifiedDashboard(onPlan: () => _planTrip(context, ref))
-                else ...[
-                  SectionHeader(l10n.yourVerification),
-                  _StatusCard(farmer: f),
-                  SectionHeader(l10n.howItWorks),
-                  HowItWorks(steps: [
-                    (Icons.badge_outlined, l10n.howStepVerify, l10n.howStepVerifyBody),
-                    (Icons.event_outlined, l10n.howStepTrip, l10n.howStepTripBody),
-                    (Icons.home_work_outlined, l10n.howStepBook, l10n.howStepBookBody),
-                    (Icons.storefront_outlined, l10n.howStepSell, l10n.howStepSellBody),
-                  ]),
-                ],
-                // While editing, the photo is managed in the verification form; after submitting, here.
-                if (f.hasEvidencePhoto && (f.status == 'Pending' || verified)) ...[
-                  SectionHeader(l10n.yourDocument),
-                  _EvidenceCard(farmer: f),
-                ],
-                const SizedBox(height: 16),
-              ]),
-            ),
-          ]),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -98,28 +112,43 @@ class _VerifiedDashboard extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final trips = ref.watch(tripsProvider);
     return trips.when(
-      loading: () => const Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator())),
-      error: (e, _) => Padding(padding: const EdgeInsets.only(top: 24), child: Text(apiErrorMessage(e, l10n.couldNotLoad))),
+      loading: () => const Padding(
+        padding: EdgeInsets.all(32),
+        child: Center(child: CircularProgressIndicator()),
+      ),
+      error: (e, _) =>
+          Padding(padding: const EdgeInsets.only(top: 24), child: Text(apiErrorMessage(e, l10n.couldNotLoad))),
       data: (list) {
         final s = tripStats(list);
         final next = list.where((t) => t.isPlanned).firstOrNull;
-        return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          const SizedBox(height: 16),
-          StatGrid(children: [
-            StatTile(value: s.upcoming, label: l10n.statUpcomingTrips, icon: Icons.event_outlined),
-            StatTile(value: s.booked, label: l10n.statSpacesBooked, icon: Icons.home_work_outlined),
-            StatTile(
-                value: s.waiting, label: l10n.statWaitingHost, icon: Icons.hourglass_top, highlight: s.waiting > 0),
-            StatTile(value: s.completed, label: l10n.statCompletedTrips, icon: Icons.task_alt),
-          ]),
-          SectionHeader(l10n.nextTrip),
-          if (next != null) _NextTripCard(trip: next) else _NoTripCard(onPlan: onPlan),
-          if (list.isNotEmpty) ...[
-            SectionHeader(l10n.allTrips,
-                action: TextButton.icon(icon: const Icon(Icons.add), label: Text(l10n.planTrip), onPressed: onPlan)),
-            for (final t in list) TripCard(trip: t),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(height: 16),
+            StatGrid(
+              children: [
+                StatTile(value: s.upcoming, label: l10n.statUpcomingTrips, icon: Icons.event_outlined),
+                StatTile(value: s.booked, label: l10n.statSpacesBooked, icon: Icons.home_work_outlined),
+                StatTile(
+                  value: s.waiting,
+                  label: l10n.statWaitingHost,
+                  icon: Icons.hourglass_top,
+                  highlight: s.waiting > 0,
+                ),
+                StatTile(value: s.completed, label: l10n.statCompletedTrips, icon: Icons.task_alt),
+              ],
+            ),
+            SectionHeader(l10n.nextTrip),
+            if (next != null) _NextTripCard(trip: next) else _NoTripCard(onPlan: onPlan),
+            if (list.isNotEmpty) ...[
+              SectionHeader(
+                l10n.allTrips,
+                action: TextButton.icon(icon: const Icon(Icons.add), label: Text(l10n.planTrip), onPressed: onPlan),
+              ),
+              for (final t in list) TripCard(trip: t),
+            ],
           ],
-        ]);
+        );
       },
     );
   }
@@ -140,8 +169,8 @@ class _NextTripCard extends ConsumerWidget {
     final (icon, color, line) = accepted
         ? (Icons.verified, scheme.primary, l10n.bookedAt(b!.space.title))
         : requested
-            ? (Icons.hourglass_top, scheme.warning, l10n.waitingAt(b!.space.title))
-            : (Icons.search, scheme.error, l10n.noSpaceYet);
+        ? (Icons.hourglass_top, scheme.warning, l10n.waitingAt(b!.space.title))
+        : (Icons.search, scheme.error, l10n.noSpaceYet);
 
     Future<void> open(String path) async {
       await context.push(path);
@@ -152,46 +181,67 @@ class _NextTripCard extends ConsumerWidget {
       margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
       child: IntrinsicHeight(
-        child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          DateBlock(date: trip.date),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Row(children: [
-                  Icon(icon, color: color, size: 20),
-                  const SizedBox(width: 6),
-                  Expanded(child: Text(line, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700))),
-                ]),
-                const SizedBox(height: 6),
-                if (b != null && (accepted || requested))
-                  Text('${b.from} – ${b.to} · ${feeLabel(l10n, b.fee == 0, b.fee)}',
-                      style: TextStyle(color: scheme.onSurfaceVariant)),
-                const SizedBox(height: 4),
-                Row(children: [
-                  Icon(vehicleIcon(trip.vehicle), size: 18, color: scheme.onSurfaceVariant),
-                  const SizedBox(width: 6),
-                  Text(l10n.vehicle(trip.vehicle), style: TextStyle(color: scheme.onSurfaceVariant)),
-                ]),
-                const SizedBox(height: 8),
-                ProduceLine(trip.produce),
-                const SizedBox(height: 12),
-                Wrap(spacing: 8, runSpacing: 8, children: [
-                  if (trip.canBook)
-                    FilledButton.icon(
-                      icon: const Icon(Icons.search),
-                      label: Text(l10n.findSpace),
-                      onPressed: () => open('/farmer/trips/${trip.id}/spaces'),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            DateBlock(date: trip.date),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(icon, color: color, size: 20),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(line, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                        ),
+                      ],
                     ),
-                  if (trip.canBook)
-                    OutlinedButton(onPressed: () => open('/farmer/trips/${trip.id}'), child: Text(l10n.viewTrip))
-                  else
-                    FilledButton.tonal(onPressed: () => open('/farmer/trips/${trip.id}'), child: Text(l10n.viewTrip)),
-                ]),
-              ]),
+                    const SizedBox(height: 6),
+                    if (b != null && (accepted || requested))
+                      Text(
+                        '${b.from} – ${b.to} · ${feeLabel(l10n, b.fee == 0, b.fee)}',
+                        style: TextStyle(color: scheme.onSurfaceVariant),
+                      ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(vehicleIcon(trip.vehicle), size: 18, color: scheme.onSurfaceVariant),
+                        const SizedBox(width: 6),
+                        Text(l10n.vehicle(trip.vehicle), style: TextStyle(color: scheme.onSurfaceVariant)),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    ProduceLine(trip.produce),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        if (trip.canBook)
+                          FilledButton.icon(
+                            icon: const Icon(Icons.search),
+                            label: Text(l10n.findSpace),
+                            onPressed: () => open('/farmer/trips/${trip.id}/spaces'),
+                          ),
+                        if (trip.canBook)
+                          OutlinedButton(onPressed: () => open('/farmer/trips/${trip.id}'), child: Text(l10n.viewTrip))
+                        else
+                          FilledButton.tonal(
+                            onPressed: () => open('/farmer/trips/${trip.id}'),
+                            child: Text(l10n.viewTrip),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ]),
+          ],
+        ),
       ),
     );
   }
@@ -209,15 +259,21 @@ class _NoTripCard extends StatelessWidget {
       margin: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.all(24),
-        child: Column(children: [
-          Icon(Icons.route_outlined, size: 48, color: scheme.primary),
-          const SizedBox(height: 8),
-          Text(l10n.noUpcomingTitle, style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 4),
-          Text(l10n.noUpcomingBody, textAlign: TextAlign.center, style: TextStyle(color: scheme.onSurfaceVariant)),
-          const SizedBox(height: 16),
-          FilledButton.icon(icon: const Icon(Icons.add), label: Text(l10n.planTrip), onPressed: onPlan),
-        ]),
+        child: Column(
+          children: [
+            Icon(Icons.route_outlined, size: 48, color: scheme.primary),
+            const SizedBox(height: 8),
+            Text(l10n.noUpcomingTitle, style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 4),
+            Text(
+              l10n.noUpcomingBody,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: scheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: 16),
+            FilledButton.icon(icon: const Icon(Icons.add), label: Text(l10n.planTrip), onPressed: onPlan),
+          ],
+        ),
       ),
     );
   }
@@ -251,7 +307,12 @@ class _StatusCard extends ConsumerWidget {
     final scheme = Theme.of(context).colorScheme;
     final (icon, color, title, body) = switch (farmer.status) {
       'Pending' => (Icons.hourglass_top, scheme.warning, l10n.verifyPendingTitle, l10n.verifyPendingBody),
-      'Rejected' => (Icons.error_outline, scheme.error, l10n.rejectedTitle, l10n.rejectedReason(farmer.rejectionReason ?? '')),
+      'Rejected' => (
+        Icons.error_outline,
+        scheme.error,
+        l10n.rejectedTitle,
+        l10n.rejectedReason(farmer.rejectionReason ?? ''),
+      ),
       _ => (Icons.badge_outlined, scheme.primary, l10n.verifyNotStartedTitle, l10n.verifyNotStartedBody),
     };
     final steps = [l10n.stepAboutYou, l10n.stepEvidence, l10n.stepReview];
@@ -260,57 +321,73 @@ class _StatusCard extends ConsumerWidget {
       margin: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.all(24),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            CircleAvatar(radius: 28, backgroundColor: color.withValues(alpha: .12), child: Icon(icon, color: color, size: 32)),
-            const SizedBox(width: 16),
-            Expanded(child: Text(title, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600))),
-          ]),
-          const SizedBox(height: 16),
-          Text(body, style: const TextStyle(fontSize: 16, height: 1.4)),
-          if (farmer.status == 'NotStarted') ...[
-            const SizedBox(height: 20),
-            for (final (i, s) in steps.indexed)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(children: [
-                  CircleAvatar(radius: 14, backgroundColor: scheme.secondaryContainer, child: Text('${i + 1}')),
-                  const SizedBox(width: 12),
-                  Text(s, style: const TextStyle(fontSize: 16)),
-                ]),
-              ),
-          ],
-          if (farmer.canEdit) ...[
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                icon: const Icon(Icons.arrow_forward),
-                label: Text(switch (farmer.status) {
-                  'Rejected' => l10n.fixAndResubmit,
-                  _ when farmer.hasStarted => l10n.continueVerification,
-                  _ => l10n.startVerification,
-                }),
-                onPressed: () async {
-                  await context.push('/farmer/verify');
-                  ref.invalidate(profileProvider);
-                  ref.invalidate(farmerProvider);
-                },
-              ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 28,
+                  backgroundColor: color.withValues(alpha: .12),
+                  child: Icon(icon, color: color, size: 32),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
             ),
-          ],
-          if (farmer.hasStarted || farmer.status == 'Pending' || farmer.status == 'Rejected') ...[
-            const SizedBox(height: 8),
-            Center(
-              child: TextButton.icon(
-                icon: const Icon(Icons.restart_alt),
-                label: Text(l10n.resetVerification),
-                style: TextButton.styleFrom(foregroundColor: scheme.error),
-                onPressed: () => _reset(context, ref),
+            const SizedBox(height: 16),
+            Text(body, style: const TextStyle(fontSize: 16, height: 1.4)),
+            if (farmer.status == 'NotStarted') ...[
+              const SizedBox(height: 20),
+              for (final (i, s) in steps.indexed)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    children: [
+                      CircleAvatar(radius: 14, backgroundColor: scheme.secondaryContainer, child: Text('${i + 1}')),
+                      const SizedBox(width: 12),
+                      Text(s, style: const TextStyle(fontSize: 16)),
+                    ],
+                  ),
+                ),
+            ],
+            if (farmer.canEdit) ...[
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  icon: const Icon(Icons.arrow_forward),
+                  label: Text(switch (farmer.status) {
+                    'Rejected' => l10n.fixAndResubmit,
+                    _ when farmer.hasStarted => l10n.continueVerification,
+                    _ => l10n.startVerification,
+                  }),
+                  onPressed: () async {
+                    await context.push('/farmer/verify');
+                    ref.invalidate(profileProvider);
+                    ref.invalidate(farmerProvider);
+                  },
+                ),
               ),
-            ),
+            ],
+            if (farmer.hasStarted || farmer.status == 'Pending' || farmer.status == 'Rejected') ...[
+              const SizedBox(height: 8),
+              Center(
+                child: TextButton.icon(
+                  icon: const Icon(Icons.restart_alt),
+                  label: Text(l10n.resetVerification),
+                  style: TextButton.styleFrom(foregroundColor: scheme.error),
+                  onPressed: () => _reset(context, ref),
+                ),
+              ),
+            ],
           ],
-        ]),
+        ),
       ),
     );
   }
@@ -330,35 +407,38 @@ class _EvidenceCard extends ConsumerWidget {
       margin: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          if (waiting) ...[
-            Text(l10n.yourDocumentPendingHint, style: Theme.of(context).textTheme.bodySmall),
-            const SizedBox(height: 12),
-          ],
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 360),
-            child: DocumentTile(
-              label: l10n.evidence(farmer.evidenceType),
-              hint: farmer.evidenceDetails,
-              icon: Icons.photo_camera_outlined,
-              filePath: evidencePhotoPath(farmer.evidencePhotoAt),
-              fileName: 'evidence',
-              canChange: waiting,
-              deleteWarning: l10n.evidenceWithdrawWarning,
-              onUpload: (photo) async {
-                await api.uploadEvidencePhoto(photo);
-                ref.invalidate(farmerProvider);
-              },
-              onDelete: () async {
-                final withdrawn = await api.deleteEvidencePhoto();
-                if (context.mounted) {
-                  showSuccess(context, withdrawn ? l10n.evidenceWithdrawnToast : l10n.photoDeletedToast);
-                }
-                ref.invalidate(farmerProvider);
-              },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (waiting) ...[
+              Text(l10n.yourDocumentPendingHint, style: Theme.of(context).textTheme.bodySmall),
+              const SizedBox(height: 12),
+            ],
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 360),
+              child: DocumentTile(
+                label: l10n.evidence(farmer.evidenceType),
+                hint: farmer.evidenceDetails,
+                icon: Icons.photo_camera_outlined,
+                filePath: evidencePhotoPath(farmer.evidencePhotoAt),
+                fileName: 'evidence',
+                canChange: waiting,
+                deleteWarning: l10n.evidenceWithdrawWarning,
+                onUpload: (photo) async {
+                  await api.uploadEvidencePhoto(photo);
+                  ref.invalidate(farmerProvider);
+                },
+                onDelete: () async {
+                  final withdrawn = await api.deleteEvidencePhoto();
+                  if (context.mounted) {
+                    showSuccess(context, withdrawn ? l10n.evidenceWithdrawnToast : l10n.photoDeletedToast);
+                  }
+                  ref.invalidate(farmerProvider);
+                },
+              ),
             ),
-          ),
-        ]),
+          ],
+        ),
       ),
     );
   }

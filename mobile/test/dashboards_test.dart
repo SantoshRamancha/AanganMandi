@@ -17,41 +17,41 @@ class _English extends LocaleNotifier {
 }
 
 Farmer _farmer(String status) => Farmer.fromJson({
-      'name': 'Ramesh Reddy',
-      'village': 'Nelakondapalli',
-      'district': 'Medak',
-      'cropCodes': ['BANANA'],
-      'farmSizeAcres': 2.5,
-      'produceSource': 'OwnFarm',
-      'evidenceType': 'AgriStackFarmerId',
-      'evidenceDetails': '123',
-      'hasEvidencePhoto': false,
-      'evidencePhotoAt': null,
-      'status': status,
-      'level': status == 'Verified' ? 2 : 1,
-      'rejectionReason': null,
-      'missing': <String>[],
-    });
+  'name': 'Ramesh Reddy',
+  'village': 'Nelakondapalli',
+  'district': 'Medak',
+  'cropCodes': ['BANANA'],
+  'farmSizeAcres': 2.5,
+  'produceSource': 'OwnFarm',
+  'evidenceType': 'AgriStackFarmerId',
+  'evidenceDetails': '123',
+  'hasEvidencePhoto': false,
+  'evidencePhotoAt': null,
+  'status': status,
+  'level': status == 'Verified' ? 2 : 1,
+  'rejectionReason': null,
+  'missing': <String>[],
+});
 
 Map<String, dynamic> _space(String status) => {
-      'id': 'sp-$status',
-      'title': 'Green villa courtyard',
-      'type': 'Courtyard',
-      'address': '1 Road',
-      'locality': 'Ameerpet',
-      'areaSqFt': 1089,
-      'isFree': false,
-      'fee': 1000,
-      'availableDays': ['Saturday'],
-      'openFrom': '16:00:00',
-      'openTo': '20:00:00',
-      'status': status,
-      'rejectionReason': null,
-      'photoUrls': <String>[],
-      'hasProof': true,
-      'photos': <Object>[],
-      'proof': null,
-    };
+  'id': 'sp-$status',
+  'title': 'Green villa courtyard',
+  'type': 'Courtyard',
+  'address': '1 Road',
+  'locality': 'Ameerpet',
+  'areaSqFt': 1089,
+  'isFree': false,
+  'fee': 1000,
+  'availableDays': ['Saturday'],
+  'openFrom': '16:00:00',
+  'openTo': '20:00:00',
+  'status': status,
+  'rejectionReason': null,
+  'photoUrls': <String>[],
+  'hasProof': true,
+  'photos': <Object>[],
+  'proof': null,
+};
 
 final _bookedTrip = Trip.fromJson({
   'id': 't1',
@@ -95,45 +95,47 @@ final _bookedTrip = Trip.fromJson({
 });
 
 HostBooking _hostBooking(String status) => HostBooking.fromJson({
-      'id': 'hb-$status',
-      'status': status,
-      'date': '2026-11-07',
-      'from': '16:00:00',
-      'to': '20:00:00',
-      'fee': 1000,
-      'message': 'Coming in an auto',
-      'reason': null,
-      'slotTaken': false,
-      'cancelledBy': null,
-      'spaceId': 's1',
-      'spaceTitle': 'Green villa courtyard',
-      'vehicle': 'Auto',
-      'produce': [
-        {'cropCode': 'BANANA', 'quantityKg': 120, 'pricePerKg': 30},
-      ],
-      'farmer': {
-        'name': 'Ramesh Reddy',
-        'village': 'Nelakondapalli',
-        'district': 'Medak',
-        'phone': status == 'Accepted' ? '+919000000001' : null,
-      },
-      'requestedAt': '2026-11-03T10:00:00',
-    });
+  'id': 'hb-$status',
+  'status': status,
+  'date': '2026-11-07',
+  'from': '16:00:00',
+  'to': '20:00:00',
+  'fee': 1000,
+  'message': 'Coming in an auto',
+  'reason': null,
+  'slotTaken': false,
+  'cancelledBy': null,
+  'spaceId': 's1',
+  'spaceTitle': 'Green villa courtyard',
+  'vehicle': 'Auto',
+  'produce': [
+    {'cropCode': 'BANANA', 'quantityKg': 120, 'pricePerKg': 30},
+  ],
+  'farmer': {
+    'name': 'Ramesh Reddy',
+    'village': 'Nelakondapalli',
+    'district': 'Medak',
+    'phone': status == 'Accepted' ? '+919000000001' : null,
+  },
+  'requestedAt': '2026-11-03T10:00:00',
+});
 
 Future<void> _pump(WidgetTester tester, Size size, Widget home, List overrides) async {
   await tester.binding.setSurfaceSize(size);
-  await tester.pumpWidget(ProviderScope(
-    overrides: [
-      localeProvider.overrideWith(_English.new),
-      cropsProvider.overrideWith((ref) async => []),
-      ...overrides.cast(),
-    ],
-    child: MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(body: home),
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        localeProvider.overrideWith(_English.new),
+        cropsProvider.overrideWith((ref) async => []),
+        ...overrides.cast(),
+      ],
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(body: home),
+      ),
     ),
-  ));
+  );
   await tester.pumpAndSettle();
 }
 
@@ -162,19 +164,25 @@ void main() {
 
     testWidgets('host dashboard at ${size.width.toInt()} px', (tester) async {
       await _pump(tester, size, const HostHome(), [
-        mySpacesProvider.overrideWith((ref) async => [Space.fromJson(_space('Live')), Space.fromJson(_space('PendingReview'))]),
-        hostBookingsProvider.overrideWith((ref, view) async => switch (view) {
-              'requests' => [_hostBooking('Requested')],
-              'upcoming' => [_hostBooking('Accepted')],
-              _ => <HostBooking>[],
-            }),
-        profileProvider.overrideWith((ref) async => Profile.fromJson({
-              'name': 'Lakshmi Prasad',
-              'phone': '+919000000002',
-              'language': 'en',
-              'roles': ['Host'],
-              'memberSince': '2026-10-30T00:00:00',
-            })),
+        mySpacesProvider.overrideWith(
+          (ref) async => [Space.fromJson(_space('Live')), Space.fromJson(_space('PendingReview'))],
+        ),
+        hostBookingsProvider.overrideWith(
+          (ref, view) async => switch (view) {
+            'requests' => [_hostBooking('Requested')],
+            'upcoming' => [_hostBooking('Accepted')],
+            _ => <HostBooking>[],
+          },
+        ),
+        profileProvider.overrideWith(
+          (ref) async => Profile.fromJson({
+            'name': 'Lakshmi Prasad',
+            'phone': '+919000000002',
+            'language': 'en',
+            'roles': ['Host'],
+            'memberSince': '2026-10-30T00:00:00',
+          }),
+        ),
       ]);
       expect(tester.takeException(), isNull);
       expect(find.text('Namaste, Lakshmi'), findsOneWidget);

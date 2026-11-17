@@ -50,12 +50,12 @@ public class OpsSpacesController(AppDbContext db, INotifier notifier) : Controll
     public async Task<IActionResult> Decide(Guid id, DecisionRequest req, CancellationToken ct)
     {
         var reason = string.IsNullOrWhiteSpace(req.Reason) ? null : req.Reason.Trim();
-        if (!req.Approve && reason is null) return Problem(statusCode: 400, title: "Give a reason to reject; the host sees it");
-        if (reason?.Length > 500) return Problem(statusCode: 400, title: "Keep the reason under 500 characters");
+        if (!req.Approve && reason is null) return this.Fail(400, "reject_reason_host");
+        if (reason?.Length > 500) return this.Fail(400, "reason_too_long", ("max", 500));
 
         var s = await db.Spaces.SingleOrDefaultAsync(x => x.Id == id, ct);
         if (s is null) return NotFound();
-        if (s.Status != SpaceStatus.PendingReview) return Problem(statusCode: 409, title: "This space was already reviewed");
+        if (s.Status != SpaceStatus.PendingReview) return this.Fail(409, "space_already_reviewed");
         s.Status = req.Approve ? SpaceStatus.Live : SpaceStatus.Rejected;
         s.RejectionReason = req.Approve ? null : reason;
         s.ReviewedAt = DateTime.UtcNow;

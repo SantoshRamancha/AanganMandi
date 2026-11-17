@@ -166,6 +166,55 @@ public static class MailText
             "{{farmer}} ఈరోజు స్లాట్ కోసం {{time}}కు {{space}} వద్ద చెక్ ఇన్ చేశారు. ఇంకా చేయకపోతే, దయచేసి దుకాణం కోసం స్థలాన్ని సిద్ధం చేయండి.",
             "{{farmer}} ने आज के स्लॉट के लिए {{time}} बजे {{space}} पर चेक इन किया है। अगर अभी तक नहीं किया है, तो कृपया दुकान के लिए जगह तैयार करें।"));
 
+    // Problem reports ---------------------------------------------------------------------------------
+
+    public static readonly L Category = new("About", "విషయం", "विषय");
+    public static readonly L Reporter = new("Reported by", "రిపోర్ట్ చేసినవారు", "रिपोर्ट करने वाले");
+    public static readonly L Booking = new("Booking", "బుకింగ్", "बुकिंग");
+    public static readonly L YourReport = new("Your report", "మీ రిపోర్ట్", "आपकी रिपोर्ट");
+    public static readonly L WhatWasDone = new("What we did", "మేము చేసింది", "हमने क्या किया");
+    public static readonly L WhatTheyWrote = new("What they wrote", "వారు రాసింది", "उन्होंने क्या लिखा");
+
+    public static L ReportCategory(string c) => c switch
+    {
+        "NoShow" => new("Someone did not come", "ఎవరో రాలేదు", "कोई नहीं आया"),
+        "SpaceProblem" => new("Problem with the space", "స్థలంతో సమస్య", "जगह में समस्या"),
+        "PaymentDispute" => new("Payment or fee", "చెల్లింపు లేదా రుసుము", "भुगतान या शुल्क"),
+        "Behaviour" => new("Behaviour or safety", "ప్రవర్తన లేదా భద్రత", "व्यवहार या सुरक्षा"),
+        "AppProblem" => new("Problem with the app", "యాప్‌తో సమస్య", "ऐप में समस्या"),
+        _ => new("Something else", "ఇంకేదైనా", "कुछ और"),
+    };
+
+    public static readonly MailTemplate ReportNew = new("report-new",
+        new("New problem report: {{category}}", "కొత్త సమస్య రిపోర్ట్: {{category}}", "नई समस्या रिपोर्ट: {{category}}"),
+        new("Someone reported a problem", "ఒకరు సమస్యను రిపోర్ట్ చేశారు", "किसी ने समस्या की रिपोर्ट की"),
+        new("{{reporter}} reported a problem. Please look at it in the Reports tab of the Operations screen and resolve it with a note; they will see your note.",
+            "{{reporter}} ఒక సమస్యను రిపోర్ట్ చేశారు. దయచేసి కార్యకలాపాల స్క్రీన్‌లోని రిపోర్టుల ట్యాబ్‌లో చూసి నోట్‌తో పరిష్కరించండి; వారు మీ నోట్ చూస్తారు.",
+            "{{reporter}} ने एक समस्या की रिपोर्ट की है। कृपया ऑपरेशंस स्क्रीन के रिपोर्ट टैब में देखें और नोट के साथ हल करें; वे आपका नोट देखेंगे।"));
+
+    public static readonly MailTemplate ReportResolved = new("report-resolved",
+        new("Your report was answered", "మీ రిపోర్ట్‌కు జవాబు వచ్చింది", "आपकी रिपोर्ट का जवाब आया"),
+        new("We looked at your report", "మీ రిపోర్ట్‌ను చూశాము", "हमने आपकी रिपोर्ट देखी"),
+        new("Thank you for telling us. Here is what our team did. You can also see it in the app under My profile, My reports.",
+            "మాకు చెప్పినందుకు ధన్యవాదాలు. మా బృందం చేసింది ఇదే. యాప్‌లో నా ప్రొఫైల్, నా రిపోర్టులలో కూడా చూడవచ్చు.",
+            "हमें बताने के लिए धन्यवाद। हमारी टीम ने यह किया। आप इसे ऐप में मेरी प्रोफ़ाइल, मेरी रिपोर्ट में भी देख सकते हैं।"));
+
+    // Reminders the evening before a booking -------------------------------------------------------
+
+    public static readonly MailTemplate ReminderFarmer = new("booking-reminder-farmer",
+        new("Tomorrow: {{space}}, {{time}}", "రేపు: {{space}}, {{time}}", "कल: {{space}}, {{time}}"),
+        new("Your selling day is tomorrow", "రేపు మీ అమ్మకం రోజు", "कल आपकी बिक्री का दिन है"),
+        new("This is a reminder that you have {{space}} booked tomorrow. When you reach the space, tap \"I've arrived\" on the trip in the app so the host and nearby buyers know you are there.\n\nIf you cannot come, please cancel in the app so the host can plan.",
+            "రేపు మీకు {{space}} బుక్ అయిందని గుర్తు చేస్తున్నాము. స్థలానికి చేరుకున్నాక, యాప్‌లో ప్రయాణంపై \"నేను చేరుకున్నాను\" నొక్కండి, అప్పుడు యజమానికి, దగ్గరి కొనుగోలుదారులకు మీరు వచ్చారని తెలుస్తుంది.\n\nమీరు రాలేకపోతే, యజమాని ప్లాన్ చేసుకునేలా యాప్‌లో రద్దు చేయండి.",
+            "याद दिला रहे हैं कि कल आपके लिए {{space}} बुक है। जगह पर पहुँचकर ऐप में यात्रा पर \"मैं पहुँच गया\" दबाएँ, ताकि मेज़बान और आस-पास के खरीदारों को पता चले कि आप आ गए हैं।\n\nअगर आप नहीं आ सकते, तो ऐप में रद्द करें ताकि मेज़बान योजना बना सकें।"));
+
+    public static readonly MailTemplate ReminderHost = new("booking-reminder-host",
+        new("Tomorrow: {{farmer}} comes to {{space}}", "రేపు: {{farmer}} {{space}}కు వస్తారు", "कल: {{farmer}} {{space}} आएँगे"),
+        new("A farmer is coming tomorrow", "రేపు ఒక రైతు వస్తున్నారు", "कल एक किसान आ रहे हैं"),
+        new("This is a reminder that {{farmer}} will sell at {{space}} tomorrow. Please keep the space clear for the stall. The app shows when they arrive.\n\nIf something has changed, cancel the booking in the app with a reason so the farmer knows in time.",
+            "రేపు {{farmer}} {{space}} వద్ద అమ్ముతారని గుర్తు చేస్తున్నాము. దయచేసి దుకాణం కోసం స్థలాన్ని ఖాళీగా ఉంచండి. వారు వచ్చినప్పుడు యాప్ చూపిస్తుంది.\n\nఏదైనా మారితే, రైతుకు సమయానికి తెలిసేలా యాప్‌లో కారణంతో బుకింగ్ రద్దు చేయండి.",
+            "याद दिला रहे हैं कि कल {{farmer}} {{space}} पर बेचेंगे। कृपया दुकान के लिए जगह ख़ाली रखें। उनके पहुँचने पर ऐप दिखाएगा।\n\nअगर कुछ बदल गया है, तो ऐप में कारण के साथ बुकिंग रद्द करें ताकि किसान को समय पर पता चले।"));
+
     // Nearby buyers -------------------------------------------------------------------------------
 
     public static readonly L Until = new("Until", "వరకు", "तक");
@@ -192,6 +241,6 @@ public static class MailText
         FarmerSubmitted, FarmerToVerify, FarmerApproved, FarmerRejected, VerifierAdded,
         SpaceSubmitted, SpaceToReview, SpaceApproved, SpaceRejected,
         BookingRequested, BookingAccepted, BookingDeclined, BookingCancelledByHost, BookingCancelledByFarmer,
-        BookingArrived, NearbyTomorrow, NearbySellingNow,
+        BookingArrived, NearbyTomorrow, NearbySellingNow, ReminderFarmer, ReminderHost, ReportNew, ReportResolved,
     ];
 }

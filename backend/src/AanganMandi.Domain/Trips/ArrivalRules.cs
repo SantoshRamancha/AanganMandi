@@ -15,12 +15,6 @@ public static class ArrivalRules
     /// <summary>The India date and time for a UTC moment.</summary>
     public static DateTime IndiaTime(DateTime utc) => utc.AddHours(5.5);
 
-    /// <summary>
-    /// Marks a stored UTC time as UTC. SQL Server hands datetime2 back without a kind, so the JSON would lack the
-    /// trailing "Z" and the app would read 06:47 UTC as 06:47 local time.
-    /// </summary>
-    public static DateTime? AsUtc(DateTime? t) => t is { } v ? DateTime.SpecifyKind(v, DateTimeKind.Utc) : null;
-
     /// <summary>Great-circle distance in metres between two latitude/longitude points.</summary>
     public static double DistanceMeters(double lat1, double lon1, double lat2, double lon2)
     {
@@ -34,17 +28,17 @@ public static class ArrivalRules
     }
 
     /// <summary>Null when the farmer can check in now, else why not. <paramref name="indiaNow"/> = <see cref="IndiaTime"/>.</summary>
-    public static string? CheckArrival(Booking b, DateTime indiaNow, double distanceMeters)
+    public static Common.ApiError? CheckArrival(Booking b, DateTime indiaNow, double distanceMeters)
     {
-        if (b.Status != BookingStatus.Accepted) return "Only a confirmed booking can be checked in";
-        if (b.ArrivedAt is not null) return "You already checked in";
+        if (b.Status != BookingStatus.Accepted) return new("checkin_not_confirmed");
+        if (b.ArrivedAt is not null) return new("already_checked_in");
         var today = DateOnly.FromDateTime(indiaNow);
-        if (b.Date != today) return b.Date > today ? "Check in on the day of your booking" : "This booking's day has passed";
+        if (b.Date != today) return new(b.Date > today ? "checkin_future_day" : "checkin_day_passed");
         var now = TimeOnly.FromDateTime(indiaNow);
-        if (now < b.From.Add(-EarlyWindow)) return $"Check-in opens at {b.From.Add(-EarlyWindow):HH\\:mm}";
-        if (now >= b.To) return "Your slot has ended";
-        if (distanceMeters > MaxDistanceMeters)
-            return $"You are about {RoundedMeters(distanceMeters)} m from the space. Check in when you reach it";
+        if (now < b.From.Add(-EarlyWindow))
+            return Common.ApiError.Of("checkin_not_open", ("time", b.From.Add(-EarlyWindow).ToString("HH:mm")));
+        if (now >= b.To) return new("slot_ended");
+        if (distanceMeters > MaxDistanceMeters) return Common.ApiError.Of("too_far", ("meters", RoundedMeters(distanceMeters)));
         return null;
     }
 

@@ -37,27 +37,26 @@ class _Harness extends StatefulWidget {
 class _HarnessState extends State<_Harness> {
   @override
   Widget build(BuildContext context) => SingleChildScrollView(
-        child: CropPicker(
-          selected: widget.selected,
-          onChanged: (code, on) => setState(() => on ? widget.selected.add(code) : widget.selected.remove(code)),
-        ),
-      );
+    child: CropPicker(
+      selected: widget.selected,
+      onChanged: (code, on) => setState(() => on ? widget.selected.add(code) : widget.selected.remove(code)),
+    ),
+  );
 }
 
 Future<Set<String>> _pump(WidgetTester tester) async {
   final selected = <String>{};
   await tester.binding.setSurfaceSize(const Size(500, 1000));
-  await tester.pumpWidget(ProviderScope(
-    overrides: [
-      localeProvider.overrideWith(_English.new),
-      cropsProvider.overrideWith((ref) async => _crops),
-    ],
-    child: MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(body: _Harness(selected)),
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [localeProvider.overrideWith(_English.new), cropsProvider.overrideWith((ref) async => _crops)],
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(body: _Harness(selected)),
+      ),
     ),
-  ));
+  );
   await tester.pumpAndSettle();
   return selected;
 }

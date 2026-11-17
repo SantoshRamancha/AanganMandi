@@ -13,27 +13,34 @@ class _FakeAuthApi extends AuthApi {
   final codes = <String>[];
 
   @override
-  Future<List<String>> verifyOtp(String phone, String code) async {
+  Future<LoginResult> verifyOtp(String phone, String code) async {
     codes.add(code);
-    return [];
+    return const LoginResult([], true);
   }
 }
 
 void main() {
   testWidgets('"Fill it in" verifies the test OTP exactly once', (tester) async {
     final api = _FakeAuthApi();
-    final router = GoRouter(routes: [
-      GoRoute(path: '/', builder: (_, _) => const OtpScreen(phone: '+919000000001', devCode: '123456')),
-      GoRoute(path: '/role', builder: (_, _) => const Text('role screen')),
-    ]);
-    await tester.pumpWidget(ProviderScope(
-      overrides: [authApiProvider.overrideWithValue(api)],
-      child: MaterialApp.router(
-        routerConfig: router,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (_, _) => const OtpScreen(phone: '+919000000001', devCode: '123456'),
+        ),
+        GoRoute(path: '/role', builder: (_, _) => const Text('role screen')),
+      ],
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [authApiProvider.overrideWithValue(api)],
+        child: MaterialApp.router(
+          routerConfig: router,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ),
       ),
-    ));
+    );
     await tester.pump(const Duration(milliseconds: 500)); // the OTP cursor blinks forever, so never "settles"
 
     expect(find.text('Test OTP: 123456'), findsOneWidget);
@@ -45,13 +52,15 @@ void main() {
   });
 
   testWidgets('no banner when the server sends no test OTP (real SMS)', (tester) async {
-    await tester.pumpWidget(ProviderScope(
-      child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: const OtpScreen(phone: '+919000000001'),
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const OtpScreen(phone: '+919000000001'),
+        ),
       ),
-    ));
+    );
     await tester.pump(const Duration(milliseconds: 500)); // the OTP cursor blinks forever, so never "settles"
     expect(find.textContaining('Test OTP'), findsNothing);
   });

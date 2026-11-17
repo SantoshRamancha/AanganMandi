@@ -82,7 +82,12 @@ class _SpaceFormScreenState extends ConsumerState<SpaceFormScreen> {
 
   Future<void> _addPhotos() async {
     final picked = kIsWeb
-        ? await ImagePicker().pickMultiImage(maxWidth: 1600, maxHeight: 1600, imageQuality: 70, limit: 8 - _photos.length)
+        ? await ImagePicker().pickMultiImage(
+            maxWidth: 1600,
+            maxHeight: 1600,
+            imageQuality: 70,
+            limit: 8 - _photos.length,
+          )
         : [?await pickPhoto()];
     for (final p in picked.take(8 - _photos.length)) {
       final bytes = await p.readAsBytes();
@@ -178,190 +183,244 @@ class _SpaceFormScreenState extends ConsumerState<SpaceFormScreen> {
           children: [
             MaxWidth(
               maxWidth: 900,
-              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                FormSection(
-                  title: l10n.spaceDetails,
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                    TextFormField(
-                      controller: _title,
-                      decoration: InputDecoration(labelText: l10n.spaceName, hintText: l10n.spaceNameHint),
-                      validator: required,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(l10n.spaceType),
-                    const SizedBox(height: 8),
-                    _choices({
-                      'Driveway': l10n.driveway,
-                      'Courtyard': l10n.courtyard,
-                      'OpenArea': l10n.openArea,
-                      'CommercialFrontage': l10n.commercialFrontage,
-                    }, _type, (v) => setState(() => _type = v)),
-                    const SizedBox(height: 16),
-                    ResponsiveFields(children: [
-                      TextFormField(
-                        controller: _area,
-                        decoration: InputDecoration(labelText: l10n.areaSqFt),
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                        validator: (v) => (int.tryParse(v ?? '') ?? 0) < 50 ? l10n.required : null,
-                      ),
-                      const SizedBox.shrink(),
-                    ]),
-                    const SizedBox(height: 16),
-                    Text(l10n.maxVehicle),
-                    const SizedBox(height: 8),
-                    _choices({
-                      'TwoWheeler': l10n.twoWheeler,
-                      'Auto': l10n.auto,
-                      'MiniTruck': l10n.miniTruck,
-                      'Tractor': l10n.tractor,
-                    }, _vehicle, (v) => setState(() => _vehicle = v)),
-                  ]),
-                ),
-                FormSection(
-                  title: l10n.spaceLocation,
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                    ResponsiveFields(children: [
-                      TextFormField(
-                        controller: _address,
-                        decoration: InputDecoration(labelText: l10n.address, helperText: l10n.addressHint, helperMaxLines: 2),
-                        validator: required,
-                        maxLines: 2,
-                      ),
-                      TextFormField(controller: _locality, decoration: InputDecoration(labelText: l10n.locality), validator: required),
-                    ]),
-                    const SizedBox(height: 16),
-                    Wrap(spacing: 12, runSpacing: 8, crossAxisAlignment: WrapCrossAlignment.center, children: [
-                      OutlinedButton.icon(
-                        icon: const Icon(Icons.my_location),
-                        label: Text(l10n.useMyLocation),
-                        onPressed: _busy ? null : _useLocation,
-                      ),
-                      TextButton(
-                        onPressed: () => setState(() => _manualLocation = !_manualLocation),
-                        child: Text(l10n.enterCoordinates),
-                      ),
-                    ]),
-                    if (_manualLocation || _lat.text.isNotEmpty) ...[
-                      const SizedBox(height: 12),
-                      ResponsiveFields(children: [
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  FormSection(
+                    title: l10n.spaceDetails,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
                         TextFormField(
-                          controller: _lat,
-                          decoration: InputDecoration(labelText: l10n.latitude, hintText: '17.4622'),
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                          controller: _title,
+                          decoration: InputDecoration(labelText: l10n.spaceName, hintText: l10n.spaceNameHint),
+                          validator: required,
                         ),
-                        TextFormField(
-                          controller: _lng,
-                          decoration: InputDecoration(labelText: l10n.longitude, hintText: '78.3568'),
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                        const SizedBox(height: 16),
+                        Text(l10n.spaceType),
+                        const SizedBox(height: 8),
+                        _choices(
+                          {
+                            'Driveway': l10n.driveway,
+                            'Courtyard': l10n.courtyard,
+                            'OpenArea': l10n.openArea,
+                            'CommercialFrontage': l10n.commercialFrontage,
+                          },
+                          _type,
+                          (v) => setState(() => _type = v),
                         ),
-                      ]),
-                    ],
-                  ]),
-                ),
-                FormSection(
-                  title: l10n.amenities,
-                  child: Wrap(spacing: 8, runSpacing: 8, children: [
-                    for (final (value, label, icon) in [
-                      ('Water', l10n.water, Icons.water_drop),
-                      ('Shade', l10n.shade, Icons.umbrella),
-                      ('PowerPoint', l10n.powerPoint, Icons.power),
-                      ('BuyerParking', l10n.buyerParking, Icons.local_parking),
-                      ('LoadingAccess', l10n.loadingAccess, Icons.local_shipping),
-                      ('Toilet', l10n.toilet, Icons.wc),
-                    ])
-                      FilterChip(
-                        // The tick would cover the icon; the filled colour already shows selection.
-                        showCheckmark: false,
-                        avatar: Icon(icon, size: 18),
-                        label: Text(label),
-                        selected: _amenities.contains(value),
-                        onSelected: (on) => setState(() => on ? _amenities.add(value) : _amenities.remove(value)),
-                      ),
-                  ]),
-                ),
-                FormSection(
-                  title: l10n.availability,
-                  subtitle: l10n.slotRule,
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                    Text(l10n.availableDays),
-                    const SizedBox(height: 8),
-                    Wrap(spacing: 8, runSpacing: 8, children: [
-                      for (final d in weekdays)
-                        FilterChip(
-                          label: Text(weekdayLabel(context, d)),
-                          selected: _days.contains(d),
-                          onSelected: (on) => setState(() => on ? _days.add(d) : _days.remove(d)),
+                        const SizedBox(height: 16),
+                        ResponsiveFields(
+                          children: [
+                            TextFormField(
+                              controller: _area,
+                              decoration: InputDecoration(labelText: l10n.areaSqFt),
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                              validator: (v) => (int.tryParse(v ?? '') ?? 0) < 50 ? l10n.required : null,
+                            ),
+                            const SizedBox.shrink(),
+                          ],
                         ),
-                    ]),
-                    const SizedBox(height: 16),
-                    ResponsiveFields(children: [
-                      OutlinedButton.icon(
-                        icon: const Icon(Icons.schedule),
-                        label: Text('${l10n.openFrom}  ${_from.format(context)}'),
-                        onPressed: () => _pickTime(true),
-                      ),
-                      OutlinedButton.icon(
-                        icon: const Icon(Icons.schedule),
-                        label: Text('${l10n.openTo}  ${_to.format(context)}'),
-                        onPressed: () => _pickTime(false),
-                      ),
-                    ]),
-                    if (_slotMinutes < 120 || _slotMinutes > 360)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Text(l10n.slotRule, style: TextStyle(color: Theme.of(context).colorScheme.error)),
-                      ),
-                  ]),
-                ),
-                FormSection(
-                  title: l10n.pricing,
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(l10n.freeSpace),
-                      value: _isFree,
-                      onChanged: (v) => setState(() => _isFree = v),
+                        const SizedBox(height: 16),
+                        Text(l10n.maxVehicle),
+                        const SizedBox(height: 8),
+                        _choices(
+                          {
+                            'TwoWheeler': l10n.twoWheeler,
+                            'Auto': l10n.auto,
+                            'MiniTruck': l10n.miniTruck,
+                            'Tractor': l10n.tractor,
+                          },
+                          _vehicle,
+                          (v) => setState(() => _vehicle = v),
+                        ),
+                      ],
                     ),
-                    if (!_isFree)
-                      ResponsiveFields(children: [
-                        TextFormField(
-                          controller: _fee,
-                          decoration: InputDecoration(labelText: l10n.feePerSlot, prefixText: '₹ '),
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                          validator: (v) => _isFree || (int.tryParse(v ?? '') ?? 0) > 0 ? null : l10n.required,
-                        ),
-                        const SizedBox.shrink(),
-                      ]),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _rules,
-                      decoration: InputDecoration(labelText: l10n.houseRules, hintText: l10n.houseRulesHint),
-                      maxLines: 2,
-                    ),
-                  ]),
-                ),
-                FormSection(
-                  title: l10n.spacePhotos,
-                  child: _PhotoGrid(
-                    photos: [for (final (_, b) in _photos) b],
-                    onAdd: _photos.length < 8 ? _addPhotos : null,
-                    onRemove: (i) => setState(() => _photos.removeAt(i)),
-                    addLabel: l10n.addPhotos,
                   ),
-                ),
-                FormSection(
-                  title: l10n.proofOfRight,
-                  subtitle: l10n.proofHint,
-                  child: _PhotoGrid(
-                    photos: [if (_proof case (_, final b)) b],
-                    onAdd: _proof == null ? _pickProof : null,
-                    onRemove: (_) => setState(() => _proof = null),
-                    addLabel: l10n.takePhoto,
+                  FormSection(
+                    title: l10n.spaceLocation,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        ResponsiveFields(
+                          children: [
+                            TextFormField(
+                              controller: _address,
+                              decoration: InputDecoration(
+                                labelText: l10n.address,
+                                helperText: l10n.addressHint,
+                                helperMaxLines: 2,
+                              ),
+                              validator: required,
+                              maxLines: 2,
+                            ),
+                            TextFormField(
+                              controller: _locality,
+                              decoration: InputDecoration(labelText: l10n.locality),
+                              validator: required,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 8,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            OutlinedButton.icon(
+                              icon: const Icon(Icons.my_location),
+                              label: Text(l10n.useMyLocation),
+                              onPressed: _busy ? null : _useLocation,
+                            ),
+                            TextButton(
+                              onPressed: () => setState(() => _manualLocation = !_manualLocation),
+                              child: Text(l10n.enterCoordinates),
+                            ),
+                          ],
+                        ),
+                        if (_manualLocation || _lat.text.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          ResponsiveFields(
+                            children: [
+                              TextFormField(
+                                controller: _lat,
+                                decoration: InputDecoration(labelText: l10n.latitude, hintText: '17.4622'),
+                                keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                              ),
+                              TextFormField(
+                                controller: _lng,
+                                decoration: InputDecoration(labelText: l10n.longitude, hintText: '78.3568'),
+                                keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
-                ),
-              ]),
+                  FormSection(
+                    title: l10n.amenities,
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final (value, label, icon) in [
+                          ('Water', l10n.water, Icons.water_drop),
+                          ('Shade', l10n.shade, Icons.umbrella),
+                          ('PowerPoint', l10n.powerPoint, Icons.power),
+                          ('BuyerParking', l10n.buyerParking, Icons.local_parking),
+                          ('LoadingAccess', l10n.loadingAccess, Icons.local_shipping),
+                          ('Toilet', l10n.toilet, Icons.wc),
+                        ])
+                          FilterChip(
+                            // The tick would cover the icon; the filled colour already shows selection.
+                            showCheckmark: false,
+                            avatar: Icon(icon, size: 18),
+                            label: Text(label),
+                            selected: _amenities.contains(value),
+                            onSelected: (on) => setState(() => on ? _amenities.add(value) : _amenities.remove(value)),
+                          ),
+                      ],
+                    ),
+                  ),
+                  FormSection(
+                    title: l10n.availability,
+                    subtitle: l10n.slotRule,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(l10n.availableDays),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            for (final d in weekdays)
+                              FilterChip(
+                                label: Text(weekdayLabel(context, d)),
+                                selected: _days.contains(d),
+                                onSelected: (on) => setState(() => on ? _days.add(d) : _days.remove(d)),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        ResponsiveFields(
+                          children: [
+                            OutlinedButton.icon(
+                              icon: const Icon(Icons.schedule),
+                              label: Text('${l10n.openFrom}  ${_from.format(context)}'),
+                              onPressed: () => _pickTime(true),
+                            ),
+                            OutlinedButton.icon(
+                              icon: const Icon(Icons.schedule),
+                              label: Text('${l10n.openTo}  ${_to.format(context)}'),
+                              onPressed: () => _pickTime(false),
+                            ),
+                          ],
+                        ),
+                        if (_slotMinutes < 120 || _slotMinutes > 360)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Text(l10n.slotRule, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                          ),
+                      ],
+                    ),
+                  ),
+                  FormSection(
+                    title: l10n.pricing,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        SwitchListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(l10n.freeSpace),
+                          value: _isFree,
+                          onChanged: (v) => setState(() => _isFree = v),
+                        ),
+                        if (!_isFree)
+                          ResponsiveFields(
+                            children: [
+                              TextFormField(
+                                controller: _fee,
+                                decoration: InputDecoration(labelText: l10n.feePerSlot, prefixText: '₹ '),
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                validator: (v) => _isFree || (int.tryParse(v ?? '') ?? 0) > 0 ? null : l10n.required,
+                              ),
+                              const SizedBox.shrink(),
+                            ],
+                          ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _rules,
+                          decoration: InputDecoration(labelText: l10n.houseRules, hintText: l10n.houseRulesHint),
+                          maxLines: 2,
+                        ),
+                      ],
+                    ),
+                  ),
+                  FormSection(
+                    title: l10n.spacePhotos,
+                    child: _PhotoGrid(
+                      photos: [for (final (_, b) in _photos) b],
+                      onAdd: _photos.length < 8 ? _addPhotos : null,
+                      onRemove: (i) => setState(() => _photos.removeAt(i)),
+                      addLabel: l10n.addPhotos,
+                    ),
+                  ),
+                  FormSection(
+                    title: l10n.proofOfRight,
+                    subtitle: l10n.proofHint,
+                    child: _PhotoGrid(
+                      photos: [if (_proof case (_, final b)) b],
+                      onAdd: _proof == null ? _pickProof : null,
+                      onRemove: (_) => setState(() => _proof = null),
+                      addLabel: l10n.takePhoto,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -391,13 +450,13 @@ class _SpaceFormScreenState extends ConsumerState<SpaceFormScreen> {
   }
 
   Widget _choices(Map<String, String> options, String selected, ValueChanged<String> onSelected) => Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          for (final e in options.entries)
-            ChoiceChip(label: Text(e.value), selected: e.key == selected, onSelected: (_) => onSelected(e.key)),
-        ],
-      );
+    spacing: 8,
+    runSpacing: 8,
+    children: [
+      for (final e in options.entries)
+        ChoiceChip(label: Text(e.value), selected: e.key == selected, onSelected: (_) => onSelected(e.key)),
+    ],
+  );
 }
 
 /// Thumbnails with remove buttons and an "add" tile.
@@ -411,43 +470,56 @@ class _PhotoGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return Wrap(spacing: 12, runSpacing: 12, children: [
-      for (final (i, bytes) in photos.indexed)
-        Stack(children: [
-          ClipRRect(
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: [
+        for (final (i, bytes) in photos.indexed)
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.memory(bytes, width: 140, height: 105, fit: BoxFit.cover),
+              ),
+              Positioned(
+                right: 4,
+                top: 4,
+                child: IconButton.filledTonal(
+                  iconSize: 18,
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(Icons.close),
+                  onPressed: () => onRemove(i),
+                ),
+              ),
+            ],
+          ),
+        if (onAdd != null)
+          InkWell(
+            onTap: onAdd,
             borderRadius: BorderRadius.circular(12),
-            child: Image.memory(bytes, width: 140, height: 105, fit: BoxFit.cover),
-          ),
-          Positioned(
-            right: 4,
-            top: 4,
-            child: IconButton.filledTonal(
-              iconSize: 18,
-              visualDensity: VisualDensity.compact,
-              icon: const Icon(Icons.close),
-              onPressed: () => onRemove(i),
+            child: Container(
+              width: 140,
+              height: 105,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: scheme.outline),
+                color: scheme.surfaceContainerHighest,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.add_a_photo, color: scheme.primary),
+                  const SizedBox(height: 6),
+                  Text(
+                    addLabel,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: scheme.primary),
+                  ),
+                ],
+              ),
             ),
           ),
-        ]),
-      if (onAdd != null)
-        InkWell(
-          onTap: onAdd,
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            width: 140,
-            height: 105,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: scheme.outline),
-              color: scheme.surfaceContainerHighest,
-            ),
-            child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-              Icon(Icons.add_a_photo, color: scheme.primary),
-              const SizedBox(height: 6),
-              Text(addLabel, textAlign: TextAlign.center, style: TextStyle(color: scheme.primary)),
-            ]),
-          ),
-        ),
-    ]);
+      ],
+    );
   }
 }

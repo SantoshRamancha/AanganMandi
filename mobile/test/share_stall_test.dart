@@ -29,45 +29,47 @@ class _FakeHostBookingApi extends HostBookingApi {
 }
 
 HostBooking _booking({bool canMarkNoShow = false}) => HostBooking.fromJson({
-      'id': 'hb1',
-      'status': 'Accepted',
-      'date': DateFormat('yyyy-MM-dd').format(DateTime.now().add(const Duration(days: 1))),
-      'from': '16:00:00',
-      'to': '20:00:00',
-      'fee': 0,
-      'message': null,
-      'reason': null,
-      'slotTaken': false,
-      'cancelledBy': null,
-      'spaceId': 's1',
-      'spaceTitle': 'Green villa courtyard',
-      'vehicle': 'Auto',
-      'produce': [
-        {'cropCode': 'custom:Tomato', 'quantityKg': 50, 'pricePerKg': 30},
-        {'cropCode': 'custom:Onion', 'quantityKg': null, 'pricePerKg': null},
-      ],
-      'farmer': {'name': 'Ramesh Reddy', 'village': 'Nelakondapalli', 'district': 'Medak', 'phone': '+919000000001'},
-      'requestedAt': '2026-11-03T10:00:00',
-      'arrivedAt': null,
-      'noShow': false,
-      'canMarkNoShow': canMarkNoShow,
-    });
+  'id': 'hb1',
+  'status': 'Accepted',
+  'date': DateFormat('yyyy-MM-dd').format(DateTime.now().add(const Duration(days: 1))),
+  'from': '16:00:00',
+  'to': '20:00:00',
+  'fee': 0,
+  'message': null,
+  'reason': null,
+  'slotTaken': false,
+  'cancelledBy': null,
+  'spaceId': 's1',
+  'spaceTitle': 'Green villa courtyard',
+  'vehicle': 'Auto',
+  'produce': [
+    {'cropCode': 'custom:Tomato', 'quantityKg': 50, 'pricePerKg': 30},
+    {'cropCode': 'custom:Onion', 'quantityKg': null, 'pricePerKg': null},
+  ],
+  'farmer': {'name': 'Ramesh Reddy', 'village': 'Nelakondapalli', 'district': 'Medak', 'phone': '+919000000001'},
+  'requestedAt': '2026-11-03T10:00:00',
+  'arrivedAt': null,
+  'noShow': false,
+  'canMarkNoShow': canMarkNoShow,
+});
 
 Future<void> _pump(WidgetTester tester, _FakeHostBookingApi api, HostBooking b) async {
   await tester.binding.setSurfaceSize(const Size(420, 1400));
-  await tester.pumpWidget(ProviderScope(
-    overrides: [
-      localeProvider.overrideWith(_English.new),
-      cropsProvider.overrideWith((ref) async => []),
-      hostBookingApiProvider.overrideWithValue(api),
-      hostBookingsProvider.overrideWith((ref, view) async => view == 'upcoming' ? [b] : <HostBooking>[]),
-    ],
-    child: const MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(body: HostBookingsScreen()),
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        localeProvider.overrideWith(_English.new),
+        cropsProvider.overrideWith((ref) async => []),
+        hostBookingApiProvider.overrideWithValue(api),
+        hostBookingsProvider.overrideWith((ref, view) async => view == 'upcoming' ? [b] : <HostBooking>[]),
+      ],
+      child: const MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(body: HostBookingsScreen()),
+      ),
     ),
-  ));
+  );
   await tester.pumpAndSettle();
   await tester.tap(find.textContaining('Upcoming'));
   await tester.pumpAndSettle();

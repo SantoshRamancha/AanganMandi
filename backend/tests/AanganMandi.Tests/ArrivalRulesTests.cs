@@ -35,17 +35,20 @@ public class ArrivalRulesTests
     public void Check_in_is_refused_when_too_far_and_says_how_far()
     {
         var error = ArrivalRules.CheckArrival(Confirmed(), At(16, 0), 734);
-        Assert.NotNull(error);
-        Assert.Contains("730 m", error);
+        Assert.Equal("too_far", error?.Code);
+        Assert.Equal(730, error!.Args["meters"]);
+        Assert.Contains("730 m", Infrastructure.Errors.ErrorText.Render(error, "en"));
     }
 
     [Fact]
     public void Check_in_is_refused_outside_the_day_and_the_window()
     {
-        Assert.Contains("opens at 15:00", ArrivalRules.CheckArrival(Confirmed(), At(14, 59), 10));
-        Assert.NotNull(ArrivalRules.CheckArrival(Confirmed(), At(20, 0), 10));
-        Assert.NotNull(ArrivalRules.CheckArrival(Confirmed(), At(16, 0, dayOffset: -1), 10));
-        Assert.NotNull(ArrivalRules.CheckArrival(Confirmed(), At(16, 0, dayOffset: 1), 10));
+        var early = ArrivalRules.CheckArrival(Confirmed(), At(14, 59), 10);
+        Assert.Equal("checkin_not_open", early?.Code);
+        Assert.Equal("15:00", early!.Args["time"]);
+        Assert.Equal("slot_ended", ArrivalRules.CheckArrival(Confirmed(), At(20, 0), 10)?.Code);
+        Assert.Equal("checkin_day_passed", ArrivalRules.CheckArrival(Confirmed(), At(16, 0, dayOffset: 1), 10)?.Code);
+        Assert.Equal("checkin_future_day", ArrivalRules.CheckArrival(Confirmed(), At(16, 0, dayOffset: -1), 10)?.Code);
     }
 
     [Fact]
@@ -75,12 +78,16 @@ public class ArrivalRulesTests
     }
 
     [Fact]
-    public void Stored_arrival_times_go_out_as_utc()
+    public void Every_stored_time_comes_back_as_utc_and_goes_out_with_a_z()
     {
         var fromDb = new DateTime(2026, 11, 12, 6, 47, 0, DateTimeKind.Unspecified);
-        Assert.Equal(DateTimeKind.Utc, ArrivalRules.AsUtc(fromDb)!.Value.Kind);
-        Assert.EndsWith("Z", System.Text.Json.JsonSerializer.Serialize(ArrivalRules.AsUtc(fromDb)).Trim('"'));
-        Assert.Null(ArrivalRules.AsUtc(null));
+        var read = Infrastructure.Persistence.UtcDateTimes.FromStore(fromDb);
+        Assert.Equal(DateTimeKind.Utc, read.Kind);
+        Assert.Equal(fromDb.Ticks, read.Ticks);   // same moment, only marked
+        Assert.EndsWith("Z", System.Text.Json.JsonSerializer.Serialize(read).Trim('"'));
+
+        var local = new DateTime(2026, 11, 12, 12, 17, 0, DateTimeKind.Local);
+        Assert.Equal(local.ToUniversalTime(), Infrastructure.Persistence.UtcDateTimes.ToStore(local));
     }
 
     [Theory]

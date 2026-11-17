@@ -39,18 +39,18 @@ public class OpsVerifiersController(AppDbContext db, INotifier notifier) : Contr
     [HttpPost]
     public async Task<ActionResult<Result>> Add(AddRequest req, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(req.Name)) return Problem(statusCode: 400, title: "Enter the verifier's name");
+        if (string.IsNullOrWhiteSpace(req.Name)) return this.Fail(400, "verifier_name_required");
         var digits = new string(req.Phone.Where(char.IsDigit).ToArray());
         if (digits.Length == 12 && digits.StartsWith("91")) digits = digits[2..];
-        if (digits.Length != 10) return Problem(statusCode: 400, title: "Enter a 10-digit mobile number");
+        if (digits.Length != 10) return this.Fail(400, "phone_invalid");
         var phone = "+91" + digits;
         var (email, emailError) = EmailAddresses.Normalize(req.Email);
-        if (emailError is not null) return Problem(statusCode: 400, title: emailError);
+        if (emailError is not null) return this.Fail(400, emailError);
 
         // An existing app user (say, a host) keeps their account and gains the Verifier role.
         var user = await db.Users.Include(u => u.Roles).SingleOrDefaultAsync(u => u.Phone == phone, ct);
         if (user?.Roles.Any(r => r.Role == Role.Verifier) == true)
-            return Problem(statusCode: 409, title: $"{phone} is already a verifier");
+            return this.Fail(409, "verifier_exists", ("phone", phone));
         if (user is null)
         {
             user = new User { Phone = phone, Name = req.Name.Trim() };

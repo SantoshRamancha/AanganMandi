@@ -41,19 +41,21 @@ void main() {
   testWidgets('declining with a typed reason sends it and closes cleanly', (tester) async {
     final api = _FakeHostBookingApi();
     await tester.binding.setSurfaceSize(const Size(900, 1400));
-    await tester.pumpWidget(ProviderScope(
-      overrides: [
-        hostBookingApiProvider.overrideWithValue(api),
-        localeProvider.overrideWith(_English.new),
-        cropsProvider.overrideWith((ref) async => []),
-        hostBookingsProvider.overrideWith((ref, view) async => view == 'requests' ? [_request] : <HostBooking>[]),
-      ],
-      child: const MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: HostBookingsScreen(),
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hostBookingApiProvider.overrideWithValue(api),
+          localeProvider.overrideWith(_English.new),
+          cropsProvider.overrideWith((ref) async => []),
+          hostBookingsProvider.overrideWith((ref, view) async => view == 'requests' ? [_request] : <HostBooking>[]),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: HostBookingsScreen(),
+        ),
       ),
-    ));
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.widgetWithText(OutlinedButton, 'Decline'));

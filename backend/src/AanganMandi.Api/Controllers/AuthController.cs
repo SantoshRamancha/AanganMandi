@@ -28,14 +28,14 @@ public class AuthController(IOtpService otp, OtpThrottle throttle, AppDbContext 
     public async Task<ActionResult<OtpRequested>> RequestOtp(OtpRequest req, CancellationToken ct)
     {
         var (phone, error) = PhoneNumbers.Normalize(req.Phone);
-        if (phone is null) return Problem(statusCode: 400, title: error);
+        if (phone is null) return this.Fail(400, error!);
         if (throttle.TrySend(phone) is { } wait)
         {
             var seconds = (int)Math.Ceiling(wait.TotalSeconds);
             Response.Headers.RetryAfter = seconds.ToString();
-            return Problem(statusCode: 429, title: seconds <= 60
-                ? $"Please wait {seconds} seconds before asking for a new OTP"
-                : $"Too many OTPs for this number. Try again in {(int)Math.Ceiling(wait.TotalMinutes)} minutes");
+            return seconds <= 60
+                ? this.Fail(429, "otp_wait", ("seconds", seconds))
+                : this.Fail(429, "otp_too_many", ("minutes", (int)Math.Ceiling(wait.TotalMinutes)));
         }
         return Accepted(new OtpRequested(await otp.SendAsync(phone, ct)));
     }
@@ -45,9 +45,9 @@ public class AuthController(IOtpService otp, OtpThrottle throttle, AppDbContext 
     public async Task<ActionResult<TokenResponse>> Verify(OtpVerify req, CancellationToken ct)
     {
         var (phone, error) = PhoneNumbers.Normalize(req.Phone);
-        if (phone is null) return Problem(statusCode: 400, title: error);
+        if (phone is null) return this.Fail(400, error!);
         if (!await otp.VerifyAsync(phone, req.Code, ct))
-            return Problem(statusCode: 401, title: "Wrong or expired OTP. Check it, or ask for a new one");
+            return this.Fail(401, "otp_wrong");
 
         var user = await db.Users.Include(u => u.Roles).SingleOrDefaultAsync(u => u.Phone == phone, ct);
         if (user is null)
@@ -66,5 +66,5 @@ public class AuthController(IOtpService otp, OtpThrottle throttle, AppDbContext 
     public async Task<ActionResult<TokenResponse>> Refresh(RefreshRequest req, CancellationToken ct) =>
         await tokens.RefreshAsync(req.RefreshToken, ct) is { } response
             ? response
-            : Problem(statusCode: 401, title: "Session expired. Please log in again.");
+            : this.Fail(401, "session_expired");
 }

@@ -46,16 +46,21 @@ Future<void> downloadFile(BuildContext context, WidgetRef ref, String path, Stri
 
 /// Full-screen, zoomable view of [path] with download and close buttons.
 Future<void> showFilePreview(BuildContext context, String path, String name) => showDialog<void>(
-      context: context,
-      builder: (dialog) => Dialog.fullscreen(
-        backgroundColor: Colors.black,
-        child: Consumer(builder: (context, ref, _) {
-          final l10n = AppLocalizations.of(context);
-          return Stack(children: [
+  context: context,
+  builder: (dialog) => Dialog.fullscreen(
+    backgroundColor: Colors.black,
+    child: Consumer(
+      builder: (context, ref, _) {
+        final l10n = AppLocalizations.of(context);
+        return Stack(
+          children: [
             Positioned.fill(
-              child: ref.watch(authFileProvider(path)).when(
+              child: ref
+                  .watch(authFileProvider(path))
+                  .when(
                     loading: () => const Center(child: CircularProgressIndicator()),
-                    error: (_, _) => const Center(child: Icon(Icons.broken_image_outlined, size: 56, color: Colors.white70)),
+                    error: (_, _) =>
+                        const Center(child: Icon(Icons.broken_image_outlined, size: 56, color: Colors.white70)),
                     data: (f) => InteractiveViewer(maxScale: 6, child: Center(child: Image.memory(f.bytes))),
                   ),
             ),
@@ -63,25 +68,29 @@ Future<void> showFilePreview(BuildContext context, String path, String name) => 
               top: 12,
               right: 12,
               child: SafeArea(
-                child: Row(children: [
-                  IconButton.filledTonal(
-                    icon: const Icon(Icons.download),
-                    tooltip: l10n.download,
-                    onPressed: () => downloadFile(context, ref, path, name),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton.filledTonal(
-                    icon: const Icon(Icons.close),
-                    tooltip: l10n.close,
-                    onPressed: () => Navigator.pop(dialog),
-                  ),
-                ]),
+                child: Row(
+                  children: [
+                    IconButton.filledTonal(
+                      icon: const Icon(Icons.download),
+                      tooltip: l10n.download,
+                      onPressed: () => downloadFile(context, ref, path, name),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton.filledTonal(
+                      icon: const Icon(Icons.close),
+                      tooltip: l10n.close,
+                      onPressed: () => Navigator.pop(dialog),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ]);
-        }),
-      ),
-    );
+          ],
+        );
+      },
+    ),
+  ),
+);
 
 /// Asks before deleting something; true only when the user taps the red Delete button.
 Future<bool> confirmDelete(BuildContext context, {required String title, required String body}) async {
@@ -169,8 +178,11 @@ class _DocumentTileState extends ConsumerState<DocumentTile> {
 
   Future<void> _delete() async {
     final l10n = AppLocalizations.of(context);
-    final ok = await confirmDelete(context,
-        title: l10n.deleteDocumentQ, body: [l10n.deleteDocumentBody, ?widget.deleteWarning].join('\n\n'));
+    final ok = await confirmDelete(
+      context,
+      title: l10n.deleteDocumentQ,
+      body: [l10n.deleteDocumentBody, ?widget.deleteWarning].join('\n\n'),
+    );
     if (ok) await _run(widget.onDelete!);
   }
 
@@ -186,16 +198,20 @@ class _DocumentTileState extends ConsumerState<DocumentTile> {
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(color: path != null ? scheme.primary.withValues(alpha: .6) : scheme.outlineVariant),
       ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        AspectRatio(
-          aspectRatio: 4 / 3,
-          child: ColoredBox(
-            color: scheme.surfaceContainerHighest,
-            child: _busy
-                ? const Center(child: CircularProgressIndicator())
-                : path == null
-                    ? Icon(widget.icon, size: 48, color: scheme.onSurfaceVariant)
-                    : ref.watch(authFileProvider(path)).when(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AspectRatio(
+            aspectRatio: 4 / 3,
+            child: ColoredBox(
+              color: scheme.surfaceContainerHighest,
+              child: _busy
+                  ? const Center(child: CircularProgressIndicator())
+                  : path == null
+                  ? Icon(widget.icon, size: 48, color: scheme.onSurfaceVariant)
+                  : ref
+                        .watch(authFileProvider(path))
+                        .when(
                           loading: () => const Center(child: CircularProgressIndicator()),
                           error: (_, _) => Icon(Icons.broken_image_outlined, size: 40, color: scheme.onSurfaceVariant),
                           data: (f) => InkWell(
@@ -203,45 +219,61 @@ class _DocumentTileState extends ConsumerState<DocumentTile> {
                             child: Image.memory(f.bytes, fit: BoxFit.cover),
                           ),
                         ),
+            ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Text(widget.label, style: const TextStyle(fontWeight: FontWeight.w600)),
-            if (widget.hint != null) Text(widget.hint!, style: Theme.of(context).textTheme.bodySmall),
-            const SizedBox(height: 6),
-            if (path == null)
-              widget.canChange
-                  ? OutlinedButton.icon(
-                      onPressed: _busy ? null : _upload,
-                      icon: const Icon(Icons.upload_outlined),
-                      label: Text(l10n.uploadPhoto),
-                    )
-                  : Text('—', style: TextStyle(color: scheme.onSurfaceVariant))
-            else ...[
-              Wrap(spacing: 4, runSpacing: 4, children: [
-                _Action(Icons.visibility_outlined, l10n.preview,
-                    _busy ? null : () => showFilePreview(context, path, widget.fileName)),
-                _Action(Icons.download_outlined, l10n.download,
-                    _busy ? null : () => downloadFile(context, ref, path, widget.fileName)),
-                if (widget.canChange) _Action(Icons.upload_outlined, l10n.reupload, _busy ? null : _upload),
-                if (widget.canChange && widget.onDelete != null)
-                  _Action(Icons.delete_outline, l10n.delete, _busy ? null : _delete, color: scheme.error),
-              ]),
-              if (!widget.canChange)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Row(children: [
-                    Icon(Icons.lock_outline, size: 16, color: scheme.onSurfaceVariant),
-                    const SizedBox(width: 6),
-                    Expanded(child: Text(l10n.documentLocked, style: Theme.of(context).textTheme.bodySmall)),
-                  ]),
-                ),
-            ],
-          ]),
-        ),
-      ]),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(widget.label, style: const TextStyle(fontWeight: FontWeight.w600)),
+                if (widget.hint != null) Text(widget.hint!, style: Theme.of(context).textTheme.bodySmall),
+                const SizedBox(height: 6),
+                if (path == null)
+                  widget.canChange
+                      ? OutlinedButton.icon(
+                          onPressed: _busy ? null : _upload,
+                          icon: const Icon(Icons.upload_outlined),
+                          label: Text(l10n.uploadPhoto),
+                        )
+                      : Text('—', style: TextStyle(color: scheme.onSurfaceVariant))
+                else ...[
+                  Wrap(
+                    spacing: 4,
+                    runSpacing: 4,
+                    children: [
+                      _Action(
+                        Icons.visibility_outlined,
+                        l10n.preview,
+                        _busy ? null : () => showFilePreview(context, path, widget.fileName),
+                      ),
+                      _Action(
+                        Icons.download_outlined,
+                        l10n.download,
+                        _busy ? null : () => downloadFile(context, ref, path, widget.fileName),
+                      ),
+                      if (widget.canChange) _Action(Icons.upload_outlined, l10n.reupload, _busy ? null : _upload),
+                      if (widget.canChange && widget.onDelete != null)
+                        _Action(Icons.delete_outline, l10n.delete, _busy ? null : _delete, color: scheme.error),
+                    ],
+                  ),
+                  if (!widget.canChange)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Row(
+                        children: [
+                          Icon(Icons.lock_outline, size: 16, color: scheme.onSurfaceVariant),
+                          const SizedBox(width: 6),
+                          Expanded(child: Text(l10n.documentLocked, style: Theme.of(context).textTheme.bodySmall)),
+                        ],
+                      ),
+                    ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -255,13 +287,13 @@ class _Action extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => TextButton.icon(
-        style: TextButton.styleFrom(
-          foregroundColor: color,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          visualDensity: VisualDensity.compact,
-        ),
-        icon: Icon(icon, size: 20),
-        label: Text(label),
-        onPressed: onPressed,
-      );
+    style: TextButton.styleFrom(
+      foregroundColor: color,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      visualDensity: VisualDensity.compact,
+    ),
+    icon: Icon(icon, size: 20),
+    label: Text(label),
+    onPressed: onPressed,
+  );
 }

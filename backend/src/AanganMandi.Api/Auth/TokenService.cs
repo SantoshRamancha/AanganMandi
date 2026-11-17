@@ -9,7 +9,9 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace AanganMandi.Api.Auth;
 
-public record TokenResponse(string AccessToken, string RefreshToken, string[] Roles, string PreferredLanguage, string? Name);
+/// <summary>TermsAccepted: the user accepted the current terms and privacy policy; the app asks first when not.</summary>
+public record TokenResponse(string AccessToken, string RefreshToken, string[] Roles, string PreferredLanguage, string? Name,
+    bool TermsAccepted);
 
 /// <summary>15-minute JWT access tokens plus 30-day refresh tokens, rotated on every refresh.</summary>
 public class TokenService(IConfiguration config, AppDbContext db)
@@ -34,7 +36,8 @@ public class TokenService(IConfiguration config, AppDbContext db)
         var refresh = Convert.ToBase64String(RandomNumberGenerator.GetBytes(48));
         db.RefreshTokens.Add(new RefreshToken { UserId = user.Id, TokenHash = Hash(refresh), ExpiresAt = DateTime.UtcNow + RefreshLifetime });
         await db.SaveChangesAsync(ct);
-        return new TokenResponse(new JwtSecurityTokenHandler().WriteToken(token), refresh, roles, user.PreferredLanguage, user.Name);
+        return new TokenResponse(new JwtSecurityTokenHandler().WriteToken(token), refresh, roles, user.PreferredLanguage, user.Name,
+            user.TermsVersion == Infrastructure.Sharing.LegalPages.Version);
     }
 
     /// <summary>Revokes the presented refresh token and issues a new pair, or returns null if it is invalid.</summary>

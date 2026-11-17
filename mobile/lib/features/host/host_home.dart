@@ -57,74 +57,102 @@ class HostHome extends ConsumerWidget {
             ref.invalidate(hostBookingsProvider);
             return ref.refresh(mySpacesProvider.future);
           },
-          child: ListView(padding: EdgeInsets.all(Breakpoints.gutter(context)), children: [
-            MaxWidth(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                DashboardBanner(
-                  title: greeting,
-                  subtitle: list.isEmpty ? l10n.hostBannerNew : l10n.hostBanner(live, requests.length),
-                  icon: Icons.home_work,
-                  action: BannerButton(icon: Icons.add, label: l10n.addSpace, onPressed: () => _add(context, ref)),
-                ),
-                if (list.isEmpty) ...[
-                  SectionHeader(l10n.howItWorks),
-                  HowItWorks(steps: [
-                    (Icons.add_home_outlined, l10n.hostHowList, l10n.hostHowListBody),
-                    (Icons.fact_check_outlined, l10n.hostHowApproved, l10n.hostHowApprovedBody),
-                    (Icons.agriculture_outlined, l10n.hostHowRequests, l10n.hostHowRequestsBody),
-                    (Icons.handshake_outlined, l10n.hostHowAccept, l10n.hostHowAcceptBody),
-                  ]),
-                ] else ...[
-                  const SizedBox(height: 16),
-                  StatGrid(children: [
-                    StatTile(
-                      value: requests.length,
-                      label: l10n.statNewRequests,
-                      icon: Icons.mark_email_unread_outlined,
-                      highlight: requests.isNotEmpty,
-                      onTap: openBookings,
+          child: ListView(
+            padding: EdgeInsets.all(Breakpoints.gutter(context)),
+            children: [
+              MaxWidth(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    DashboardBanner(
+                      title: greeting,
+                      subtitle: list.isEmpty ? l10n.hostBannerNew : l10n.hostBanner(live, requests.length),
+                      icon: Icons.home_work,
+                      action: BannerButton(icon: Icons.add, label: l10n.addSpace, onPressed: () => _add(context, ref)),
                     ),
-                    StatTile(
-                      value: upcoming.length,
-                      label: l10n.statUpcomingBookings,
-                      icon: Icons.event_available_outlined,
-                      onTap: () => openBookings(1),
-                    ),
-                    StatTile(value: live, label: l10n.statSpacesLive, icon: Icons.storefront_outlined),
-                    StatTile(value: inReview, label: l10n.statusPendingReview, icon: Icons.pending_actions),
-                  ]),
-                  if (requests.isNotEmpty) ...[
-                    SectionHeader(l10n.needsYourAnswer,
-                        action: TextButton(onPressed: openBookings, child: Text(l10n.viewAll))),
-                    for (final b in requests.take(3)) _RequestTile(booking: b, onTap: openBookings),
-                  ],
-                  SectionHeader(l10n.nextBooking),
-                  if (upcoming.firstOrNull case final next?)
-                    _NextBookingCard(booking: next, onTap: () => openBookings(1))
-                  else
-                    Card(
-                      margin: EdgeInsets.zero,
-                      child: ListTile(
-                        leading: Icon(Icons.event_outlined, color: Theme.of(context).colorScheme.outline),
-                        title: Text(l10n.noBookingYet),
+                    if (list.isEmpty) ...[
+                      SectionHeader(l10n.howItWorks),
+                      HowItWorks(
+                        steps: [
+                          (Icons.add_home_outlined, l10n.hostHowList, l10n.hostHowListBody),
+                          (Icons.fact_check_outlined, l10n.hostHowApproved, l10n.hostHowApprovedBody),
+                          (Icons.agriculture_outlined, l10n.hostHowRequests, l10n.hostHowRequestsBody),
+                          (Icons.handshake_outlined, l10n.hostHowAccept, l10n.hostHowAcceptBody),
+                        ],
                       ),
-                    ),
-                  SectionHeader(l10n.mySpaces,
-                      action: TextButton.icon(
-                          icon: const Icon(Icons.add), label: Text(l10n.addSpace), onPressed: () => _add(context, ref))),
-                  LayoutBuilder(builder: (context, c) {
-                    const gap = 16.0;
-                    final cols = ((c.maxWidth + gap) / (340 + gap)).floor().clamp(1, 3);
-                    final width = (c.maxWidth - gap * (cols - 1)) / cols;
-                    return Wrap(spacing: gap, runSpacing: gap, children: [
-                      for (final s in list) SizedBox(width: width, height: 300, child: SpaceCard(space: s)),
-                    ]);
-                  }),
-                ],
-                const SizedBox(height: 24),
-              ]),
-            ),
-          ]),
+                    ] else ...[
+                      const SizedBox(height: 16),
+                      StatGrid(
+                        children: [
+                          StatTile(
+                            value: requests.length,
+                            label: l10n.statNewRequests,
+                            icon: Icons.mark_email_unread_outlined,
+                            highlight: requests.isNotEmpty,
+                            onTap: openBookings,
+                          ),
+                          StatTile(
+                            value: upcoming.length,
+                            label: l10n.statUpcomingBookings,
+                            icon: Icons.event_available_outlined,
+                            onTap: () => openBookings(1),
+                          ),
+                          StatTile(value: live, label: l10n.statSpacesLive, icon: Icons.storefront_outlined),
+                          StatTile(value: inReview, label: l10n.statusPendingReview, icon: Icons.pending_actions),
+                        ],
+                      ),
+                      if (requests.isNotEmpty) ...[
+                        SectionHeader(
+                          l10n.needsYourAnswer,
+                          action: TextButton(onPressed: openBookings, child: Text(l10n.viewAll)),
+                        ),
+                        for (final b in requests.take(3)) _RequestTile(booking: b, onTap: openBookings),
+                      ],
+                      SectionHeader(l10n.nextBooking),
+                      if (upcoming.firstOrNull case final next?)
+                        _NextBookingCard(booking: next, onTap: () => openBookings(1))
+                      else
+                        Card(
+                          margin: EdgeInsets.zero,
+                          child: ListTile(
+                            leading: Icon(Icons.event_outlined, color: Theme.of(context).colorScheme.outline),
+                            title: Text(l10n.noBookingYet),
+                          ),
+                        ),
+                      SectionHeader(
+                        l10n.mySpaces,
+                        action: TextButton.icon(
+                          icon: const Icon(Icons.add),
+                          label: Text(l10n.addSpace),
+                          onPressed: () => _add(context, ref),
+                        ),
+                      ),
+                      LayoutBuilder(
+                        builder: (context, c) {
+                          const gap = 16.0;
+                          final cols = ((c.maxWidth + gap) / (340 + gap)).floor().clamp(1, 3);
+                          final width = (c.maxWidth - gap * (cols - 1)) / cols;
+                          return Wrap(
+                            spacing: gap,
+                            runSpacing: gap,
+                            children: [
+                              for (final s in list)
+                                SizedBox(
+                                  width: width,
+                                  height: 300,
+                                  child: SpaceCard(space: s),
+                                ),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -152,8 +180,10 @@ class _RequestTile extends StatelessWidget {
           foregroundColor: scheme.onWarningContainer,
           child: Text((b.farmerName ?? '?').characters.first.toUpperCase()),
         ),
-        title: Text('${b.farmerName ?? l10n.noName} · ${tripDate(b.date)}',
-            style: const TextStyle(fontWeight: FontWeight.w600)),
+        title: Text(
+          '${b.farmerName ?? l10n.noName} · ${tripDate(b.date)}',
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
         subtitle: Text('${b.spaceTitle} · ${b.from}–${b.to} · ${l10n.vehicle(b.vehicle)}'),
         trailing: FilledButton.tonal(onPressed: onTap, child: Text(l10n.answer)),
       ),
@@ -178,44 +208,61 @@ class _NextBookingCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: IntrinsicHeight(
-          child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            DateBlock(date: b.date),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(b.farmerName ?? l10n.noName, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 4),
-                  Text('${b.spaceTitle} · ${b.from} – ${b.to}', style: TextStyle(color: scheme.onSurfaceVariant)),
-                  if (b.arrivedAt case final at?) ...[
-                    const SizedBox(height: 6),
-                    Row(children: [
-                      Icon(Icons.where_to_vote, size: 18, color: scheme.primary),
-                      const SizedBox(width: 6),
-                      Text(l10n.arrivedAt(TimeOfDay.fromDateTime(at).format(context)),
-                          style: TextStyle(color: scheme.primary, fontWeight: FontWeight.w600)),
-                    ]),
-                  ],
-                  const SizedBox(height: 8),
-                  ProduceLine(b.produce),
-                  const SizedBox(height: 12),
-                  Wrap(spacing: 8, runSpacing: 8, children: [
-                    if (b.farmerPhone != null)
-                      FilledButton.tonalIcon(
-                        icon: const Icon(Icons.call),
-                        label: Text(l10n.callFarmer),
-                        onPressed: () => launchUrl(Uri.parse('tel:${b.farmerPhone}')),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              DateBlock(date: b.date),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        b.farmerName ?? l10n.noName,
+                        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
                       ),
-                    OutlinedButton.icon(
-                      icon: const Icon(Icons.share),
-                      label: Text(l10n.shareWithNeighbours),
-                      onPressed: () => showShareStallSheet(context, b),
-                    ),
-                  ]),
-                ]),
+                      const SizedBox(height: 4),
+                      Text('${b.spaceTitle} · ${b.from} – ${b.to}', style: TextStyle(color: scheme.onSurfaceVariant)),
+                      if (b.arrivedAt case final at?) ...[
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(Icons.where_to_vote, size: 18, color: scheme.primary),
+                            const SizedBox(width: 6),
+                            Text(
+                              l10n.arrivedAt(TimeOfDay.fromDateTime(at).format(context)),
+                              style: TextStyle(color: scheme.primary, fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                      ],
+                      const SizedBox(height: 8),
+                      ProduceLine(b.produce),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          if (b.farmerPhone != null)
+                            FilledButton.tonalIcon(
+                              icon: const Icon(Icons.call),
+                              label: Text(l10n.callFarmer),
+                              onPressed: () => launchUrl(Uri.parse('tel:${b.farmerPhone}')),
+                            ),
+                          OutlinedButton.icon(
+                            icon: const Icon(Icons.share),
+                            label: Text(l10n.shareWithNeighbours),
+                            onPressed: () => showShareStallSheet(context, b),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ]),
+            ],
+          ),
         ),
       ),
     );
@@ -238,29 +285,50 @@ class SpaceCard extends ConsumerWidget {
           await context.push('/host/spaces/${space.id}');
           ref.invalidate(mySpacesProvider);
         },
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Expanded(
-            child: Stack(fit: StackFit.expand, children: [
-              space.photoUrls.isEmpty
-                  ? ColoredBox(color: scheme.surfaceContainerHighest, child: Icon(Icons.home_work, size: 56, color: scheme.onSurfaceVariant))
-                  : Image.network('$apiOrigin${space.photoUrls.first}', fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => ColoredBox(color: scheme.surfaceContainerHighest)),
-              Positioned(left: 12, top: 12, child: StatusChip(status: space.status)),
-            ]),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(space.title, maxLines: 1, overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 4),
-              Text('${space.locality} · ${space.areaSqFt} sq ft', style: TextStyle(color: scheme.onSurfaceVariant)),
-              const SizedBox(height: 4),
-              Text(space.isFree ? l10n.free : l10n.perSlot(space.fee.toStringAsFixed(0)),
-                  style: TextStyle(color: scheme.primary, fontWeight: FontWeight.w600)),
-            ]),
-          ),
-        ]),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  space.photoUrls.isEmpty
+                      ? ColoredBox(
+                          color: scheme.surfaceContainerHighest,
+                          child: Icon(Icons.home_work, size: 56, color: scheme.onSurfaceVariant),
+                        )
+                      : Image.network(
+                          '$apiOrigin${space.photoUrls.first}',
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => ColoredBox(color: scheme.surfaceContainerHighest),
+                        ),
+                  Positioned(left: 12, top: 12, child: StatusChip(status: space.status)),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    space.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 4),
+                  Text('${space.locality} · ${space.areaSqFt} sq ft', style: TextStyle(color: scheme.onSurfaceVariant)),
+                  const SizedBox(height: 4),
+                  Text(
+                    space.isFree ? l10n.free : l10n.perSlot(space.fee.toStringAsFixed(0)),
+                    style: TextStyle(color: scheme.primary, fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -284,8 +352,10 @@ class StatusChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(20)),
-      child: Text(label, style: TextStyle(color: fg, fontWeight: FontWeight.w600, fontSize: 13)),
+      child: Text(
+        label,
+        style: TextStyle(color: fg, fontWeight: FontWeight.w600, fontSize: 13),
+      ),
     );
   }
 }
-

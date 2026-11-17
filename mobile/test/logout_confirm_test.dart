@@ -6,13 +6,15 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   testWidgets('log out asks first, and Cancel keeps you signed in', (tester) async {
-    await tester.pumpWidget(const ProviderScope(
-      child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(body: Center(child: LogoutButton())),
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(body: Center(child: LogoutButton())),
+        ),
       ),
-    ));
+    );
     await tester.tap(find.byType(LogoutButton));
     await tester.pumpAndSettle();
 
