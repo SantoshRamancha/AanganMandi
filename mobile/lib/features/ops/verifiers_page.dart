@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/api_client.dart';
 import '../../core/api/ops_api.dart';
 import '../../core/widgets/responsive.dart';
+import '../../core/widgets/feedback.dart';
 import '../../l10n/app_localizations.dart';
 import 'ops_widgets.dart';
 
@@ -32,7 +33,7 @@ class _VerifiersPageState extends ConsumerState<VerifiersPage> {
   }
 
 
-  void _say(String text) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  void _say(String text) => showSuccess(context, text);
 
   Future<void> _add() async {
     if (!_form.currentState!.validate()) return;
@@ -50,7 +51,7 @@ class _VerifiersPageState extends ConsumerState<VerifiersPage> {
       _email.clear();
       refreshOps(ref);
     } catch (e) {
-      _say(apiErrorMessage(e, l10n.couldNotSave));
+      if (mounted) await showApiError(context, e);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -88,7 +89,7 @@ class _VerifiersPageState extends ConsumerState<VerifiersPage> {
       ].join(' '));
       refreshOps(ref);
     } catch (e) {
-      _say(apiErrorMessage(e, l10n.couldNotSave));
+      if (mounted) await showApiError(context, e);
     }
   }
 

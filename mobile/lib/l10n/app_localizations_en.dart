@@ -1805,4 +1805,37 @@ class AppLocalizationsEn extends AppLocalizations {
   ) {
     return 'Fresh produce from a verified farmer at my place!\n$date, $time at $space.\nBringing: $crops\nDetails: $url';
   }
+
+  @override
+  String get errorTitle => 'That didn\'t work';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get noConnection =>
+      'Can\'t reach Aangan Mandi. Check your internet connection and try again.';
+
+  @override
+  String get serverProblem =>
+      'Something went wrong on our side. Please try again in a few minutes.';
+
+  @override
+  String get deleteAccount => 'Delete my account';
+
+  @override
+  String get deleteAccountSubtitle => 'Removes your details for good';
+
+  @override
+  String get deleteAccountQ => 'Delete your account?';
+
+  @override
+  String get deleteAccountBody =>
+      'This deletes your name, mobile number and email, your farming details and proof photo, your spaces with their photos, and your saved area. Upcoming bookings are cancelled and the other person is told.';
+
+  @override
+  String get deleteAccountUnderstand => 'I understand this cannot be undone';
+
+  @override
+  String get accountDeletedToast => 'Your account was deleted';
 }

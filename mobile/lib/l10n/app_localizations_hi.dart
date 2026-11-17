@@ -1771,4 +1771,38 @@ class AppLocalizationsHi extends AppLocalizations {
   ) {
     return 'मेरे यहाँ सत्यापित किसान की ताज़ी उपज!\n$date, $time, $space पर।\nला रहे हैं: $crops\nजानकारी: $url';
   }
+
+  @override
+  String get errorTitle => 'यह नहीं हो पाया';
+
+  @override
+  String get ok => 'ठीक है';
+
+  @override
+  String get noConnection =>
+      'आंगन मंडी से जुड़ नहीं पा रहे। अपना इंटरनेट देखें और फिर से कोशिश करें।';
+
+  @override
+  String get serverProblem =>
+      'हमारी तरफ़ से कुछ गड़बड़ हुई। कुछ मिनट बाद फिर से कोशिश करें।';
+
+  @override
+  String get deleteAccount => 'मेरा खाता हटाएँ';
+
+  @override
+  String get deleteAccountSubtitle => 'आपकी जानकारी हमेशा के लिए हटा देता है';
+
+  @override
+  String get deleteAccountQ => 'अपना खाता हटाएँ?';
+
+  @override
+  String get deleteAccountBody =>
+      'इससे आपका नाम, मोबाइल नंबर और ईमेल, खेती का विवरण और सबूत की फ़ोटो, आपकी जगहें और उनकी फ़ोटो, और सेव किया इलाका हट जाएगा। आने वाली बुकिंग रद्द होंगी और दूसरे व्यक्ति को बताया जाएगा।';
+
+  @override
+  String get deleteAccountUnderstand =>
+      'मैं समझता/समझती हूँ कि इसे वापस नहीं लाया जा सकता';
+
+  @override
+  String get accountDeletedToast => 'आपका खाता हटा दिया गया';
 }

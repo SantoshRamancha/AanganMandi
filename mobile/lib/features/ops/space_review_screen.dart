@@ -6,6 +6,7 @@ import '../../core/api/api_client.dart';
 import '../../core/api/ops_api.dart';
 import '../../core/labels.dart';
 import '../../core/widgets/responsive.dart';
+import '../../core/widgets/feedback.dart';
 import '../../l10n/app_localizations.dart';
 import '../host/space_form_screen.dart' show weekdayLabel;
 import 'ops_widgets.dart';
@@ -77,8 +78,7 @@ class SpaceReviewScreen extends ConsumerWidget {
                   onDecide: (approve, reason) async {
                     await ref.read(opsApiProvider).decideSpace(id, approve: approve, reason: reason);
                     if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(approve ? l10n.spaceLiveToast(s.title) : l10n.spaceRejectedToast)));
+                    showSuccess(context, approve ? l10n.spaceLiveToast(s.title) : l10n.spaceRejectedToast);
                     Navigator.of(context).pop();
                   },
                 ),

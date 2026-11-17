@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'core/router/app_router.dart';
 import 'core/storage/prefs.dart';
 import 'core/theme/app_theme.dart';
+import 'core/widgets/feedback.dart';
 import 'l10n/app_localizations.dart';
 
 Future<void> main() async {
@@ -24,6 +25,8 @@ class AanganMandiApp extends ConsumerWidget {
     // Dates (DateFormat) follow the app language too.
     Intl.defaultLocale = language;
     return MaterialApp.router(
+      // Success and error pop-ups can be shown from anywhere (core/widgets/feedback.dart).
+      scaffoldMessengerKey: rootMessengerKey,
       // The debug ribbon covers the app-bar buttons.
       debugShowCheckedModeBanner: false,
       onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,

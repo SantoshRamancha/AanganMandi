@@ -42,6 +42,8 @@ role in the database on every call, so a removed verifier loses access at once.
 | Save a home location + radius (1, 2 or 5 km); see farmers selling nearby today and tomorrow; email alerts the evening before and when a farmer arrives | buyer | app → buyer home |
 | Share a confirmed stall with neighbours: a ready message + public link, sent to a WhatsApp group or copied (see [Sharing with neighbours](#sharing-with-neighbours)) | host | app → Bookings → Upcoming, and the host home |
 | Open a shared stall link: time, crops and prices, area; the address once the farmer arrives. No app or login | anyone | browser |
+| Delete my account (see [Deleting](#deleting)) | farmer, host, buyer | app → My profile → "Delete my account" |
+| Success and error pop-ups: a green card that fades for "done", a dialog with OK for "that didn't work" (no internet, the server's reason, or "a problem on our side") | everyone | app |
 
 Not built yet: in-app payment, produce browsing beyond the nearby list, maps, push notifications (alerts and booking news arrive by email, and in the app when it is opened).
 
@@ -241,6 +243,56 @@ database.
 
 A deleted space is only marked `IsDeleted` (an EF query filter hides it), so past bookings still show its name. Booking
 lists and booking emails read spaces with `IgnoreQueryFilters()` for that reason; other queries never see deleted spaces.
+
+**Whole account** (`DELETE /api/v1/users/me`, app → My profile → Delete my account, after a tick box): upcoming bookings
+are cancelled and the other side told; planned trips are cancelled; the farmer's verification details, crops, plots and
+evidence photo, the host's spaces with their photos and proof, and the buyer's area and alert history are deleted. The
+name and email are cleared, the phone is replaced by a placeholder (so the number can sign up again as a new user), and
+roles and logins are removed. Past bookings stay for the other side without the name. Verifier and admin accounts are
+refused (409): an admin removes them, so their waiting farmers are reassigned. Any token of a deleted account is
+refused with 401 from then on.
+
+The Play Store also asks for a web page about deleting an account: `GET /account/delete` (English, Telugu, Hindi;
+`Support:Email` adds "can't open the app? write to …").
+
+## Before going live
+
+These are in the code; the deployment itself (server, HTTPS, domain) is not set up yet.
+
+**Commands** (run with the published API, e.g. `dotnet AanganMandi.Api.dll <command>`, or `dotnet run --project
+backend/src/AanganMandi.Api -- <command>` locally). Each does its job and exits without serving:
+
+| Command | What it does |
+|---|---|
+| `migrate` | Applies pending database migrations. Run on every deploy before starting the new version (Development migrates on start) |
+| `create-admin +919000054321 "Name"` | Makes that mobile number an admin, creating the user if needed. The first admin on a fresh database; admins can't sign up in the app |
+| `copy-uploads-to-bucket` | One-time copy of files uploaded to disk before switching to the bucket |
+
+**Login limits** (no SMS costs run away, no OTP guessing):
+
+- The number must be an Indian mobile (10 digits starting 6–9; `+91`, spaces and dashes are fine).
+- Per number: a new OTP at most every 30 seconds and 5 per hour (`429` with `Retry-After`).
+- Per code: 5 tries, valid 5 minutes, works once; a typo no longer throws the code away.
+- Per IP address: 20 OTP requests or checks per 10 minutes. Behind a reverse proxy, set up forwarded headers so the API
+  sees the client's address.
+- The limits are kept in memory, so they reset on restart and count per server.
+
+**Settings** (none are secrets; all are in `appsettings.json`, empty by default):
+
+| Setting | Use |
+|---|---|
+| `Cors:AllowedOrigins` | The web app's address(es) allowed to call the API from a browser, e.g. `["https://app.aanganmandi.in"]`. Development also allows any localhost port. The Android app needs nothing here |
+| `Logs:Directory` | Where log files go (default `logs` next to the app; Development: `backend/App_Data/logs`) |
+| `Alerts:Emails` | Who gets an email when the API logs errors; `MinMinutesBetween` (15) and `CollectSeconds` (60) keep it to one email per burst |
+| `Support:Email` | Shown on `/account/delete` |
+| `Sharing:PublicBaseUrl` | The public API address in shared stall links |
+
+**Logs and alerts.** Besides the console, the API writes one file per day (`api-YYYYMMDD.log`, kept 30 days, at most
+20 MB a file) with the time, level, source, request path and message. Every Error or Fatal entry is also collected and
+emailed to `Alerts:Emails`: the first error waits `CollectSeconds` for related ones, then one email lists them (India
+time, where, message, exception), at most one email per `MinMinutesBetween`. Alerts go straight through the email
+provider, not the database queue, so they still arrive when the database is the problem; a failed alert is only logged
+as a warning.
 
 ## Still needed
 

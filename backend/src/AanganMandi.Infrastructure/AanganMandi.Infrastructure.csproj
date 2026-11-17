@@ -12,6 +12,8 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite" Version="8.0.11" />
     <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.20.1" />
     <PackageReference Include="StackExchange.Redis" Version="2.8.24" />
+    <!-- Error alert sink (Logging/ErrorAlerts.cs); same version the API's Serilog.AspNetCore brings. -->
+    <PackageReference Include="Serilog" Version="3.1.1" />
   </ItemGroup>
 
   <!--

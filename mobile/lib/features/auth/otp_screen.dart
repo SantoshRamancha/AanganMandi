@@ -6,6 +6,7 @@ import 'package:pinput/pinput.dart';
 import '../../core/api/api_client.dart';
 import '../../core/storage/prefs.dart';
 import '../../core/widgets/responsive.dart';
+import '../../core/widgets/feedback.dart';
 import '../../l10n/app_localizations.dart';
 
 /// What the phone screen hands to the OTP screen.
@@ -54,10 +55,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
       if (appRole != null) await Prefs.setRole(appRole);
       if (mounted) context.go(appRole != null ? '/home' : '/role');
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(apiErrorMessage(e, AppLocalizations.of(context).errorGeneric))));
-      }
+      if (mounted) await showApiError(context, e);
     } finally {
       if (mounted) setState(() => _busy = false);
     }

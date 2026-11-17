@@ -21,7 +21,9 @@ public static class DependencyInjection
             config.GetConnectionString("Default"),
             sql => sql.UseNetTopologySuite()));
         services.AddScoped(sp => sp.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext());
-        services.AddSingleton<IOtpService, DevOtpService>();
+        services.AddSingleton<IOtpService>(sp =>
+            new DevOtpService(sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<DevOtpService>>(), config));
+        services.AddSingleton(new OtpThrottle());
 
         // Uploaded files: the object storage bucket (StorageProvider, keys in user-secrets) or local disk.
         if (UsesBucket(config))
@@ -41,8 +43,21 @@ public static class DependencyInjection
         services.AddEmailQueue(config);
         services.Configure<NotificationOptions>(config.GetSection("Notifications"));
         services.AddScoped<INotifier, EmailNotifier>();
+        services.AddScoped<Accounts.AccountDeletion>();
+
+        // Error alerts: Serilog hands Error/Fatal events to the sink; the hosted service emails them (Alerts section).
+        services.Configure<Logging.ErrorAlertOptions>(config.GetSection("Alerts"));
+        services.AddSingleton(Logging.ErrorAlertSink.Instance);
+        services.AddHostedService<Logging.ErrorAlertService>();
         return services;
     }
+
+    /// <summary>
+    /// Folder for the API's log files: <c>Logs:Directory</c>, relative to the API project (content root) unless
+    /// absolute; default "logs" next to the app.
+    /// </summary>
+    public static string LogDirectory(IConfiguration config, string contentRoot) =>
+        Path.GetFullPath(Path.Combine(contentRoot, config["Logs:Directory"] ?? "logs"));
 
     /// <summary>Storage:Provider = Object stores uploads in the bucket; anything else (default Local) on disk.</summary>
     public static bool UsesBucket(IConfiguration config) =>

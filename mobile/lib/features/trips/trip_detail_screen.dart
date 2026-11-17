@@ -10,6 +10,7 @@ import '../../core/labels.dart';
 import '../../core/location.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/responsive.dart';
+import '../../core/widgets/feedback.dart';
 import '../../l10n/app_localizations.dart';
 import 'trip_widgets.dart';
 
@@ -135,11 +136,10 @@ class _BookingCard extends ConsumerWidget {
 
     // On the day: "I've arrived" from the phone's position; the server checks the time and the distance.
     Future<void> checkIn() async {
-      final messenger = ScaffoldMessenger.of(context);
       final pos = await currentPosition();
       if (!context.mounted) return;
       if (pos == null) {
-        messenger.showSnackBar(SnackBar(content: Text(l10n.locationNeededToCheckIn)));
+        await showError(context, l10n.locationNeededToCheckIn);
         return;
       }
       if (await runWithToast(context, () => api.arrive(trip.id, b!.id, pos.latitude, pos.longitude),

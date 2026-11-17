@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/api/api_client.dart';
 import '../../core/api/app_api.dart';
 import '../../core/api/models.dart';
 import '../../core/api/trip_api.dart';
@@ -13,6 +12,7 @@ import '../../core/labels.dart';
 import '../../core/storage/prefs.dart';
 import '../../core/widgets/crop_picker.dart';
 import '../../core/widgets/responsive.dart';
+import '../../core/widgets/feedback.dart';
 import '../../l10n/app_localizations.dart';
 import 'trip_widgets.dart';
 
@@ -93,7 +93,7 @@ class _TripFormScreenState extends ConsumerState<TripFormScreen> {
           ProduceItem(code, quantityKg: double.tryParse(c.kg.text.trim()), pricePerKg: double.tryParse(c.price.text.trim())),
     ];
     if (_date == null || produce.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.tripNeedsDateAndCrop)));
+      showError(context, l10n.tripNeedsDateAndCrop);
       return;
     }
     setState(() => _busy = true);
@@ -115,9 +115,7 @@ class _TripFormScreenState extends ConsumerState<TripFormScreen> {
         context.pop();
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(apiErrorMessage(e, l10n.errorGeneric))));
-      }
+      if (mounted) await showApiError(context, e);
     } finally {
       if (mounted) setState(() => _busy = false);
     }

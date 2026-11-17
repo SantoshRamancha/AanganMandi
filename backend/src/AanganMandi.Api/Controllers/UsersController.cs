@@ -1,6 +1,7 @@
 using AanganMandi.Api.Auth;
 using AanganMandi.Application.Identity;
 using AanganMandi.Domain.Identity;
+using AanganMandi.Infrastructure.Accounts;
 using AanganMandi.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +18,20 @@ public class UsersController(AppDbContext db, TokenService tokens) : ControllerB
     public record LanguageRequest(string Language);
     public record ProfileDto(string? Name, string Phone, string? Email, string Language, Role[] Roles, DateTime MemberSince);
     public record EmailRequest(string? Email);
+
+    /// <summary>
+    /// Deletes the signed-in user's account and personal data (<see cref="AccountDeletion"/>). The app logs out
+    /// afterwards. Staff accounts are refused: an admin removes them, so their waiting farmers are reassigned.
+    /// </summary>
+    [HttpDelete]
+    public async Task<IActionResult> DeleteAccount([FromServices] AccountDeletion deletion, CancellationToken ct) =>
+        await deletion.DeleteAsync(User.UserId(), ct) switch
+        {
+            AccountDeletionResult.Deleted => NoContent(),
+            AccountDeletionResult.StaffAccount => Problem(statusCode: 409,
+                title: "Verifier and admin accounts are removed by an admin. Ask an admin to remove yours"),
+            _ => NotFound(),
+        };
 
     /// <summary>The signed-in user's own account details, for the profile screen.</summary>
     [HttpGet]

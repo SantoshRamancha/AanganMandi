@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/api/api_client.dart';
 import '../../core/widgets/responsive.dart';
+import '../../core/widgets/feedback.dart';
 import '../../l10n/app_localizations.dart';
 import 'otp_screen.dart';
 
@@ -35,10 +36,7 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen> {
       final devCode = await ref.read(authApiProvider).requestOtp(phone);
       if (mounted) context.push('/otp', extra: OtpArgs(phone, devCode));
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(apiErrorMessage(e, AppLocalizations.of(context).errorGeneric))));
-      }
+      if (mounted) await showApiError(context, e);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
