@@ -45,15 +45,25 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     if (_busy) return;
     setState(() => _busy = true);
     try {
-      final roles = await ref.read(authApiProvider).verifyOtp(widget.phone, code);
+      final login = await ref.read(authApiProvider).verifyOtp(widget.phone, code);
+      final roles = login.roles;
       // Staff roles are given by an admin, never chosen here, and open the operations home.
       final appRole = roles.contains('Admin')
           ? 'Admin'
           : roles.contains('Verifier')
-              ? 'Verifier'
-              : roles.where(const {'Farmer', 'Host', 'Buyer'}.contains).firstOrNull;
+          ? 'Verifier'
+          : roles.where(const {'Farmer', 'Host', 'Buyer'}.contains).firstOrNull;
       if (appRole != null) await Prefs.setRole(appRole);
-      if (mounted) context.go(appRole != null ? '/home' : '/role');
+      // The terms and privacy policy come first (again when they change); the consent screen then goes on.
+      if (mounted) {
+        context.go(
+          !login.termsAccepted
+              ? '/consent'
+              : appRole != null
+              ? '/home'
+              : '/role',
+        );
+      }
     } catch (e) {
       if (mounted) await showApiError(context, e);
     } finally {
@@ -88,8 +98,10 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
               color: scheme.tertiaryContainer,
               child: ListTile(
                 leading: Icon(Icons.science_outlined, color: scheme.onTertiaryContainer),
-                title: Text(l10n.testOtp(code),
-                    style: TextStyle(color: scheme.onTertiaryContainer, fontWeight: FontWeight.w600)),
+                title: Text(
+                  l10n.testOtp(code),
+                  style: TextStyle(color: scheme.onTertiaryContainer, fontWeight: FontWeight.w600),
+                ),
                 subtitle: Text(l10n.testOtpHint, style: TextStyle(color: scheme.onTertiaryContainer)),
                 trailing: TextButton(
                   style: TextButton.styleFrom(foregroundColor: scheme.onTertiaryContainer),
@@ -111,7 +123,11 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
               onCompleted: _verify,
             ),
           ),
-          if (_busy) const Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator())),
+          if (_busy)
+            const Padding(
+              padding: EdgeInsets.all(24),
+              child: Center(child: CircularProgressIndicator()),
+            ),
         ],
       ),
     );

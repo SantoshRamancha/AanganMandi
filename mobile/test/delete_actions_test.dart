@@ -23,24 +23,24 @@ class _FakeHostApi extends HostApi {
 
   @override
   Future<Space> get(String id) async => Space.fromJson({
-        'id': id,
-        'title': 'Green villa courtyard',
-        'type': 'Courtyard',
-        'address': '1 Road',
-        'locality': 'Ameerpet',
-        'areaSqFt': 1089,
-        'isFree': true,
-        'fee': 0,
-        'availableDays': ['Saturday'],
-        'openFrom': '16:00:00',
-        'openTo': '20:00:00',
-        'status': 'Live',
-        'rejectionReason': null,
-        'photoUrls': <String>[],
-        'hasProof': false,
-        'photos': <Object>[],
-        'proof': null,
-      });
+    'id': id,
+    'title': 'Green villa courtyard',
+    'type': 'Courtyard',
+    'address': '1 Road',
+    'locality': 'Ameerpet',
+    'areaSqFt': 1089,
+    'isFree': true,
+    'fee': 0,
+    'availableDays': ['Saturday'],
+    'openFrom': '16:00:00',
+    'openTo': '20:00:00',
+    'status': 'Live',
+    'rejectionReason': null,
+    'photoUrls': <String>[],
+    'hasProof': false,
+    'photos': <Object>[],
+    'proof': null,
+  });
 
   @override
   Future<int> deleteSpace(String spaceId) async {
@@ -62,46 +62,53 @@ class _FakeFarmerApi extends FarmerApi {
 }
 
 Farmer _farmer(String status) => Farmer.fromJson({
-      'name': 'Ramesh Reddy',
-      'village': 'Nelakondapalli',
-      'district': 'Medak',
-      'cropCodes': ['BANANA'],
-      'farmSizeAcres': 2.5,
-      'produceSource': 'OwnFarm',
-      'evidenceType': 'LandRecord',
-      'evidenceDetails': null,
-      'hasEvidencePhoto': false,
-      'evidencePhotoAt': null,
-      'status': status,
-      'level': 1,
-      'rejectionReason': status == 'Rejected' ? 'Photo is blurred' : null,
-      'missing': <String>[],
-    });
+  'name': 'Ramesh Reddy',
+  'village': 'Nelakondapalli',
+  'district': 'Medak',
+  'cropCodes': ['BANANA'],
+  'farmSizeAcres': 2.5,
+  'produceSource': 'OwnFarm',
+  'evidenceType': 'LandRecord',
+  'evidenceDetails': null,
+  'hasEvidencePhoto': false,
+  'evidencePhotoAt': null,
+  'status': status,
+  'level': 1,
+  'rejectionReason': status == 'Rejected' ? 'Photo is blurred' : null,
+  'missing': <String>[],
+});
 
 Widget _app(List overrides, Widget home) => ProviderScope(
-      overrides: [localeProvider.overrideWith(_English.new), cropsProvider.overrideWith((ref) async => []), ...overrides.cast()],
-      child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: home,
-      ),
-    );
+  overrides: [
+    localeProvider.overrideWith(_English.new),
+    cropsProvider.overrideWith((ref) async => []),
+    ...overrides.cast(),
+  ],
+  child: MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: home,
+  ),
+);
 
 void main() {
   testWidgets('host deletes a space after confirming, and returns to the list', (tester) async {
     final api = _FakeHostApi();
     await tester.binding.setSurfaceSize(const Size(390, 844));
-    await tester.pumpWidget(_app(
-      [hostApiProvider.overrideWithValue(api)],
-      Scaffold(
-        body: Builder(
-          builder: (context) => TextButton(
-            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SpaceDetailScreen(id: 's1'))),
-            child: const Text('My spaces'),
+    await tester.pumpWidget(
+      _app(
+        [hostApiProvider.overrideWithValue(api)],
+        Scaffold(
+          body: Builder(
+            builder: (context) => TextButton(
+              onPressed: () =>
+                  Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SpaceDetailScreen(id: 's1'))),
+              child: const Text('My spaces'),
+            ),
           ),
         ),
       ),
-    ));
+    );
     await tester.tap(find.text('My spaces'));
     await tester.pumpAndSettle();
 
@@ -129,10 +136,12 @@ void main() {
   testWidgets('a waiting farmer can clear verification, and is told it leaves the queue', (tester) async {
     final api = _FakeFarmerApi();
     await tester.binding.setSurfaceSize(const Size(390, 1400));
-    await tester.pumpWidget(_app([
-      farmerApiProvider.overrideWithValue(api),
-      farmerProvider.overrideWith((ref) async => _farmer('Pending')),
-    ], const Scaffold(body: FarmerHome())));
+    await tester.pumpWidget(
+      _app([
+        farmerApiProvider.overrideWithValue(api),
+        farmerProvider.overrideWith((ref) async => _farmer('Pending')),
+      ], const Scaffold(body: FarmerHome())),
+    );
     await tester.pumpAndSettle();
 
     await tester.ensureVisible(find.text('Clear and start over'));
@@ -150,10 +159,12 @@ void main() {
 
   testWidgets('a verified farmer has nothing to clear', (tester) async {
     await tester.binding.setSurfaceSize(const Size(390, 1400));
-    await tester.pumpWidget(_app([
-      farmerProvider.overrideWith((ref) async => _farmer('Verified')),
-      tripsProvider.overrideWith((ref) async => []),
-    ], const Scaffold(body: FarmerHome())));
+    await tester.pumpWidget(
+      _app([
+        farmerProvider.overrideWith((ref) async => _farmer('Verified')),
+        tripsProvider.overrideWith((ref) async => []),
+      ], const Scaffold(body: FarmerHome())),
+    );
     await tester.pumpAndSettle();
     expect(find.text('Clear and start over'), findsNothing);
   });

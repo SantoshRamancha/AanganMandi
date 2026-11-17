@@ -44,6 +44,11 @@ role in the database on every call, so a removed verifier loses access at once.
 | Open a shared stall link: time, crops and prices, area; the address once the farmer arrives. No app or login | anyone | browser |
 | Delete my account (see [Deleting](#deleting)) | farmer, host, buyer | app → My profile → "Delete my account" |
 | Success and error pop-ups: a green card that fades for "done", a dialog with OK for "that didn't work" (no internet, the server's reason, or "a problem on our side") | everyone | app |
+| Every refusal from the API in the user's language, with a stable code (see [Errors in three languages](#errors-in-three-languages)) | everyone | app |
+| Terms of use and privacy policy accepted once after login (again when they change) | everyone | app → consent screen; My profile → Terms of use / Privacy policy |
+| Report a problem about a booking or the app; see the team's answer | farmer, host, buyer | app → a booking → Report a problem; My profile → Report a problem / My reports |
+| Problem reports: open and resolved, call the reporter, resolve with a note they see | admin | app → Operations → Reports |
+| Reminder the evening before a booking | farmer, host | email |
 
 Not built yet: in-app payment, produce browsing beyond the nearby list, maps, push notifications (alerts and booking news arrive by email, and in the app when it is opened).
 
@@ -140,6 +145,9 @@ wording, `MailLayout.cs` for the HTML).
 | Farmer cancels | the host |
 | Farmer checks in at the space | the host ("your farmer is here"), and buyers whose area covers the space ("selling now", with the address) |
 | Every evening at 18:00 India time | each buyer with tomorrow's confirmed stalls inside their area: one email listing time, area, distance, farmer and crops |
+| Every evening at 18:00 India time | the farmer and the host of each confirmed booking for tomorrow: a reminder with time, address or farmer, phone and crops (once per booking, `Booking.ReminderSentAt`) |
+| Someone reports a problem | every admin (category, who, the booking, what they wrote) |
+| An admin resolves a report | the person who reported it, with the admin's note |
 
 Emails are **queued** in this database (`dbo.EmailQueueItems`, created on first use) and a **Hangfire** job sends them
 every 15 seconds, retrying failures (1, 5, 15, 60 min). A failed email never fails the action that triggered it.
@@ -284,7 +292,7 @@ backend/src/AanganMandi.Api -- <command>` locally). Each does its job and exits 
 | `Cors:AllowedOrigins` | The web app's address(es) allowed to call the API from a browser, e.g. `["https://app.aanganmandi.in"]`. Development also allows any localhost port. The Android app needs nothing here |
 | `Logs:Directory` | Where log files go (default `logs` next to the app; Development: `backend/App_Data/logs`) |
 | `Alerts:Emails` | Who gets an email when the API logs errors; `MinMinutesBetween` (15) and `CollectSeconds` (60) keep it to one email per burst |
-| `Support:Email` | Shown on `/account/delete` |
+| `Support:Email` | Contact on `/account/delete` and on the terms and privacy pages (grievances) |
 | `Sharing:PublicBaseUrl` | The public API address in shared stall links |
 
 **Logs and alerts.** Besides the console, the API writes one file per day (`api-YYYYMMDD.log`, kept 30 days, at most
@@ -293,6 +301,47 @@ emailed to `Alerts:Emails`: the first error waits `CollectSeconds` for related o
 time, where, message, exception), at most one email per `MinMinutesBetween`. Alerts go straight through the email
 provider, not the database queue, so they still arrive when the database is the problem; a failed alert is only logged
 as a warning.
+
+## Errors in three languages
+
+Every refusal is problem+json with a stable `code`, its values in `args`, and a `title` in the language of the
+request's `Accept-Language` header (the app sends its language on every call):
+
+```json
+{ "status": 429, "code": "otp_wait", "args": { "seconds": 30 }, "title": "కొత్త OTP అడగడానికి ముందు 30 సెకన్లు ఆగండి" }
+```
+
+Rules return an `ApiError` (`Domain/Common`), controllers answer with `this.Fail(status, "code", ("name", value))`, and
+the words live in one catalogue: `Infrastructure/Errors/ErrorText.cs` (English, Telugu, Hindi). A test scans the API for
+every code it uses and fails if one has no words, and another renders every code in all three languages.
+
+## Dates and times
+
+Every DateTime is stored and sent as UTC: an EF convention (`Persistence/UtcDateTimes.cs`) marks values UTC when read
+back, so JSON always ends in `Z`, and the app shows local time (`core/api/api_dates.dart`). Slot times and booking dates
+are India times (`DateOnly`, `TimeOnly`).
+
+## Photos
+
+Every upload goes through `shrinkPhoto` (`mobile/lib/core/photo_compress.dart`): on a phone the photo is re-encoded as
+JPEG and stepped down in size and quality until it is under 400 KB, and EXIF data (including GPS) is dropped. In a
+browser the picker's own resize (1600 px, quality 70) is used. The server still accepts up to 8 MB.
+
+## Terms, privacy and problem reports
+
+- **Pages**: `GET /legal/terms` and `/legal/privacy` (English text, with a Telugu or Hindi summary on top). They describe
+  what the app really collects and why, and are a **draft for a lawyer to review before launch**. Raise
+  `LegalPages.Version` whenever either text changes.
+- **Consent**: the login answer and `GET /users/me` say `termsAccepted`; until then the app shows the consent screen
+  (what is used and why, links to both pages, "I agree") and records it with `POST /users/me/consent { version }`
+  (`User.TermsVersion`, `TermsAcceptedAt`). An old version is refused (409), so nobody accepts words they were not shown.
+  Already signed-in users are asked on their next visit to the home screen.
+- **Reports**: `POST /api/v1/reports { category, message, bookingId? }` (10–1000 characters, at most 10 a day, a booking
+  only if the user is its farmer or host), `GET /reports/mine`; admins `GET /ops/reports?status=Open|Resolved` and
+  `POST /ops/reports/{id}/resolve { resolution }`. Categories: someone did not come, the space, payment or fee,
+  behaviour or safety, the app, something else.
+
+Migration: `RemindersReportsConsent`.
 
 ## Still needed
 

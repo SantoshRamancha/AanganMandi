@@ -23,7 +23,7 @@ public static partial class CropCodes
     /// Checks a crop list against the known master codes and tidies custom names (trimmed, single spaces).
     /// Returns the distinct codes in order, or the reason the list is not valid.
     /// </summary>
-    public static (string[]? Codes, string? Error) Normalize(IEnumerable<string> codes, IReadOnlySet<string> known)
+    public static (string[]? Codes, Domain.Common.ApiError? Error) Normalize(IEnumerable<string> codes, IReadOnlySet<string> known)
     {
         var result = new List<string>();
         foreach (var raw in codes)
@@ -32,15 +32,17 @@ public static partial class CropCodes
             if (IsCustom(code))
             {
                 var name = Regex.Replace(CustomName(code).Trim(), @"\s+", " ");
-                if (!CustomNameRegex().IsMatch(name)) return (null, "Crop names must be 2 to 30 letters");
+                if (!CustomNameRegex().IsMatch(name)) return (null, new Domain.Common.ApiError("crop_name_invalid"));
                 code = CustomPrefix + name;
             }
             else if (!known.Contains(code))
             {
-                return (null, "Unknown crop code");
+                return (null, new Domain.Common.ApiError("crop_unknown"));
             }
             if (!result.Contains(code, StringComparer.OrdinalIgnoreCase)) result.Add(code);
         }
-        return result.Count > MaxCrops ? (null, $"Choose at most {MaxCrops} crops") : (result.ToArray(), null);
+        return result.Count > MaxCrops
+            ? (null, Domain.Common.ApiError.Of("crops_too_many", ("max", MaxCrops)))
+            : (result.ToArray(), null);
     }
 }

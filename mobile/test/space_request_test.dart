@@ -50,26 +50,36 @@ final _space = SpaceCard.fromJson({
 void main() {
   testWidgets('requesting a space with a message sends it and returns to the trip', (tester) async {
     final api = _FakeTripApi();
-    final router = GoRouter(initialLocation: '/trip', routes: [
-      GoRoute(
-        path: '/trip',
-        builder: (_, _) => const Scaffold(body: Text('trip page')),
-        routes: [GoRoute(path: 'spaces', builder: (_, _) => const SpaceSearchScreen(tripId: 't1'))],
-      ),
-    ]);
-    await tester.binding.setSurfaceSize(const Size(900, 1400));
-    await tester.pumpWidget(ProviderScope(
-      overrides: [
-        tripApiProvider.overrideWithValue(api),
-        tripProvider.overrideWith((ref, id) async => _trip),
-        tripSpacesProvider.overrideWith((ref, key) async => [_space]),
+    final router = GoRouter(
+      initialLocation: '/trip',
+      routes: [
+        GoRoute(
+          path: '/trip',
+          builder: (_, _) => const Scaffold(body: Text('trip page')),
+          routes: [
+            GoRoute(
+              path: 'spaces',
+              builder: (_, _) => const SpaceSearchScreen(tripId: 't1'),
+            ),
+          ],
+        ),
       ],
-      child: MaterialApp.router(
-        routerConfig: router,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
+    );
+    await tester.binding.setSurfaceSize(const Size(900, 1400));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          tripApiProvider.overrideWithValue(api),
+          tripProvider.overrideWith((ref, id) async => _trip),
+          tripSpacesProvider.overrideWith((ref, key) async => [_space]),
+        ],
+        child: MaterialApp.router(
+          routerConfig: router,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ),
       ),
-    ));
+    );
     router.push('/trip/spaces');
     await tester.pumpAndSettle();
 

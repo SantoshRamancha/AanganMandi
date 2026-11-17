@@ -18,15 +18,18 @@ class PageHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(title, style: Theme.of(context).textTheme.headlineSmall),
-          if (subtitle != null) ...[
-            const SizedBox(height: 4),
-            Text(subtitle!, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, height: 1.35)),
-          ],
-        ]),
-      );
+    padding: const EdgeInsets.only(bottom: 16),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: Theme.of(context).textTheme.headlineSmall),
+        if (subtitle != null) ...[
+          const SizedBox(height: 4),
+          Text(subtitle!, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, height: 1.35)),
+        ],
+      ],
+    ),
+  );
 }
 
 /// Amber notice card: something staff should act on.
@@ -59,16 +62,19 @@ class InfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-        margin: const EdgeInsets.only(bottom: 16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Text(title, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 12),
-            ...children,
-          ]),
-        ),
-      );
+    margin: const EdgeInsets.only(bottom: 16),
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(title, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+          const SizedBox(height: 12),
+          ...children,
+        ],
+      ),
+    ),
+  );
 }
 
 /// One label/value row; [warn] paints the value red (something the reviewer must notice).
@@ -82,13 +88,21 @@ class Fact extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        SizedBox(width: 130, child: Text(label, style: TextStyle(color: scheme.onSurfaceVariant))),
-        Expanded(
-          child: Text(value,
-              style: TextStyle(color: warn ? scheme.error : null, fontWeight: warn ? FontWeight.w600 : null)),
-        ),
-      ]),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 130,
+            child: Text(label, style: TextStyle(color: scheme.onSurfaceVariant)),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(color: warn ? scheme.error : null, fontWeight: warn ? FontWeight.w600 : null),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -110,7 +124,10 @@ class StatusChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(20)),
-      child: Text(label, style: TextStyle(color: fg, fontWeight: FontWeight.w600, fontSize: 13)),
+      child: Text(
+        label,
+        style: TextStyle(color: fg, fontWeight: FontWeight.w600, fontSize: 13),
+      ),
     );
   }
 }
@@ -123,10 +140,14 @@ class StatusFilter extends StatelessWidget {
   final ValueChanged<String> onChanged;
 
   @override
-  Widget build(BuildContext context) => Wrap(spacing: 8, runSpacing: 8, children: [
-        for (final (value, label) in options)
-          ChoiceChip(label: Text(label), selected: value == selected, onSelected: (_) => onChanged(value)),
-      ]);
+  Widget build(BuildContext context) => Wrap(
+    spacing: 8,
+    runSpacing: 8,
+    children: [
+      for (final (value, label) in options)
+        ChoiceChip(label: Text(label), selected: value == selected, onSelected: (_) => onChanged(value)),
+    ],
+  );
 }
 
 /// A private file loaded with the staff login (works on web and phones), with preview and download.
@@ -145,40 +166,50 @@ class AuthImage extends ConsumerWidget {
     final scheme = Theme.of(context).colorScheme;
     final api = '/ops/files/$path';
     final name = path.split('/').last.split('.').first;
-    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: [
-      ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: SizedBox(
-          height: height,
-          child: ColoredBox(
-            color: scheme.surfaceContainerHighest,
-            child: ref.watch(authFileProvider(api)).when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (_, _) => Icon(Icons.broken_image_outlined, size: 40, color: scheme.onSurfaceVariant),
-                  data: (f) => InkWell(
-                    onTap: () => showFilePreview(context, api, name),
-                    child: Image.memory(f.bytes, fit: BoxFit.cover),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: SizedBox(
+            height: height,
+            child: ColoredBox(
+              color: scheme.surfaceContainerHighest,
+              child: ref
+                  .watch(authFileProvider(api))
+                  .when(
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                    error: (_, _) => Icon(Icons.broken_image_outlined, size: 40, color: scheme.onSurfaceVariant),
+                    data: (f) => InkWell(
+                      onTap: () => showFilePreview(context, api, name),
+                      child: Image.memory(f.bytes, fit: BoxFit.cover),
+                    ),
                   ),
-                ),
+            ),
           ),
         ),
-      ),
-      Wrap(spacing: 4, crossAxisAlignment: WrapCrossAlignment.center, children: [
-        if (caption != null) Text(caption!, style: Theme.of(context).textTheme.bodySmall),
-        TextButton.icon(
-          style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-          icon: const Icon(Icons.visibility_outlined, size: 20),
-          label: Text(l10n.preview),
-          onPressed: () => showFilePreview(context, api, name),
+        Wrap(
+          spacing: 4,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            if (caption != null) Text(caption!, style: Theme.of(context).textTheme.bodySmall),
+            TextButton.icon(
+              style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+              icon: const Icon(Icons.visibility_outlined, size: 20),
+              label: Text(l10n.preview),
+              onPressed: () => showFilePreview(context, api, name),
+            ),
+            TextButton.icon(
+              style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+              icon: const Icon(Icons.download_outlined, size: 20),
+              label: Text(l10n.download),
+              onPressed: () => downloadFile(context, ref, api, name),
+            ),
+          ],
         ),
-        TextButton.icon(
-          style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-          icon: const Icon(Icons.download_outlined, size: 20),
-          label: Text(l10n.download),
-          onPressed: () => downloadFile(context, ref, api, name),
-        ),
-      ]),
-    ]);
+      ],
+    );
   }
 }
 
@@ -232,33 +263,44 @@ class _DecisionPanelState extends State<DecisionPanel> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return InfoCard(title: l10n.decision, children: [
-      Text(widget.guidance),
-      const SizedBox(height: 12),
-      Wrap(spacing: 8, runSpacing: 8, children: [
-        for (final r in widget.quickReasons) ActionChip(label: Text(r), onPressed: () => _reason.text = r),
-      ]),
-      const SizedBox(height: 12),
-      TextField(
-        controller: _reason,
-        maxLines: 2,
-        maxLength: 500,
-        decoration: InputDecoration(labelText: l10n.reasonLabel),
-      ),
-      const SizedBox(height: 8),
-      Wrap(spacing: 12, runSpacing: 12, children: [
-        FilledButton.icon(
-          icon: const Icon(Icons.check),
-          label: Text(widget.approveLabel),
-          onPressed: _busy ? null : () => _decide(true),
+    return InfoCard(
+      title: l10n.decision,
+      children: [
+        Text(widget.guidance),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final r in widget.quickReasons) ActionChip(label: Text(r), onPressed: () => _reason.text = r),
+          ],
         ),
-        OutlinedButton.icon(
-          icon: const Icon(Icons.close),
-          label: Text(l10n.reject),
-          style: OutlinedButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
-          onPressed: _busy || _reason.text.trim().isEmpty ? null : () => _decide(false),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _reason,
+          maxLines: 2,
+          maxLength: 500,
+          decoration: InputDecoration(labelText: l10n.reasonLabel),
         ),
-      ]),
-    ]);
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            FilledButton.icon(
+              icon: const Icon(Icons.check),
+              label: Text(widget.approveLabel),
+              onPressed: _busy ? null : () => _decide(true),
+            ),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.close),
+              label: Text(l10n.reject),
+              style: OutlinedButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
+              onPressed: _busy || _reason.text.trim().isEmpty ? null : () => _decide(false),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 }

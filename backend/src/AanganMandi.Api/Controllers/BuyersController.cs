@@ -41,9 +41,9 @@ public class BuyersController(AppDbContext db) : ControllerBase
     public async Task<ActionResult<BuyerDto>> SaveArea(AreaDto req, CancellationToken ct)
     {
         if (req.Latitude is < -90 or > 90 || req.Longitude is < -180 or > 180 || (req.Latitude == 0 && req.Longitude == 0))
-            return Problem(statusCode: 400, title: "Capture your location");
+            return this.Fail(400, "location_required");
         if (!BuyerArea.Radii.Contains(req.RadiusKm))
-            return Problem(statusCode: 400, title: $"Choose {string.Join(", ", BuyerArea.Radii)} km");
+            return this.Fail(400, "radius_invalid", ("radii", string.Join(", ", BuyerArea.Radii)));
 
         var area = await AreaAsync(ct);
         if (area is null)

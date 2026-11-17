@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../photo_compress.dart';
 import 'api_client.dart';
 import 'models.dart';
 
@@ -19,11 +20,14 @@ String? photoSubtype(List<int> b) {
 /// Builds a multipart file from a picked photo (works on Android and web). The server checks the bytes too, and
 /// answers "Only JPEG, PNG or WebP photos are accepted" for anything else (e.g. HEIC on a browser that can't show it).
 Future<MultipartFile> _photoPart(XFile photo) async {
-  final bytes = await photo.readAsBytes();
+  // Every upload goes through here: shrink it to ~400 KB first (and drop EXIF/GPS data).
+  final bytes = await shrinkPhoto(await photo.readAsBytes());
   final subtype = photoSubtype(bytes);
-  return MultipartFile.fromBytes(bytes,
-      filename: 'photo.${subtype == 'jpeg' ? 'jpg' : subtype ?? 'bin'}',
-      contentType: subtype == null ? DioMediaType('application', 'octet-stream') : DioMediaType('image', subtype));
+  return MultipartFile.fromBytes(
+    bytes,
+    filename: 'photo.${subtype == 'jpeg' ? 'jpg' : subtype ?? 'bin'}',
+    contentType: subtype == null ? DioMediaType('application', 'octet-stream') : DioMediaType('image', subtype),
+  );
 }
 
 class FarmerApi {
@@ -40,15 +44,17 @@ class FarmerApi {
     required List<String> cropCodes,
     required double? farmSizeAcres,
     required String produceSource,
-  }) =>
-      _dio.put('/farmers/me/details', data: {
-        'name': name,
-        'village': village,
-        'district': district,
-        'cropCodes': cropCodes,
-        'farmSizeAcres': farmSizeAcres,
-        'produceSource': produceSource,
-      });
+  }) => _dio.put(
+    '/farmers/me/details',
+    data: {
+      'name': name,
+      'village': village,
+      'district': district,
+      'cropCodes': cropCodes,
+      'farmSizeAcres': farmSizeAcres,
+      'produceSource': produceSource,
+    },
+  );
 
   /// type: AgriStackFarmerId, LandRecord, FpoMembership or OfficerReference.
   Future<void> saveEvidence({required String type, required String? details}) =>
@@ -91,12 +97,17 @@ class HostApi {
       Space.fromJson((await _dio.put('/hosts/me/spaces/$id', data: body)).data as Map<String, dynamic>);
 
   Future<void> addPhoto(String spaceId, XFile photo, {bool isProof = false}) async {
-    await _dio.post('/hosts/me/spaces/$spaceId/photos',
-        data: FormData.fromMap({'file': await _photoPart(photo), 'isProof': isProof}));
+    await _dio.post(
+      '/hosts/me/spaces/$spaceId/photos',
+      data: FormData.fromMap({'file': await _photoPart(photo), 'isProof': isProof}),
+    );
   }
 
   Future<void> replacePhoto(String spaceId, String photoId, XFile photo) async {
-    await _dio.put('/hosts/me/spaces/$spaceId/photos/$photoId', data: FormData.fromMap({'file': await _photoPart(photo)}));
+    await _dio.put(
+      '/hosts/me/spaces/$spaceId/photos/$photoId',
+      data: FormData.fromMap({'file': await _photoPart(photo)}),
+    );
   }
 
   /// True when this sent a waiting space back to draft (fewer than 3 photos or no proof left).
@@ -126,4 +137,5 @@ final farmerProvider = FutureProvider.autoDispose<Farmer>((ref) => ref.watch(far
 final mySpacesProvider = FutureProvider.autoDispose<List<Space>>((ref) => ref.watch(hostApiProvider).mySpaces());
 
 final profileProvider = FutureProvider.autoDispose<Profile>(
-    (ref) async => Profile.fromJson((await ref.watch(dioProvider).get('/users/me')).data as Map<String, dynamic>));
+  (ref) async => Profile.fromJson((await ref.watch(dioProvider).get('/users/me')).data as Map<String, dynamic>),
+);

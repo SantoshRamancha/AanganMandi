@@ -54,6 +54,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Someone logged in before the terms existed or changed: ask once before going on.
+    ref.listen(profileProvider, (_, next) {
+      if (next.value case final p? when !p.termsAccepted) context.go('/consent');
+    });
     final l10n = AppLocalizations.of(context);
     final role = Prefs.role;
     final title = switch (role) {
@@ -136,10 +140,10 @@ class LogoutButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) => FilledButton.tonalIcon(
-        icon: const Icon(Icons.logout),
-        label: Text(AppLocalizations.of(context).logout),
-        onPressed: () => confirmLogout(context, ref),
-      );
+    icon: const Icon(Icons.logout),
+    label: Text(AppLocalizations.of(context).logout),
+    onPressed: () => confirmLogout(context, ref),
+  );
 }
 
 /// The signed-in person's initials in the app bar; opens My profile.
@@ -148,10 +152,10 @@ class _ProfileButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) => IconButton(
-        tooltip: AppLocalizations.of(context).profileTitle,
-        icon: InitialsAvatar(name: ref.watch(profileProvider).value?.name, radius: 17),
-        onPressed: () => context.push('/profile'),
-      );
+    tooltip: AppLocalizations.of(context).profileTitle,
+    icon: InitialsAvatar(name: ref.watch(profileProvider).value?.name, radius: 17),
+    onPressed: () => context.push('/profile'),
+  );
 }
 
 /// Centered icon, title and message for empty or not-yet-built screens.
@@ -169,18 +173,25 @@ class EmptyState extends StatelessWidget {
         padding: EdgeInsets.all(Breakpoints.gutter(context)),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 480),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            CircleAvatar(
-              radius: 48,
-              backgroundColor: scheme.primaryContainer,
-              child: Icon(icon, size: 48, color: scheme.onPrimaryContainer),
-            ),
-            const SizedBox(height: 20),
-            Text(title, textAlign: TextAlign.center, style: Theme.of(context).textTheme.headlineSmall),
-            const SizedBox(height: 8),
-            Text(body, textAlign: TextAlign.center, style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 16)),
-            if (action != null) ...[const SizedBox(height: 24), action!],
-          ]),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircleAvatar(
+                radius: 48,
+                backgroundColor: scheme.primaryContainer,
+                child: Icon(icon, size: 48, color: scheme.onPrimaryContainer),
+              ),
+              const SizedBox(height: 20),
+              Text(title, textAlign: TextAlign.center, style: Theme.of(context).textTheme.headlineSmall),
+              const SizedBox(height: 8),
+              Text(
+                body,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 16),
+              ),
+              if (action != null) ...[const SizedBox(height: 24), action!],
+            ],
+          ),
         ),
       ),
     );

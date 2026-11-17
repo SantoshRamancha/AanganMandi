@@ -42,4 +42,16 @@ public interface INotifier
     /// A booking already announced to a buyer is skipped, so running it twice sends nothing new.
     /// </summary>
     Task NearbyTomorrowAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// Daily job, the evening before: reminds the farmer and the host of every confirmed booking for tomorrow
+    /// (each booking once, see Booking.ReminderSentAt).
+    /// </summary>
+    Task BookingRemindersAsync(CancellationToken ct = default);
+
+    /// <summary>A problem report was filed: to every admin with an email.</summary>
+    Task ProblemReportedAsync(Guid reportId, CancellationToken ct = default);
+
+    /// <summary>An admin resolved a report: to the person who filed it, with the admin's note.</summary>
+    Task ProblemResolvedAsync(Guid reportId, CancellationToken ct = default);
 }

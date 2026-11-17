@@ -81,7 +81,7 @@ public class HostSpacesController(AppDbContext db, IFileStorage storage, INotifi
     {
         var space = await FindAsync(id, ct);
         if (space is null) return NotFound();
-        if (space.Status is SpaceStatus.PendingReview) return Problem(statusCode: 409, title: "Space is under review");
+        if (space.Status is SpaceStatus.PendingReview) return this.Fail(409, "space_under_review");
         if (Validate(req) is { } error) return error;
         Apply(space, req);
         // Any change to a live or rejected space sends it back through review.
@@ -104,7 +104,7 @@ public class HostSpacesController(AppDbContext db, IFileStorage storage, INotifi
         var (invalid, kind) = await CheckUploadAsync(file, ct);
         if (invalid is not null) return invalid;
         if (!isProof && space.Photos.Count(p => !p.IsRightToUseProof) >= MaxPhotos)
-            return Problem(statusCode: 400, title: $"A space can have at most {MaxPhotos} photos");
+            return this.Fail(400, "space_max_photos", ("max", MaxPhotos));
 
         var path = await SaveAsync(space, file, kind, isProof, ct);
         var oldProof = isProof ? space.Photos.Where(p => p.IsRightToUseProof).ToList() : [];
@@ -192,12 +192,12 @@ public class HostSpacesController(AppDbContext db, IFileStorage storage, INotifi
         var space = await FindAsync(id, ct);
         if (space is null) return NotFound();
         if (space.Status is not (SpaceStatus.Draft or SpaceStatus.Rejected))
-            return Problem(statusCode: 409, title: "Space is already submitted");
+            return this.Fail(409, "space_already_submitted");
         var photos = space.Photos.Count(p => !p.IsRightToUseProof);
         if (photos < MinPhotos)
-            return Problem(statusCode: 422, title: $"Add at least {MinPhotos} photos of the space");
+            return this.Fail(422, "space_min_photos", ("min", MinPhotos));
         if (!space.Photos.Any(p => p.IsRightToUseProof))
-            return Problem(statusCode: 422, title: "Add a photo of your ownership, rent document or society letter");
+            return this.Fail(422, "space_proof_required");
         space.Status = SpaceStatus.PendingReview;
         space.RejectionReason = null;
         space.UpdatedAt = DateTime.UtcNow;
@@ -208,17 +208,17 @@ public class HostSpacesController(AppDbContext db, IFileStorage storage, INotifi
 
     /// <summary>An approved (live) space's photos and proof are final: preview and download only.</summary>
     private ObjectResult? LockedFiles(Space s) => s.Status is SpaceStatus.Live
-        ? Problem(statusCode: 409, title: "This space is approved, so its photos and proof can no longer be changed")
+        ? this.Fail(409, "space_files_locked")
         : null;
 
     /// <summary>The photo's real format, read from its bytes (the label the browser sends can be wrong), or the error.</summary>
     private async Task<(ObjectResult? Error, ImageFormat.Kind Kind)> CheckUploadAsync(IFormFile file, CancellationToken ct)
     {
-        if (file.Length is 0 or > MaxUploadBytes) return (Problem(statusCode: 400, title: "Photo must be under 8 MB"), ImageFormat.Jpeg);
+        if (file.Length is 0 or > MaxUploadBytes) return (this.Fail(400, "photo_too_big", ("mb", 8)), ImageFormat.Jpeg);
         await using var head = file.OpenReadStream();
         return await ImageFormat.DetectAsync(head, ct) is { } kind
             ? (null, kind)
-            : (Problem(statusCode: 400, title: "Only JPEG, PNG or WebP photos are accepted"), ImageFormat.Jpeg);
+            : (this.Fail(400, "photo_format"), ImageFormat.Jpeg);
     }
 
     /// <summary>Proof documents are private (kyc/); space photos are public (spaces/).</summary>
@@ -249,15 +249,15 @@ public class HostSpacesController(AppDbContext db, IFileStorage storage, INotifi
     private ObjectResult? Validate(SpaceRequest r)
     {
         string? error =
-            string.IsNullOrWhiteSpace(r.Title) ? "Give the space a name" :
-            string.IsNullOrWhiteSpace(r.Address) || string.IsNullOrWhiteSpace(r.Locality) ? "Address and locality are required" :
-            r.Latitude is < -90 or > 90 || r.Longitude is < -180 or > 180 || (r.Latitude == 0 && r.Longitude == 0) ? "Capture the space location" :
-            r.AreaSqFt is < 50 or > 100_000 ? "Usable area must be between 50 and 100,000 sq ft" :
-            !r.IsFree && r.Fee is <= 0 or > 100_000 ? "Enter a fee per slot, or mark the space as free" :
-            r.AvailableDays.Length == 0 ? "Choose at least one day" :
-            (r.OpenTo - r.OpenFrom).TotalHours is < 2 or > 6 ? "Each slot must be 2 to 6 hours long" :
+            string.IsNullOrWhiteSpace(r.Title) ? "space_name_required" :
+            string.IsNullOrWhiteSpace(r.Address) || string.IsNullOrWhiteSpace(r.Locality) ? "space_address_required" :
+            r.Latitude is < -90 or > 90 || r.Longitude is < -180 or > 180 || (r.Latitude == 0 && r.Longitude == 0) ? "space_location_required" :
+            r.AreaSqFt is < 50 or > 100_000 ? "space_area_range" :
+            !r.IsFree && r.Fee is <= 0 or > 100_000 ? "space_fee_required" :
+            r.AvailableDays.Length == 0 ? "space_days_required" :
+            (r.OpenTo - r.OpenFrom).TotalHours is < 2 or > 6 ? "space_slot_length" :
             null;
-        return error is null ? null : Problem(statusCode: 400, title: error);
+        return error is null ? null : this.Fail(400, error);
     }
 
     private static void Apply(Space s, SpaceRequest r)

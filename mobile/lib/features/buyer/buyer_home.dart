@@ -24,35 +24,44 @@ class BuyerHome extends ConsumerWidget {
     return settings.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Text(apiErrorMessage(e, l10n.couldNotLoad)),
-          const SizedBox(height: 12),
-          OutlinedButton(onPressed: () => ref.invalidate(buyerSettingsProvider), child: Text(l10n.retry)),
-        ]),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(apiErrorMessage(e, l10n.couldNotLoad)),
+            const SizedBox(height: 12),
+            OutlinedButton(onPressed: () => ref.invalidate(buyerSettingsProvider), child: Text(l10n.retry)),
+          ],
+        ),
       ),
       data: (s) {
         final area = s.area;
         // No area yet: explain and ask for it.
         if (area == null) {
-          return ListView(padding: EdgeInsets.all(gutter), children: [
-            MaxWidth(
-              maxWidth: 640,
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                    Icon(Icons.storefront_outlined, size: 40, color: Theme.of(context).colorScheme.primary),
-                    const SizedBox(height: 12),
-                    Text(l10n.nearbySetupTitle, style: Theme.of(context).textTheme.titleLarge),
-                    const SizedBox(height: 8),
-                    Text(l10n.nearbySetupBody, style: const TextStyle(fontSize: 16, height: 1.4)),
-                    const SizedBox(height: 16),
-                    AreaForm(hasEmail: s.hasEmail),
-                  ]),
+          return ListView(
+            padding: EdgeInsets.all(gutter),
+            children: [
+              MaxWidth(
+                maxWidth: 640,
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Icon(Icons.storefront_outlined, size: 40, color: Theme.of(context).colorScheme.primary),
+                        const SizedBox(height: 12),
+                        Text(l10n.nearbySetupTitle, style: Theme.of(context).textTheme.titleLarge),
+                        const SizedBox(height: 8),
+                        Text(l10n.nearbySetupBody, style: const TextStyle(fontSize: 16, height: 1.4)),
+                        const SizedBox(height: 16),
+                        AreaForm(hasEmail: s.hasEmail),
+                      ],
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ]);
+            ],
+          );
         }
 
         final stalls = ref.watch(nearbyStallsProvider);
@@ -61,57 +70,77 @@ class BuyerHome extends ConsumerWidget {
             ref.invalidate(buyerSettingsProvider);
             await ref.refresh(nearbyStallsProvider.future).catchError((_) => <NearbyStall>[]);
           },
-          child: ListView(padding: EdgeInsets.all(gutter), children: [
-            MaxWidth(
-              maxWidth: 760,
-              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                Row(children: [
-                  Expanded(
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text(l10n.nearbyTitle, style: Theme.of(context).textTheme.titleLarge),
-                      Text(l10n.withinKm(area.radiusKm),
-                          style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
-                    ]),
-                  ),
-                  TextButton.icon(
-                    icon: const Icon(Icons.tune),
-                    label: Text(l10n.changeArea),
-                    onPressed: () => showModalBottomSheet<void>(
-                      context: context,
-                      isScrollControlled: true,
-                      showDragHandle: true,
-                      builder: (sheet) => SafeArea(
-                        child: SingleChildScrollView(
-                          padding: EdgeInsets.fromLTRB(24, 0, 24, 24 + MediaQuery.viewInsetsOf(sheet).bottom),
-                          child: AreaForm(initial: area, hasEmail: s.hasEmail, inSheet: true),
-                        ),
-                      ),
-                    ),
-                  ),
-                ]),
-                if (area.alertsOn && !s.hasEmail)
-                  Card(
-                    margin: const EdgeInsets.only(top: 12),
-                    child: ListTile(leading: const Icon(Icons.mail_outline), title: Text(l10n.addEmailForAlerts)),
-                  ),
-                const SizedBox(height: 12),
-                ...stalls.when(
-                  loading: () => [const Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator()))],
-                  error: (e, _) => [Text(apiErrorMessage(e, l10n.couldNotLoad))],
-                  data: (list) => list.isEmpty
-                      ? [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 32),
-                            child: Text(l10n.nearbyEmpty,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+          child: ListView(
+            padding: EdgeInsets.all(gutter),
+            children: [
+              MaxWidth(
+                maxWidth: 760,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(l10n.nearbyTitle, style: Theme.of(context).textTheme.titleLarge),
+                              Text(
+                                l10n.withinKm(area.radiusKm),
+                                style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                              ),
+                            ],
                           ),
-                        ]
-                      : [for (final st in list) StallCard(stall: st)],
+                        ),
+                        TextButton.icon(
+                          icon: const Icon(Icons.tune),
+                          label: Text(l10n.changeArea),
+                          onPressed: () => showModalBottomSheet<void>(
+                            context: context,
+                            isScrollControlled: true,
+                            showDragHandle: true,
+                            builder: (sheet) => SafeArea(
+                              child: SingleChildScrollView(
+                                padding: EdgeInsets.fromLTRB(24, 0, 24, 24 + MediaQuery.viewInsetsOf(sheet).bottom),
+                                child: AreaForm(initial: area, hasEmail: s.hasEmail, inSheet: true),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (area.alertsOn && !s.hasEmail)
+                      Card(
+                        margin: const EdgeInsets.only(top: 12),
+                        child: ListTile(leading: const Icon(Icons.mail_outline), title: Text(l10n.addEmailForAlerts)),
+                      ),
+                    const SizedBox(height: 12),
+                    ...stalls.when(
+                      loading: () => [
+                        const Padding(
+                          padding: EdgeInsets.all(32),
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                      ],
+                      error: (e, _) => [Text(apiErrorMessage(e, l10n.couldNotLoad))],
+                      data: (list) => list.isEmpty
+                          ? [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 32),
+                                child: Text(
+                                  l10n.nearbyEmpty,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                                ),
+                              ),
+                            ]
+                          : [for (final st in list) StallCard(stall: st)],
+                    ),
+                  ],
                 ),
-              ]),
-            ),
-          ]),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -132,49 +161,74 @@ class StallCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       shape: s.sellingNow
-          ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: scheme.primary, width: 2))
+          ? RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: scheme.primary, width: 2),
+            )
           : null,
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Wrap(spacing: 8, runSpacing: 4, crossAxisAlignment: WrapCrossAlignment.center, children: [
-            Chip(
-              avatar: Icon(s.sellingNow ? Icons.storefront : Icons.event, size: 18,
-                  color: s.sellingNow ? scheme.onPrimary : scheme.onSecondaryContainer),
-              label: Text(s.sellingNow ? l10n.sellingNow : (today ? l10n.today : l10n.tomorrow)),
-              backgroundColor: s.sellingNow ? scheme.primary : scheme.secondaryContainer,
-              labelStyle: TextStyle(
-                  color: s.sellingNow ? scheme.onPrimary : scheme.onSecondaryContainer, fontWeight: FontWeight.w600),
-              side: BorderSide.none,
-              visualDensity: VisualDensity.compact,
-            ),
-            Text(s.sellingNow ? l10n.untilTime(s.to) : '${s.from} – ${s.to}',
-                style: const TextStyle(fontWeight: FontWeight.w600)),
-            Text('· ${l10n.kmAway(s.distanceKm.toStringAsFixed(1))}', style: TextStyle(color: scheme.onSurfaceVariant)),
-          ]),
-          const SizedBox(height: 8),
-          Text([s.farmerName ?? l10n.noName, ?s.village].join(', '),
-              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 2),
-          Text('${s.spaceTitle} · ${s.locality}', style: TextStyle(color: scheme.onSurfaceVariant)),
-          const SizedBox(height: 8),
-          ProduceChips(s.produce),
-          const SizedBox(height: 8),
-          if (s.sellingNow && s.address != null) ...[
-            IconFact(Icons.place_outlined, s.address!, bold: true),
-            if (s.latitude != null && s.longitude != null)
-              Align(
-                alignment: Alignment.centerLeft,
-                child: FilledButton.tonalIcon(
-                  icon: const Icon(Icons.map_outlined),
-                  label: Text(l10n.openInMaps),
-                  onPressed: () => launchUrl(Uri.parse('https://www.google.com/maps?q=${s.latitude},${s.longitude}'),
-                      mode: LaunchMode.externalApplication),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Chip(
+                  avatar: Icon(
+                    s.sellingNow ? Icons.storefront : Icons.event,
+                    size: 18,
+                    color: s.sellingNow ? scheme.onPrimary : scheme.onSecondaryContainer,
+                  ),
+                  label: Text(s.sellingNow ? l10n.sellingNow : (today ? l10n.today : l10n.tomorrow)),
+                  backgroundColor: s.sellingNow ? scheme.primary : scheme.secondaryContainer,
+                  labelStyle: TextStyle(
+                    color: s.sellingNow ? scheme.onPrimary : scheme.onSecondaryContainer,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  side: BorderSide.none,
+                  visualDensity: VisualDensity.compact,
                 ),
-              ),
-          ] else
-            Text(l10n.exactPlaceLater, style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 13)),
-        ]),
+                Text(
+                  s.sellingNow ? l10n.untilTime(s.to) : '${s.from} – ${s.to}',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                Text(
+                  '· ${l10n.kmAway(s.distanceKm.toStringAsFixed(1))}',
+                  style: TextStyle(color: scheme.onSurfaceVariant),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              [s.farmerName ?? l10n.noName, ?s.village].join(', '),
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 2),
+            Text('${s.spaceTitle} · ${s.locality}', style: TextStyle(color: scheme.onSurfaceVariant)),
+            const SizedBox(height: 8),
+            ProduceChips(s.produce),
+            const SizedBox(height: 8),
+            if (s.sellingNow && s.address != null) ...[
+              IconFact(Icons.place_outlined, s.address!, bold: true),
+              if (s.latitude != null && s.longitude != null)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: FilledButton.tonalIcon(
+                    icon: const Icon(Icons.map_outlined),
+                    label: Text(l10n.openInMaps),
+                    onPressed: () => launchUrl(
+                      Uri.parse('https://www.google.com/maps?q=${s.latitude},${s.longitude}'),
+                      mode: LaunchMode.externalApplication,
+                    ),
+                  ),
+                ),
+            ] else
+              Text(l10n.exactPlaceLater, style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 13)),
+          ],
+        ),
       ),
     );
   }
@@ -234,43 +288,51 @@ class _AreaFormState extends ConsumerState<AreaForm> {
     final scheme = Theme.of(context).colorScheme;
     final api = ref.read(buyerApiProvider);
     final located = _lat != null && _lng != null;
-    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: [
-      OutlinedButton.icon(
-        icon: Icon(located ? Icons.check_circle : Icons.my_location, color: located ? scheme.primary : null),
-        label: Text(located ? l10n.locationSaved : l10n.useMyLocation),
-        onPressed: _busy ? null : _locate,
-      ),
-      const SizedBox(height: 16),
-      Text(l10n.howFar, style: Theme.of(context).textTheme.titleSmall),
-      const SizedBox(height: 8),
-      SegmentedButton<int>(
-        segments: [for (final km in const [1, 2, 5]) ButtonSegment(value: km, label: Text(l10n.radiusKm(km)))],
-        selected: {_radius},
-        onSelectionChanged: (v) => setState(() => _radius = v.first),
-      ),
-      const SizedBox(height: 8),
-      SwitchListTile(
-        contentPadding: EdgeInsets.zero,
-        title: Text(l10n.emailAlerts),
-        subtitle: Text(widget.hasEmail ? l10n.emailAlertsBody : l10n.addEmailForAlerts),
-        value: _alerts,
-        onChanged: (v) => setState(() => _alerts = v),
-      ),
-      const SizedBox(height: 8),
-      FilledButton(
-        onPressed: !located || _busy
-            ? null
-            : () => _run(
-                () => api.saveArea(BuyerArea(latitude: _lat!, longitude: _lng!, radiusKm: _radius, alertsOn: _alerts)),
-                l10n.areaSavedToast),
-        child: Text(l10n.save),
-      ),
-      if (widget.inSheet && widget.initial != null)
-        TextButton(
-          style: TextButton.styleFrom(foregroundColor: scheme.error),
-          onPressed: _busy ? null : () => _run(api.deleteArea, l10n.areaRemovedToast),
-          child: Text(l10n.removeArea),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        OutlinedButton.icon(
+          icon: Icon(located ? Icons.check_circle : Icons.my_location, color: located ? scheme.primary : null),
+          label: Text(located ? l10n.locationSaved : l10n.useMyLocation),
+          onPressed: _busy ? null : _locate,
         ),
-    ]);
+        const SizedBox(height: 16),
+        Text(l10n.howFar, style: Theme.of(context).textTheme.titleSmall),
+        const SizedBox(height: 8),
+        SegmentedButton<int>(
+          segments: [
+            for (final km in const [1, 2, 5]) ButtonSegment(value: km, label: Text(l10n.radiusKm(km))),
+          ],
+          selected: {_radius},
+          onSelectionChanged: (v) => setState(() => _radius = v.first),
+        ),
+        const SizedBox(height: 8),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(l10n.emailAlerts),
+          subtitle: Text(widget.hasEmail ? l10n.emailAlertsBody : l10n.addEmailForAlerts),
+          value: _alerts,
+          onChanged: (v) => setState(() => _alerts = v),
+        ),
+        const SizedBox(height: 8),
+        FilledButton(
+          onPressed: !located || _busy
+              ? null
+              : () => _run(
+                  () =>
+                      api.saveArea(BuyerArea(latitude: _lat!, longitude: _lng!, radiusKm: _radius, alertsOn: _alerts)),
+                  l10n.areaSavedToast,
+                ),
+          child: Text(l10n.save),
+        ),
+        if (widget.inSheet && widget.initial != null)
+          TextButton(
+            style: TextButton.styleFrom(foregroundColor: scheme.error),
+            onPressed: _busy ? null : () => _run(api.deleteArea, l10n.areaRemovedToast),
+            child: Text(l10n.removeArea),
+          ),
+      ],
+    );
   }
 }

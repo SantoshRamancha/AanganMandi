@@ -10,11 +10,11 @@ import 'trip_widgets.dart';
 
 /// Counts for the farmer dashboard, from the trip list (planned trips come first, soonest at the top).
 ({int upcoming, int booked, int waiting, int completed}) tripStats(List<Trip> trips) => (
-      upcoming: trips.where((t) => t.isPlanned).length,
-      booked: trips.where((t) => t.isPlanned && t.booking?.status == 'Accepted').length,
-      waiting: trips.where((t) => t.isPlanned && t.booking?.status == 'Requested').length,
-      completed: trips.where((t) => t.status == 'Completed').length,
-    );
+  upcoming: trips.where((t) => t.isPlanned).length,
+  booked: trips.where((t) => t.isPlanned && t.booking?.status == 'Accepted').length,
+  waiting: trips.where((t) => t.isPlanned && t.booking?.status == 'Requested').length,
+  completed: trips.where((t) => t.status == 'Completed').length,
+);
 
 /// One trip in a list: date block, status, vehicle and area, and the booked or requested space.
 class TripCard extends ConsumerWidget {
@@ -44,53 +44,76 @@ class TripCard extends ConsumerWidget {
         },
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Container(
-              width: 56,
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              decoration: BoxDecoration(
-                color: past ? scheme.surfaceContainerHighest : scheme.primaryContainer,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(children: [
-                Text('${trip.date.day}',
-                    style: TextStyle(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 56,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: past ? scheme.surfaceContainerHighest : scheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      '${trip.date.day}',
+                      style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
-                        color: past ? scheme.onSurfaceVariant : scheme.onPrimaryContainer)),
-                Text(tripDate(trip.date).split(',').first,
-                    style: TextStyle(fontSize: 12, color: past ? scheme.onSurfaceVariant : scheme.onPrimaryContainer)),
-              ]),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Row(children: [
-                  Expanded(
-                    child: Text(tripDate(trip.date), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-                  ),
-                  BookingStatusChip(statusKey),
-                ]),
-                const SizedBox(height: 4),
-                Row(children: [
-                  Icon(vehicleIcon(trip.vehicle), size: 18, color: scheme.onSurfaceVariant),
-                  const SizedBox(width: 6),
-                  Text(l10n.vehicle(trip.vehicle), style: TextStyle(color: scheme.onSurfaceVariant)),
-                  if (trip.preferredArea != null) ...[
-                    Text('  ·  ', style: TextStyle(color: scheme.onSurfaceVariant)),
-                    Flexible(
-                      child: Text(trip.preferredArea!,
-                          overflow: TextOverflow.ellipsis, style: TextStyle(color: scheme.onSurfaceVariant)),
+                        color: past ? scheme.onSurfaceVariant : scheme.onPrimaryContainer,
+                      ),
+                    ),
+                    Text(
+                      tripDate(trip.date).split(',').first,
+                      style: TextStyle(fontSize: 12, color: past ? scheme.onSurfaceVariant : scheme.onPrimaryContainer),
                     ),
                   ],
-                ]),
-                if (line != null) ...[
-                  const SizedBox(height: 6),
-                  Text(line, style: const TextStyle(fontWeight: FontWeight.w600)),
-                ],
-              ]),
-            ),
-          ]),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            tripDate(trip.date),
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                        BookingStatusChip(statusKey),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(vehicleIcon(trip.vehicle), size: 18, color: scheme.onSurfaceVariant),
+                        const SizedBox(width: 6),
+                        Text(l10n.vehicle(trip.vehicle), style: TextStyle(color: scheme.onSurfaceVariant)),
+                        if (trip.preferredArea != null) ...[
+                          Text('  ·  ', style: TextStyle(color: scheme.onSurfaceVariant)),
+                          Flexible(
+                            child: Text(
+                              trip.preferredArea!,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(color: scheme.onSurfaceVariant),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    if (line != null) ...[
+                      const SizedBox(height: 6),
+                      Text(line, style: const TextStyle(fontWeight: FontWeight.w600)),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

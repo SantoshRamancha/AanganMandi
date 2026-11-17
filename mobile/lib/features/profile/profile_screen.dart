@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/api/api_client.dart';
@@ -14,6 +15,8 @@ import '../../core/router/app_router.dart';
 import '../../core/widgets/responsive.dart';
 import '../../core/widgets/feedback.dart';
 import '../../l10n/app_localizations.dart';
+import '../support/report_problem.dart';
+import '../onboarding/consent_screen.dart';
 import '../home/home_screen.dart';
 import '../onboarding/language_screen.dart';
 
@@ -29,39 +32,53 @@ class ProfileScreen extends ConsumerWidget {
       appBar: AppBar(title: Text(l10n.profileTitle)),
       body: RefreshIndicator(
         onRefresh: () => ref.refresh(profileProvider.future),
-        child: ListView(padding: EdgeInsets.all(Breakpoints.gutter(context)), children: [
-          MaxWidth(
-            maxWidth: 720,
-            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              profile.when(
-                loading: () => const Padding(padding: EdgeInsets.all(48), child: Center(child: CircularProgressIndicator())),
-                error: (e, _) => Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.cloud_off),
-                    title: Text(apiErrorMessage(e, l10n.couldNotLoad)),
-                    trailing: TextButton(onPressed: () => ref.invalidate(profileProvider), child: Text(l10n.retry)),
+        child: ListView(
+          padding: EdgeInsets.all(Breakpoints.gutter(context)),
+          children: [
+            MaxWidth(
+              maxWidth: 720,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  profile.when(
+                    loading: () => const Padding(
+                      padding: EdgeInsets.all(48),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                    error: (e, _) => Card(
+                      child: ListTile(
+                        leading: const Icon(Icons.cloud_off),
+                        title: Text(apiErrorMessage(e, l10n.couldNotLoad)),
+                        trailing: TextButton(onPressed: () => ref.invalidate(profileProvider), child: Text(l10n.retry)),
+                      ),
+                    ),
+                    data: (p) => Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _Header(profile: p),
+                        _AccountCard(profile: p),
+                        if (p.roles.contains('Farmer')) const _FarmerCard(),
+                        if (p.roles.contains('Host')) const _HostCard(),
+                      ],
+                    ),
                   ),
-                ),
-                data: (p) => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                  _Header(profile: p),
-                  _AccountCard(profile: p),
-                  if (p.roles.contains('Farmer')) const _FarmerCard(),
-                  if (p.roles.contains('Host')) const _HostCard(),
-                ]),
+                  const _AppearanceCard(),
+                  const _LanguageCard(),
+                  const SizedBox(height: 8),
+                  const _HelpCard(),
+                  const SizedBox(height: 8),
+                  _LogoutCard(phone: profile.value?.phone),
+                  // Staff accounts are removed by an admin, so their waiting farmers get reassigned.
+                  if (profile.value case final p? when !p.roles.contains('Admin') && !p.roles.contains('Verifier')) ...[
+                    const SizedBox(height: 12),
+                    const _DeleteAccountTile(),
+                  ],
+                  const SizedBox(height: 24),
+                ],
               ),
-              const _AppearanceCard(),
-              const _LanguageCard(),
-              const SizedBox(height: 8),
-              _LogoutCard(phone: profile.value?.phone),
-              // Staff accounts are removed by an admin, so their waiting farmers get reassigned.
-              if (profile.value case final p? when !p.roles.contains('Admin') && !p.roles.contains('Verifier')) ...[
-                const SizedBox(height: 12),
-                const _DeleteAccountTile(),
-              ],
-              const SizedBox(height: 24),
-            ]),
-          ),
-        ]),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -78,34 +95,44 @@ class _Header extends StatelessWidget {
     final name = profile.name?.trim();
     return Padding(
       padding: const EdgeInsets.only(top: 8, bottom: 20),
-      child: Column(children: [
-        InitialsAvatar(name: name, radius: 44),
-        const SizedBox(height: 12),
-        Text(name == null || name.isEmpty ? profile.phone : name,
-            textAlign: TextAlign.center, style: Theme.of(context).textTheme.headlineSmall),
-        const SizedBox(height: 8),
-        Wrap(alignment: WrapAlignment.center, spacing: 8, runSpacing: 8, children: [
-          for (final r in profile.roles)
-            Chip(
-              avatar: Icon(_roleIcon(r), size: 18, color: scheme.onSecondaryContainer),
-              label: Text(l10n.roleName(r)),
-              backgroundColor: scheme.secondaryContainer,
-              labelStyle: TextStyle(color: scheme.onSecondaryContainer, fontWeight: FontWeight.w600),
-              side: BorderSide.none,
-            ),
-        ]),
-      ]),
+      child: Column(
+        children: [
+          InitialsAvatar(name: name, radius: 44),
+          const SizedBox(height: 12),
+          Text(
+            name == null || name.isEmpty ? profile.phone : name,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final r in profile.roles)
+                Chip(
+                  avatar: Icon(_roleIcon(r), size: 18, color: scheme.onSecondaryContainer),
+                  label: Text(l10n.roleName(r)),
+                  backgroundColor: scheme.secondaryContainer,
+                  labelStyle: TextStyle(color: scheme.onSecondaryContainer, fontWeight: FontWeight.w600),
+                  side: BorderSide.none,
+                ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
   static IconData _roleIcon(String role) => switch (role) {
-        'Farmer' => Icons.agriculture,
-        'Host' => Icons.home_work,
-        'Buyer' => Icons.shopping_basket,
-        'Verifier' => Icons.fact_check,
-        'Admin' => Icons.admin_panel_settings,
-        _ => Icons.person,
-      };
+    'Farmer' => Icons.agriculture,
+    'Host' => Icons.home_work,
+    'Buyer' => Icons.shopping_basket,
+    'Verifier' => Icons.fact_check,
+    'Admin' => Icons.admin_panel_settings,
+    _ => Icons.person,
+  };
 }
 
 /// Icon, label and value in one row of a settings-style card.
@@ -123,12 +150,15 @@ class _Row extends StatelessWidget {
       minVerticalPadding: 8,
       leading: Icon(icon, color: scheme.primary),
       title: Text(label, style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14)),
-      subtitle: Text(value,
-          style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: muted ? scheme.onSurfaceVariant : scheme.onSurface,
-              fontStyle: muted ? FontStyle.italic : null)),
+      subtitle: Text(
+        value,
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: muted ? scheme.onSurfaceVariant : scheme.onSurface,
+          fontStyle: muted ? FontStyle.italic : null,
+        ),
+      ),
     );
   }
 }
@@ -143,13 +173,15 @@ class _AccountCard extends StatelessWidget {
     final name = profile.name?.trim() ?? '';
     return FormSection(
       title: l10n.accountDetails,
-      child: Column(children: [
-        _Row(Icons.badge_outlined, l10n.name, name.isEmpty ? l10n.nameNotSet : name, muted: name.isEmpty),
-        _Row(Icons.phone_iphone, l10n.mobileNumber, profile.phone),
-        _EmailRow(email: profile.email),
-        _Row(Icons.event_available, l10n.memberSince, DateFormat.yMMMd().format(profile.memberSince)),
-        _Row(Icons.groups_outlined, l10n.yourRoles, profile.roles.map(l10n.roleName).join(', ')),
-      ]),
+      child: Column(
+        children: [
+          _Row(Icons.badge_outlined, l10n.name, name.isEmpty ? l10n.nameNotSet : name, muted: name.isEmpty),
+          _Row(Icons.phone_iphone, l10n.mobileNumber, profile.phone),
+          _EmailRow(email: profile.email),
+          _Row(Icons.event_available, l10n.memberSince, DateFormat.yMMMd().format(profile.memberSince)),
+          _Row(Icons.groups_outlined, l10n.yourRoles, profile.roles.map(l10n.roleName).join(', ')),
+        ],
+      ),
     );
   }
 }
@@ -164,18 +196,25 @@ class _FarmerCard extends ConsumerWidget {
     if (farmer == null) return const SizedBox.shrink();
     final lang = ref.watch(localeProvider);
     final crops = ref.watch(cropsProvider).value ?? const <Crop>[];
-    final cropNames = [
-      for (final code in farmer.cropCodes) cropName(code, crops, lang),
-    ];
+    final cropNames = [for (final code in farmer.cropCodes) cropName(code, crops, lang)];
     return FormSection(
       title: l10n.farmDetails,
-      child: Column(children: [
-        _Row(Icons.verified_user_outlined, l10n.verificationStatus, l10n.farmerStatus(farmer.status)),
-        _Row(Icons.location_on_outlined, l10n.village,
-            [farmer.village, if (farmer.district case final d?) districtName(d, lang)].whereType<String>().join(', ').ifEmpty(l10n.notGiven)),
-        _Row(Icons.grass, l10n.crops, cropNames.join(', ').ifEmpty(l10n.notGiven)),
-        if (farmer.farmSizeAcres != null) _Row(Icons.straighten, l10n.farmSize, l10n.aboutAcres('${farmer.farmSizeAcres}')),
-      ]),
+      child: Column(
+        children: [
+          _Row(Icons.verified_user_outlined, l10n.verificationStatus, l10n.farmerStatus(farmer.status)),
+          _Row(
+            Icons.location_on_outlined,
+            l10n.village,
+            [
+              farmer.village,
+              if (farmer.district case final d?) districtName(d, lang),
+            ].whereType<String>().join(', ').ifEmpty(l10n.notGiven),
+          ),
+          _Row(Icons.grass, l10n.crops, cropNames.join(', ').ifEmpty(l10n.notGiven)),
+          if (farmer.farmSizeAcres != null)
+            _Row(Icons.straighten, l10n.farmSize, l10n.aboutAcres('${farmer.farmSizeAcres}')),
+        ],
+      ),
     );
   }
 }
@@ -190,8 +229,11 @@ class _HostCard extends ConsumerWidget {
     if (spaces == null) return const SizedBox.shrink();
     return FormSection(
       title: l10n.mySpaces,
-      child: _Row(Icons.home_work_outlined, l10n.roleNameHost,
-          l10n.mySpacesSummary(spaces.length, spaces.where((s) => s.status == 'Live').length)),
+      child: _Row(
+        Icons.home_work_outlined,
+        l10n.roleNameHost,
+        l10n.mySpacesSummary(spaces.length, spaces.where((s) => s.status == 'Live').length),
+      ),
     );
   }
 }
@@ -208,8 +250,16 @@ class _AppearanceCard extends ConsumerWidget {
       child: SegmentedButton<ThemeMode>(
         showSelectedIcon: false,
         segments: [
-          ButtonSegment(value: ThemeMode.system, icon: const Icon(Icons.brightness_auto_outlined), label: Text(l10n.themeSystem)),
-          ButtonSegment(value: ThemeMode.light, icon: const Icon(Icons.light_mode_outlined), label: Text(l10n.themeLight)),
+          ButtonSegment(
+            value: ThemeMode.system,
+            icon: const Icon(Icons.brightness_auto_outlined),
+            label: Text(l10n.themeSystem),
+          ),
+          ButtonSegment(
+            value: ThemeMode.light,
+            icon: const Icon(Icons.light_mode_outlined),
+            label: Text(l10n.themeLight),
+          ),
           ButtonSegment(value: ThemeMode.dark, icon: const Icon(Icons.dark_mode_outlined), label: Text(l10n.themeDark)),
         ],
         selected: {ref.watch(themeModeProvider)},
@@ -229,9 +279,7 @@ class _LanguageCard extends ConsumerWidget {
       title: l10n.language,
       child: SegmentedButton<String>(
         showSelectedIcon: false,
-        segments: [
-          for (final e in LanguageScreen.languages.entries) ButtonSegment(value: e.key, label: Text(e.value)),
-        ],
+        segments: [for (final e in LanguageScreen.languages.entries) ButtonSegment(value: e.key, label: Text(e.value))],
         selected: {ref.watch(localeProvider)},
         onSelectionChanged: (s) {
           ref.read(localeProvider.notifier).set(s.single);
@@ -248,6 +296,48 @@ extension on String {
 }
 
 /// Log out as a clear, separate row at the end of the profile; asks before logging out.
+/// Help and legal: report a problem, my reports, the terms and the privacy policy.
+class _HelpCard extends ConsumerWidget {
+  const _HelpCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final lang = ref.watch(localeProvider);
+    return Card(
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          ListTile(
+            leading: const Icon(Icons.report_outlined),
+            title: Text(l10n.reportProblem),
+            onTap: () => showReportProblemSheet(context),
+          ),
+          ListTile(
+            leading: const Icon(Icons.inbox_outlined),
+            title: Text(l10n.myReports),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/reports'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.description_outlined),
+            title: Text(l10n.readTerms),
+            trailing: const Icon(Icons.open_in_new, size: 18),
+            onTap: () => openLegalPage('terms', lang),
+          ),
+          ListTile(
+            leading: const Icon(Icons.privacy_tip_outlined),
+            title: Text(l10n.readPrivacy),
+            trailing: const Icon(Icons.open_in_new, size: 18),
+            onTap: () => openLegalPage('privacy', lang),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// "Delete my account" (Play Store requirement): asks first, with a tick box, then deletes on the server, logs out
 /// and goes back to the login screen.
 class _DeleteAccountTile extends ConsumerWidget {
@@ -273,7 +363,10 @@ class _DeleteAccountTile extends ConsumerWidget {
     final scheme = Theme.of(context).colorScheme;
     return ListTile(
       leading: Icon(Icons.person_remove_outlined, color: scheme.error),
-      title: Text(l10n.deleteAccount, style: TextStyle(color: scheme.error, fontWeight: FontWeight.w600)),
+      title: Text(
+        l10n.deleteAccount,
+        style: TextStyle(color: scheme.error, fontWeight: FontWeight.w600),
+      ),
       subtitle: Text(l10n.deleteAccountSubtitle),
       onTap: () => _delete(context, ref),
     );
@@ -298,17 +391,21 @@ class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
     return AlertDialog(
       icon: Icon(Icons.person_remove_outlined, color: scheme.error, size: 32),
       title: Text(l10n.deleteAccountQ),
-      content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(l10n.deleteAccountBody, style: const TextStyle(height: 1.4)),
-        const SizedBox(height: 12),
-        CheckboxListTile(
-          contentPadding: EdgeInsets.zero,
-          controlAffinity: ListTileControlAffinity.leading,
-          value: _understood,
-          title: Text(l10n.deleteAccountUnderstand),
-          onChanged: (v) => setState(() => _understood = v ?? false),
-        ),
-      ]),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l10n.deleteAccountBody, style: const TextStyle(height: 1.4)),
+          const SizedBox(height: 12),
+          CheckboxListTile(
+            contentPadding: EdgeInsets.zero,
+            controlAffinity: ListTileControlAffinity.leading,
+            value: _understood,
+            title: Text(l10n.deleteAccountUnderstand),
+            onChanged: (v) => setState(() => _understood = v ?? false),
+          ),
+        ],
+      ),
       actions: [
         TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.cancel)),
         FilledButton(
@@ -343,7 +440,10 @@ class _LogoutCard extends ConsumerWidget {
           foregroundColor: scheme.onErrorContainer,
           child: const Icon(Icons.logout),
         ),
-        title: Text(l10n.logout, style: TextStyle(color: scheme.error, fontWeight: FontWeight.w700, fontSize: 17)),
+        title: Text(
+          l10n.logout,
+          style: TextStyle(color: scheme.error, fontWeight: FontWeight.w700, fontSize: 17),
+        ),
         subtitle: phone == null ? null : Text(l10n.signedInAs(phone!)),
         trailing: Icon(Icons.chevron_right, color: scheme.error),
         onTap: () => confirmLogout(context, ref),
@@ -366,16 +466,22 @@ class _EmailRow extends ConsumerWidget {
       minVerticalPadding: 8,
       leading: Icon(Icons.mail_outline, color: scheme.primary),
       title: Text(l10n.email, style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14)),
-      subtitle: Text(email ?? l10n.emailNotSet,
-          style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: email == null ? scheme.onSurfaceVariant : scheme.onSurface,
-              fontStyle: email == null ? FontStyle.italic : null)),
+      subtitle: Text(
+        email ?? l10n.emailNotSet,
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: email == null ? scheme.onSurfaceVariant : scheme.onSurface,
+          fontStyle: email == null ? FontStyle.italic : null,
+        ),
+      ),
       trailing: TextButton(
         child: Text(email == null ? l10n.addButton : l10n.changeButton),
         onPressed: () async {
-          final saved = await showDialog<bool>(context: context, builder: (_) => _EmailDialog(current: email));
+          final saved = await showDialog<bool>(
+            context: context,
+            builder: (_) => _EmailDialog(current: email),
+          );
           if (saved == true) ref.invalidate(profileProvider);
         },
       ),
@@ -429,18 +535,22 @@ class _EmailDialogState extends ConsumerState<_EmailDialog> {
     return AlertDialog(
       icon: const Icon(Icons.mail_outline),
       title: Text(l10n.emailDialogTitle),
-      content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Text(l10n.emailDialogBody),
-        const SizedBox(height: 12),
-        TextField(
-          controller: _email,
-          autofocus: true,
-          keyboardType: TextInputType.emailAddress,
-          autofillHints: const [AutofillHints.email],
-          onSubmitted: _busy ? null : _save,
-          decoration: InputDecoration(labelText: l10n.email, hintText: 'name@example.com', errorText: _error),
-        ),
-      ]),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(l10n.emailDialogBody),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _email,
+            autofocus: true,
+            keyboardType: TextInputType.emailAddress,
+            autofillHints: const [AutofillHints.email],
+            onSubmitted: _busy ? null : _save,
+            decoration: InputDecoration(labelText: l10n.email, hintText: 'name@example.com', errorText: _error),
+          ),
+        ],
+      ),
       actions: [
         if (widget.current != null)
           TextButton(

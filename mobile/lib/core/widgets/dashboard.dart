@@ -26,22 +26,30 @@ class DashboardBanner extends StatelessWidget {
           colors: [scheme.primary, Color.lerp(scheme.primary, scheme.tertiary, .55)!],
         ),
       ),
-      child: Row(children: [
-        Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(title, style: TextStyle(color: fg, fontSize: 24, fontWeight: FontWeight.w800, height: 1.2)),
-            const SizedBox(height: 6),
-            Text(subtitle, style: TextStyle(color: fg.withValues(alpha: .9), fontSize: 15, height: 1.35)),
-            if (action != null) ...[const SizedBox(height: 14), action!],
-          ]),
-        ),
-        const SizedBox(width: 12),
-        CircleAvatar(
-          radius: 34,
-          backgroundColor: fg.withValues(alpha: .16),
-          child: Icon(icon, size: 38, color: fg),
-        ),
-      ]),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(color: fg, fontSize: 24, fontWeight: FontWeight.w800, height: 1.2),
+                ),
+                const SizedBox(height: 6),
+                Text(subtitle, style: TextStyle(color: fg.withValues(alpha: .9), fontSize: 15, height: 1.35)),
+                if (action != null) ...[const SizedBox(height: 14), action!],
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          CircleAvatar(
+            radius: 34,
+            backgroundColor: fg.withValues(alpha: .16),
+            child: Icon(icon, size: 38, color: fg),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -97,23 +105,33 @@ class StatTile extends StatelessWidget {
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
-              Text('$value', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: accent, height: 1.1)),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: (highlight ? scheme.onWarningContainer : scheme.primary).withValues(alpha: .1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, size: 22, color: accent),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    '$value',
+                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: accent, height: 1.1),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: (highlight ? scheme.onWarningContainer : scheme.primary).withValues(alpha: .1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(icon, size: 22, color: accent),
+                  ),
+                ],
               ),
-            ]),
-            const SizedBox(height: 8),
-            Text(label,
-                style: TextStyle(color: highlight ? scheme.onWarningContainer : scheme.onSurfaceVariant, height: 1.3)),
-          ]),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: TextStyle(color: highlight ? scheme.onWarningContainer : scheme.onSurfaceVariant, height: 1.3),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -127,14 +145,18 @@ class StatGrid extends StatelessWidget {
   final int maxColumns;
 
   @override
-  Widget build(BuildContext context) => LayoutBuilder(builder: (context, c) {
-        const gap = 12.0;
-        final cols = c.maxWidth >= 720 ? maxColumns : 2;
-        final width = (c.maxWidth - gap * (cols - 1)) / cols;
-        return Wrap(spacing: gap, runSpacing: gap, children: [
-          for (final child in children) SizedBox(width: width, child: child),
-        ]);
-      });
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, c) {
+      const gap = 12.0;
+      final cols = c.maxWidth >= 720 ? maxColumns : 2;
+      final width = (c.maxWidth - gap * (cols - 1)) / cols;
+      return Wrap(
+        spacing: gap,
+        runSpacing: gap,
+        children: [for (final child in children) SizedBox(width: width, child: child)],
+      );
+    },
+  );
 }
 
 /// Section title with an optional action on the right ("Plan a trip", "View all").
@@ -146,12 +168,16 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: EdgeInsets.only(top: top, bottom: 12),
-        child: Row(children: [
-          Expanded(child: Text(title, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700))),
-          ?action,
-        ]),
-      );
+    padding: EdgeInsets.only(top: top, bottom: 12),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(title, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+        ),
+        ?action,
+      ],
+    ),
+  );
 }
 
 /// Numbered steps explaining how the app works; [done] steps get a tick, the [current] one is highlighted.
@@ -171,29 +197,35 @@ class HowItWorks extends StatelessWidget {
       margin: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Column(children: [
-          for (final (i, (icon, title, body)) in steps.indexed)
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: CircleAvatar(
-                backgroundColor: i < done
-                    ? scheme.primary
-                    : i == done
-                        ? scheme.primaryContainer
-                        : scheme.surfaceContainerHighest,
-                foregroundColor: i < done
-                    ? scheme.onPrimary
-                    : i == done
-                        ? scheme.onPrimaryContainer
-                        : scheme.onSurfaceVariant,
-                child: Icon(i < done ? Icons.check : icon),
-              ),
-              title: Text(title,
+        child: Column(
+          children: [
+            for (final (i, (icon, title, body)) in steps.indexed)
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: CircleAvatar(
+                  backgroundColor: i < done
+                      ? scheme.primary
+                      : i == done
+                      ? scheme.primaryContainer
+                      : scheme.surfaceContainerHighest,
+                  foregroundColor: i < done
+                      ? scheme.onPrimary
+                      : i == done
+                      ? scheme.onPrimaryContainer
+                      : scheme.onSurfaceVariant,
+                  child: Icon(i < done ? Icons.check : icon),
+                ),
+                title: Text(
+                  title,
                   style: TextStyle(
-                      fontWeight: FontWeight.w600, color: i > done ? scheme.onSurfaceVariant : scheme.onSurface)),
-              subtitle: Text(body),
-            ),
-        ]),
+                    fontWeight: FontWeight.w600,
+                    color: i > done ? scheme.onSurfaceVariant : scheme.onSurface,
+                  ),
+                ),
+                subtitle: Text(body),
+              ),
+          ],
+        ),
       ),
     );
   }

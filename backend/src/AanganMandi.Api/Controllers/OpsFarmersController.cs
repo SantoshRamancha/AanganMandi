@@ -53,7 +53,7 @@ public class OpsFarmersController(AppDbContext db, INotifier notifier) : Control
         if (farmer is null) return NotFound();
         var isAdmin = StaffAccessFilter.IsAdmin(HttpContext);
         if (!isAdmin && farmer.AssignedVerifierId != User.UserId())
-            return Problem(statusCode: 403, title: "This farmer is assigned to another verifier");
+            return this.Fail(403, "farmer_other_verifier");
 
         var user = await db.Users.SingleAsync(u => u.Id == farmer.UserId, ct);
         // Codes, not names: the app shows them in the reviewer's language (custom crops as the farmer typed them).
@@ -78,10 +78,10 @@ public class OpsFarmersController(AppDbContext db, INotifier notifier) : Control
     {
         var farmer = await db.FarmerProfiles.SingleOrDefaultAsync(f => f.Id == id, ct);
         if (farmer is null) return NotFound();
-        if (farmer.Status != VerificationStatus.Pending) return Problem(statusCode: 409, title: "Only farmers waiting for review can be assigned");
+        if (farmer.Status != VerificationStatus.Pending) return this.Fail(409, "farmer_not_waiting");
         var candidates = await VerifierAssignment.CandidatesAsync(db, ct);
         if (req.VerifierId == farmer.UserId || candidates.All(c => c.UserId != req.VerifierId))
-            return Problem(statusCode: 400, title: "Choose an active verifier other than the farmer");
+            return this.Fail(400, "verifier_invalid");
         farmer.AssignedVerifierId = req.VerifierId;
         farmer.AssignedAt = DateTime.UtcNow;
         farmer.UpdatedAt = DateTime.UtcNow;
@@ -94,16 +94,16 @@ public class OpsFarmersController(AppDbContext db, INotifier notifier) : Control
     public async Task<IActionResult> Decide(Guid id, DecisionRequest req, CancellationToken ct)
     {
         var reason = string.IsNullOrWhiteSpace(req.Reason) ? null : req.Reason.Trim();
-        if (!req.Approve && reason is null) return Problem(statusCode: 400, title: "Give a reason to reject; the farmer sees it");
-        if (reason?.Length > 500) return Problem(statusCode: 400, title: "Keep the reason under 500 characters");
+        if (!req.Approve && reason is null) return this.Fail(400, "reject_reason_farmer");
+        if (reason?.Length > 500) return this.Fail(400, "reason_too_long", ("max", 500));
 
         var farmer = await db.FarmerProfiles.SingleOrDefaultAsync(f => f.Id == id, ct);
         if (farmer is null) return NotFound();
         var me = User.UserId();
         // Re-checked here, not trusted from the screen: the farmer may have been reassigned since it opened.
         if (!StaffAccessFilter.IsAdmin(HttpContext) && farmer.AssignedVerifierId != me)
-            return Problem(statusCode: 403, title: "This farmer is assigned to another verifier");
-        if (farmer.Status != VerificationStatus.Pending) return Problem(statusCode: 409, title: "This farmer was already reviewed");
+            return this.Fail(403, "farmer_other_verifier");
+        if (farmer.Status != VerificationStatus.Pending) return this.Fail(409, "farmer_already_reviewed");
 
         farmer.Status = req.Approve ? VerificationStatus.Verified : VerificationStatus.Rejected;
         farmer.Level = req.Approve ? 2 : 1;

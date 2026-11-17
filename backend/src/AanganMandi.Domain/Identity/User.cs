@@ -11,6 +11,9 @@ public class User : Entity
     /// <summary>Optional; when set, the user gets email updates (verification, spaces, bookings).</summary>
     public string? Email { get; set; }
     public string PreferredLanguage { get; set; } = "en";
+    /// <summary>Which version of the terms and privacy policy the user accepted (see LegalPages.Version), and when.</summary>
+    public string? TermsVersion { get; set; }
+    public DateTime? TermsAcceptedAt { get; set; }
     public string Status { get; set; } = "Active";
     public List<UserRole> Roles { get; set; } = [];
 }

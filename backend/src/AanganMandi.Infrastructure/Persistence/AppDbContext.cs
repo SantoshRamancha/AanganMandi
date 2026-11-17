@@ -1,4 +1,5 @@
 using AanganMandi.Domain.Buyers;
+using AanganMandi.Domain.Support;
 using AanganMandi.Domain.Farmers;
 using AanganMandi.Domain.Identity;
 using AanganMandi.Domain.Master;
@@ -101,6 +102,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Booking> Bookings => Set<Booking>();
     public DbSet<BuyerArea> BuyerAreas => Set<BuyerArea>();
     public DbSet<NearbyAlert> NearbyAlerts => Set<NearbyAlert>();
+    public DbSet<ProblemReport> ProblemReports => Set<ProblemReport>();
+
+    /// <summary>All DateTimes are UTC, also when read back (see <see cref="UtcDateTimes"/>).</summary>
+    protected override void ConfigureConventions(ModelConfigurationBuilder b)
+    {
+        b.Properties<DateTime>().HaveConversion<UtcDateTimes.Converter>();
+        b.Properties<DateTime?>().HaveConversion<UtcDateTimes.NullableConverter>();
+    }
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -210,6 +219,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.Property(a => a.Location).HasColumnType("geography");
             e.HasOne<User>().WithMany().HasForeignKey(a => a.UserId).OnDelete(DeleteBehavior.Cascade);
             e.HasQueryFilter(a => !a.IsDeleted);
+        });
+        b.Entity<ProblemReport>(e =>
+        {
+            e.HasIndex(r => new { r.Status, r.CreatedAt });
+            e.HasIndex(r => r.ReporterUserId);
+            e.Property(r => r.Category).HasConversion<string>().HasMaxLength(24);
+            e.Property(r => r.Status).HasConversion<string>().HasMaxLength(16);
+            e.Property(r => r.Message).HasMaxLength(ProblemReport.MaxMessage);
+            e.Property(r => r.Resolution).HasMaxLength(ProblemReport.MaxResolution);
         });
         b.Entity<NearbyAlert>(e =>
         {

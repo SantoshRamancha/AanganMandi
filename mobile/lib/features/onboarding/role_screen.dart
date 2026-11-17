@@ -57,24 +57,29 @@ class _RoleScreenState extends ConsumerState<RoleScreen> {
                   onTap: _saving == null ? () => _choose(role) : null,
                   child: Padding(
                     padding: const EdgeInsets.all(16),
-                    child: Row(children: [
-                      CircleAvatar(
-                        radius: 28,
-                        backgroundColor: scheme.primaryContainer,
-                        child: Icon(icon, size: 30, color: scheme.onPrimaryContainer),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                          const SizedBox(height: 2),
-                          Text(hint, style: TextStyle(color: scheme.onSurfaceVariant)),
-                        ]),
-                      ),
-                      _saving == role
-                          ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
-                          : const Icon(Icons.chevron_right),
-                    ]),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 28,
+                          backgroundColor: scheme.primaryContainer,
+                          child: Icon(icon, size: 30, color: scheme.onPrimaryContainer),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                              const SizedBox(height: 2),
+                              Text(hint, style: TextStyle(color: scheme.onSurfaceVariant)),
+                            ],
+                          ),
+                        ),
+                        _saving == role
+                            ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
+                            : const Icon(Icons.chevron_right),
+                      ],
+                    ),
                   ),
                 ),
               ),

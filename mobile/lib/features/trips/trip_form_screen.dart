@@ -90,7 +90,11 @@ class _TripFormScreenState extends ConsumerState<TripFormScreen> {
     final produce = [
       for (final MapEntry(key: code, value: c) in _crops.entries)
         if (c.selected)
-          ProduceItem(code, quantityKg: double.tryParse(c.kg.text.trim()), pricePerKg: double.tryParse(c.price.text.trim())),
+          ProduceItem(
+            code,
+            quantityKg: double.tryParse(c.kg.text.trim()),
+            pricePerKg: double.tryParse(c.price.text.trim()),
+          ),
     ];
     if (_date == null || produce.isEmpty) {
       showError(context, l10n.tripNeedsDateAndCrop);
@@ -98,7 +102,9 @@ class _TripFormScreenState extends ConsumerState<TripFormScreen> {
     }
     setState(() => _busy = true);
     try {
-      final trip = await ref.read(tripApiProvider).save(
+      final trip = await ref
+          .read(tripApiProvider)
+          .save(
             id: widget.tripId,
             date: _date!,
             vehicle: _vehicle,
@@ -128,7 +134,10 @@ class _TripFormScreenState extends ConsumerState<TripFormScreen> {
       final trip = ref.watch(tripProvider(widget.tripId!));
       if (trip.value case final t?) _load(t);
       if (!_loaded) {
-        return Scaffold(appBar: AppBar(), body: const Center(child: CircularProgressIndicator()));
+        return Scaffold(
+          appBar: AppBar(),
+          body: const Center(child: CircularProgressIndicator()),
+        );
       }
     }
     final lang = ref.watch(localeProvider);
@@ -139,96 +148,119 @@ class _TripFormScreenState extends ConsumerState<TripFormScreen> {
 
     return Scaffold(
       appBar: AppBar(title: Text(widget.tripId == null ? l10n.planTrip : l10n.editTrip)),
-      body: ListView(padding: EdgeInsets.all(gutter), children: [
-        MaxWidth(
-          maxWidth: 760,
-          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            FormSection(
-              title: l10n.tripWhen,
-              subtitle: _hasBooking ? l10n.tripDateLocked : null,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.event),
-                  label: Text(_date == null ? l10n.chooseDate : tripDate(_date!)),
-                  onPressed: _hasBooking ? null : _pickDate,
-                ),
-              ),
-            ),
-            FormSection(
-              title: l10n.tripVehicle,
-              subtitle: l10n.tripVehicleHint,
-              child: Wrap(spacing: 8, runSpacing: 8, children: [
-                for (final v in vehicles)
-                  ChoiceChip(
-                    avatar: Icon(vehicleIcon(v), size: 20),
-                    label: Text(l10n.vehicle(v)),
-                    selected: _vehicle == v,
-                    onSelected: _hasBooking ? null : (_) => setState(() => _vehicle = v),
-                  ),
-              ]),
-            ),
-            FormSection(
-              title: l10n.tripProduce,
-              subtitle: l10n.tripProduceHint,
-              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                CropPicker(
-                  suggested: mine,
-                  selected: {for (final e in _crops.entries) if (e.value.selected) e.key},
-                  onChanged: (code, on) => setState(() => _input(code).selected = on),
-                ),
-                // Optional kg and ₹/kg for each chosen crop, in the order they were picked.
-                for (final MapEntry(key: code, value: c) in _crops.entries)
-                  if (c.selected)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: Row(children: [
-                        Expanded(
-                          flex: 3,
-                          child: Text(cropName(code, crops, lang), style: const TextStyle(fontWeight: FontWeight.w600)),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(flex: 2, child: _numberField(c.kg, l10n.quantityKg)),
-                        const SizedBox(width: 8),
-                        Expanded(flex: 2, child: _numberField(c.price, l10n.priceKg)),
-                      ]),
+      body: ListView(
+        padding: EdgeInsets.all(gutter),
+        children: [
+          MaxWidth(
+            maxWidth: 760,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                FormSection(
+                  title: l10n.tripWhen,
+                  subtitle: _hasBooking ? l10n.tripDateLocked : null,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.event),
+                      label: Text(_date == null ? l10n.chooseDate : tripDate(_date!)),
+                      onPressed: _hasBooking ? null : _pickDate,
                     ),
-              ]),
-            ),
-            FormSection(
-              title: l10n.tripWhere,
-              child: Column(children: [
-                TextField(
-                  controller: _area,
-                  maxLength: 80,
-                  decoration: InputDecoration(labelText: l10n.preferredArea, hintText: l10n.preferredAreaHint),
+                  ),
                 ),
-                TextField(
-                  controller: _notes,
-                  maxLength: 200,
-                  maxLines: 2,
-                  decoration: InputDecoration(labelText: l10n.tripNotes),
+                FormSection(
+                  title: l10n.tripVehicle,
+                  subtitle: l10n.tripVehicleHint,
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final v in vehicles)
+                        ChoiceChip(
+                          avatar: Icon(vehicleIcon(v), size: 20),
+                          label: Text(l10n.vehicle(v)),
+                          selected: _vehicle == v,
+                          onSelected: _hasBooking ? null : (_) => setState(() => _vehicle = v),
+                        ),
+                    ],
+                  ),
                 ),
-              ]),
+                FormSection(
+                  title: l10n.tripProduce,
+                  subtitle: l10n.tripProduceHint,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      CropPicker(
+                        suggested: mine,
+                        selected: {
+                          for (final e in _crops.entries)
+                            if (e.value.selected) e.key,
+                        },
+                        onChanged: (code, on) => setState(() => _input(code).selected = on),
+                      ),
+                      // Optional kg and ₹/kg for each chosen crop, in the order they were picked.
+                      for (final MapEntry(key: code, value: c) in _crops.entries)
+                        if (c.selected)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 16),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  flex: 3,
+                                  child: Text(
+                                    cropName(code, crops, lang),
+                                    style: const TextStyle(fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(flex: 2, child: _numberField(c.kg, l10n.quantityKg)),
+                                const SizedBox(width: 8),
+                                Expanded(flex: 2, child: _numberField(c.price, l10n.priceKg)),
+                              ],
+                            ),
+                          ),
+                    ],
+                  ),
+                ),
+                FormSection(
+                  title: l10n.tripWhere,
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: _area,
+                        maxLength: 80,
+                        decoration: InputDecoration(labelText: l10n.preferredArea, hintText: l10n.preferredAreaHint),
+                      ),
+                      TextField(
+                        controller: _notes,
+                        maxLength: 200,
+                        maxLines: 2,
+                        decoration: InputDecoration(labelText: l10n.tripNotes),
+                      ),
+                    ],
+                  ),
+                ),
+                FilledButton.icon(
+                  icon: _busy
+                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.check),
+                  label: Text(widget.tripId == null ? l10n.saveTripFindSpace : l10n.save),
+                  onPressed: _busy ? null : _save,
+                ),
+                const SizedBox(height: 24),
+              ],
             ),
-            FilledButton.icon(
-              icon: _busy
-                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Icon(Icons.check),
-              label: Text(widget.tripId == null ? l10n.saveTripFindSpace : l10n.save),
-              onPressed: _busy ? null : _save,
-            ),
-            const SizedBox(height: 24),
-          ]),
-        ),
-      ]),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _numberField(TextEditingController c, String label) => TextField(
-        controller: c,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
-        decoration: InputDecoration(labelText: label, isDense: true),
-      );
+    controller: c,
+    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+    inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
+    decoration: InputDecoration(labelText: label, isDense: true),
+  );
 }

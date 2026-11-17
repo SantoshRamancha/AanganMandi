@@ -13,7 +13,11 @@ class Breakpoints {
   /// Side padding that grows with the screen.
   static double gutter(BuildContext context) {
     final w = MediaQuery.sizeOf(context).width;
-    return w >= desktop ? 32 : w >= tablet ? 24 : 16;
+    return w >= desktop
+        ? 32
+        : w >= tablet
+        ? 24
+        : 16;
   }
 }
 
@@ -25,11 +29,14 @@ class MaxWidth extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Align(
-        alignment: Alignment.topCenter,
-        // Take only the child's height, so it also works in bottom bars.
-        heightFactor: 1,
-        child: ConstrainedBox(constraints: BoxConstraints(maxWidth: maxWidth), child: child),
-      );
+    alignment: Alignment.topCenter,
+    // Take only the child's height, so it also works in bottom bars.
+    heightFactor: 1,
+    child: ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: maxWidth),
+      child: child,
+    ),
+  );
 }
 
 /// Layout for language, login and role screens: a brand panel beside the form on wide
@@ -52,7 +59,10 @@ class AuthShell extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 if (showBack)
-                  Align(alignment: Alignment.centerLeft, child: BackButton(onPressed: () => Navigator.of(context).maybePop())),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: BackButton(onPressed: () => Navigator.of(context).maybePop()),
+                  ),
                 if (!desktop) const _BrandHeader(),
                 child,
               ],
@@ -63,10 +73,12 @@ class AuthShell extends StatelessWidget {
     );
     return Scaffold(
       body: desktop
-          ? Row(children: [
-              const Expanded(flex: 5, child: _BrandPanel()),
-              Expanded(flex: 4, child: form),
-            ])
+          ? Row(
+              children: [
+                const Expanded(flex: 5, child: _BrandPanel()),
+                Expanded(flex: 4, child: form),
+              ],
+            )
           : form,
     );
   }
@@ -81,17 +93,23 @@ class _BrandHeader extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: 24, top: 8),
-      child: Column(children: [
-        CircleAvatar(
-          radius: 36,
-          backgroundColor: scheme.primaryContainer,
-          child: Icon(Icons.storefront, size: 40, color: scheme.onPrimaryContainer),
-        ),
-        const SizedBox(height: 12),
-        Text(l10n.appTitle, style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700)),
-        const SizedBox(height: 4),
-        Text(l10n.tagline, textAlign: TextAlign.center, style: TextStyle(color: scheme.onSurfaceVariant)),
-      ]),
+      child: Column(
+        children: [
+          CircleAvatar(
+            radius: 36,
+            backgroundColor: scheme.primaryContainer,
+            child: Icon(Icons.storefront, size: 40, color: scheme.onPrimaryContainer),
+          ),
+          const SizedBox(height: 12),
+          Text(l10n.appTitle, style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700)),
+          const SizedBox(height: 4),
+          Text(
+            l10n.tagline,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: scheme.onSurfaceVariant),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -122,8 +140,11 @@ class _BrandPanel extends StatelessWidget {
               children: [
                 const Icon(Icons.storefront, size: 64, color: onBrand),
                 const SizedBox(height: 24),
-                Text(l10n.appTitle,
-                    style: Theme.of(context).textTheme.displaySmall?.copyWith(color: onBrand, fontWeight: FontWeight.w700)),
+                Text(
+                  l10n.appTitle,
+                  style: Theme.of(context).textTheme.displaySmall
+                      ?.copyWith(color: onBrand, fontWeight: FontWeight.w700),
+                ),
                 const SizedBox(height: 8),
                 Text(l10n.tagline, style: Theme.of(context).textTheme.titleLarge?.copyWith(color: onBrand)),
                 const SizedBox(height: 40),
@@ -134,11 +155,15 @@ class _BrandPanel extends StatelessWidget {
                 ])
                   Padding(
                     padding: const EdgeInsets.only(bottom: 20),
-                    child: Row(children: [
-                      Icon(icon, color: onBrand),
-                      const SizedBox(width: 16),
-                      Expanded(child: Text(text, style: const TextStyle(color: onBrand, fontSize: 16))),
-                    ]),
+                    child: Row(
+                      children: [
+                        Icon(icon, color: onBrand),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Text(text, style: const TextStyle(color: onBrand, fontSize: 16)),
+                        ),
+                      ],
+                    ),
                   ),
               ],
             ),
@@ -158,15 +183,17 @@ class ResponsiveFields extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, c) {
-      final cols = c.maxWidth >= 560 ? columns : 1;
-      final width = (c.maxWidth - spacing * (cols - 1)) / cols;
-      return Wrap(
-        spacing: spacing,
-        runSpacing: spacing,
-        children: [for (final child in children) SizedBox(width: width, child: child)],
-      );
-    });
+    return LayoutBuilder(
+      builder: (context, c) {
+        final cols = c.maxWidth >= 560 ? columns : 1;
+        final width = (c.maxWidth - spacing * (cols - 1)) / cols;
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: [for (final child in children) SizedBox(width: width, child: child)],
+        );
+      },
+    );
   }
 }
 
@@ -184,15 +211,15 @@ class FormSection extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
         padding: const EdgeInsets.all(20),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Text(title, style: text.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
-          if (subtitle != null) ...[
-            const SizedBox(height: 4),
-            Text(subtitle!, style: text.bodySmall),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(title, style: text.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+            if (subtitle != null) ...[const SizedBox(height: 4), Text(subtitle!, style: text.bodySmall)],
+            const SizedBox(height: 16),
+            child,
           ],
-          const SizedBox(height: 16),
-          child,
-        ]),
+        ),
       ),
     );
   }

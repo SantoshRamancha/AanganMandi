@@ -95,8 +95,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get featureVerified => 'केवल अपनी उपज बेचने वाले सत्यापित किसान';
 
   @override
-  String get featureSpaces =>
-      'पड़ोसी कुछ घंटों के लिए अपना आंगन या ड्राइववे देते हैं';
+  String get featureSpaces => 'पड़ोसी कुछ घंटों के लिए अपना आंगन या ड्राइववे देते हैं';
 
   @override
   String get featureAlerts => 'दुकान खुलने पर पास के खरीदारों को सूचना';
@@ -135,15 +134,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get verifyPendingTitle => 'जाँच जारी है';
 
   @override
-  String get verifyPendingBody =>
-      'हमारी टीम आपकी जानकारी जाँच रही है। आमतौर पर 48 घंटे तक लगते हैं।';
+  String get verifyPendingBody => 'हमारी टीम आपकी जानकारी जाँच रही है। आमतौर पर 48 घंटे तक लगते हैं।';
 
   @override
   String get verifiedTitle => 'सत्यापित किसान';
 
   @override
-  String get verifiedBody =>
-      'आप सत्यापित हैं। बेचना शुरू करने के लिए यात्रा की योजना बनाएँ और जगह बुक करें।';
+  String get verifiedBody => 'आप सत्यापित हैं। बेचना शुरू करने के लिए यात्रा की योजना बनाएँ और जगह बुक करें।';
 
   @override
   String get rejectedTitle => 'सत्यापन में बदलाव ज़रूरी हैं';
@@ -195,8 +192,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get evidenceQuestion => 'किसान होने का एक सबूत चुनें';
 
   @override
-  String get evidenceSubtitle =>
-      'एक सत्यापनकर्ता इसे जाँचकर मंज़ूरी देता है, आमतौर पर 48 घंटों में।';
+  String get evidenceSubtitle => 'एक सत्यापनकर्ता इसे जाँचकर मंज़ूरी देता है, आमतौर पर 48 घंटों में।';
 
   @override
   String get evidenceAgriStack => 'एग्रीस्टैक किसान ID';
@@ -208,22 +204,19 @@ class AppLocalizationsHi extends AppLocalizations {
   String get evidenceLandRecord => 'ज़मीन या खेती का रिकॉर्ड';
 
   @override
-  String get evidenceLandRecordHint =>
-      'पट्टादार पासबुक, ROR-1B, पट्टा समझौता या फ़सल रिकॉर्ड';
+  String get evidenceLandRecordHint => 'पट्टादार पासबुक, ROR-1B, पट्टा समझौता या फ़सल रिकॉर्ड';
 
   @override
   String get evidenceFpo => 'FPO सदस्यता या सिफ़ारिश';
 
   @override
-  String get evidenceFpoHint =>
-      'आपके किसान उत्पादक संगठन का सदस्यता कार्ड या पत्र';
+  String get evidenceFpoHint => 'आपके किसान उत्पादक संगठन का सदस्यता कार्ड या पत्र';
 
   @override
   String get evidenceOfficer => 'कृषि अधिकारी की सिफ़ारिश';
 
   @override
-  String get evidenceOfficerHint =>
-      'आपके कृषि विस्तार अधिकारी या मान्यता प्राप्त किसान संगठन का पत्र';
+  String get evidenceOfficerHint => 'आपके कृषि विस्तार अधिकारी या मान्यता प्राप्त किसान संगठन का पत्र';
 
   @override
   String get detailsAgriStack => 'किसान ID नंबर';
@@ -323,8 +316,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get address => 'पूरा पता';
 
   @override
-  String get addressHint =>
-      'बुकिंग मंज़ूर करने के बाद ही किसान को दिखाया जाएगा';
+  String get addressHint => 'बुकिंग मंज़ूर करने के बाद ही किसान को दिखाया जाएगा';
 
   @override
   String get locality => 'इलाका';
@@ -420,15 +412,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get proofOfRight => 'इस जगह के उपयोग के अधिकार का प्रमाण';
 
   @override
-  String get proofHint =>
-      'मालिकाना दस्तावेज़, किराया समझौता या सोसाइटी का पत्र। खरीदारों को कभी नहीं दिखाया जाता।';
+  String get proofHint => 'मालिकाना दस्तावेज़, किराया समझौता या सोसाइटी का पत्र। खरीदारों को कभी नहीं दिखाया जाता।';
 
   @override
   String get submitSpace => 'मंज़ूरी के लिए भेजें';
 
   @override
-  String get spaceSubmitted =>
-      'मंज़ूरी के लिए भेज दिया। आमतौर पर 48 घंटे में जाँच होती है।';
+  String get spaceSubmitted => 'मंज़ूरी के लिए भेज दिया। आमतौर पर 48 घंटे में जाँच होती है।';
 
   @override
   String get statusDraft => 'ड्राफ़्ट';
@@ -460,8 +450,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get addMorePhotos => 'और फ़ोटो जोड़ें';
 
   @override
-  String get buyerComingSoon =>
-      'किसानों के बेचना शुरू करने पर आपके पास की दुकानें यहाँ दिखेंगी।';
+  String get buyerComingSoon => 'किसानों के बेचना शुरू करने पर आपके पास की दुकानें यहाँ दिखेंगी।';
 
   @override
   String get profileTitle => 'मेरी प्रोफ़ाइल';
@@ -529,8 +518,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get themeDark => 'डार्क';
 
   @override
-  String get themeSystemHint =>
-      'सिस्टम आपके फ़ोन या कंप्यूटर की सेटिंग के अनुसार चलता है।';
+  String get themeSystemHint => 'सिस्टम आपके फ़ोन या कंप्यूटर की सेटिंग के अनुसार चलता है।';
 
   @override
   String get staffAccessRevokedTitle => 'अब आपके पास स्टाफ़ एक्सेस नहीं है';
@@ -560,12 +548,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get opsHelloNoName => 'नमस्ते';
 
   @override
-  String get opsAdminSubtitle =>
-      'एडमिन · आप हर किसान को देखते हैं और सत्यापनकर्ताओं को संभालते हैं';
+  String get opsAdminSubtitle => 'एडमिन · आप हर किसान को देखते हैं और सत्यापनकर्ताओं को संभालते हैं';
 
   @override
-  String get opsVerifierSubtitle =>
-      'सत्यापनकर्ता · आप अपने को सौंपे गए किसानों की जाँच करते हैं';
+  String get opsVerifierSubtitle => 'सत्यापनकर्ता · आप अपने को सौंपे गए किसानों की जाँच करते हैं';
 
   @override
   String get statFarmersWaitingAll => 'जाँच का इंतज़ार कर रहे किसान';
@@ -589,8 +575,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get statSpacesLive => 'लाइव जगहें';
 
   @override
-  String get couldNotLoad =>
-      'लोड नहीं हो सका। फिर से कोशिश करने के लिए नीचे खींचें या रिफ़्रेश दबाएँ।';
+  String get couldNotLoad => 'लोड नहीं हो सका। फिर से कोशिश करने के लिए नीचे खींचें या रिफ़्रेश दबाएँ।';
 
   @override
   String get couldNotSave => 'सेव नहीं हो सका। फिर से कोशिश करें।';
@@ -638,12 +623,10 @@ class AppLocalizationsHi extends AppLocalizations {
       'सभी किसान। हर आवेदन उस सत्यापनकर्ता को जाता है जिसके पास सबसे कम इंतज़ार में हैं।';
 
   @override
-  String get farmerQueueVerifierHint =>
-      'आपको सौंपे गए किसान, सबसे पुराने पहले।';
+  String get farmerQueueVerifierHint => 'आपको सौंपे गए किसान, सबसे पुराने पहले।';
 
   @override
-  String get noVerifierWarnTitle =>
-      'कुछ किसानों के पास कोई सत्यापनकर्ता नहीं है';
+  String get noVerifierWarnTitle => 'कुछ किसानों के पास कोई सत्यापनकर्ता नहीं है';
 
   @override
   String get noVerifierWarnBody =>
@@ -663,8 +646,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get reviewFarmer => 'किसान की जाँच';
 
   @override
-  String get qrFarmerPhotoUnclear =>
-      'सबूत की फ़ोटो साफ़ नहीं है — कृपया दोबारा लें';
+  String get qrFarmerPhotoUnclear => 'सबूत की फ़ोटो साफ़ नहीं है — कृपया दोबारा लें';
 
   @override
   String get qrFarmerNameMismatch => 'सबूत पर लिखा नाम मेल नहीं खाता';
@@ -676,8 +658,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get qrFarmerRefereeNo => 'सिफ़ारिश करने वाले ने आपकी पुष्टि नहीं की';
 
   @override
-  String get qrFarmerNotGrower =>
-      'आप सिर्फ़ दूसरे किसानों से खरीदी उपज बेचते हैं';
+  String get qrFarmerNotGrower => 'आप सिर्फ़ दूसरे किसानों से खरीदी उपज बेचते हैं';
 
   @override
   String phoneOtpVerified(String phone) {
@@ -726,20 +707,16 @@ class AppLocalizationsHi extends AppLocalizations {
   String get olderDocuments => 'पिछली सत्यापन प्रक्रिया के दस्तावेज़';
 
   @override
-  String get howCheckAgriStack =>
-      'AgriStack किसान रजिस्ट्री में किसान ID नंबर और नाम जाँचें।';
+  String get howCheckAgriStack => 'AgriStack किसान रजिस्ट्री में किसान ID नंबर और नाम जाँचें।';
 
   @override
-  String get howCheckLandRecord =>
-      'भू भारती पोर्टल पर मालिक या काश्तकार का नाम और सर्वे नंबर जाँचें।';
+  String get howCheckLandRecord => 'भू भारती पोर्टल पर मालिक या काश्तकार का नाम और सर्वे नंबर जाँचें।';
 
   @override
-  String get howCheckFpo =>
-      'FPO (या सिफ़ारिश करने वाले) को फ़ोन करके पुष्टि करें कि वे इस किसान को जानते हैं।';
+  String get howCheckFpo => 'FPO (या सिफ़ारिश करने वाले) को फ़ोन करके पुष्टि करें कि वे इस किसान को जानते हैं।';
 
   @override
-  String get howCheckOfficer =>
-      'अधिकारी या संस्था को फ़ोन करके पुष्टि करें कि वे इस किसान को जानते हैं।';
+  String get howCheckOfficer => 'अधिकारी या संस्था को फ़ोन करके पुष्टि करें कि वे इस किसान को जानते हैं।';
 
   @override
   String get farmerApproveGuidance =>
@@ -769,8 +746,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get verifierAssignedToast => 'सत्यापनकर्ता सौंपा गया';
 
   @override
-  String get noVerifiersYetAssign =>
-      'अभी कोई सत्यापनकर्ता नहीं है। सत्यापनकर्ता टैब में जोड़ें।';
+  String get noVerifiersYetAssign => 'अभी कोई सत्यापनकर्ता नहीं है। सत्यापनकर्ता टैब में जोड़ें।';
 
   @override
   String get chooseVerifier => 'सत्यापनकर्ता चुनें';
@@ -804,8 +780,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get qrSpacePhotos => 'फ़ोटो साफ़ नहीं हैं या जगह नहीं दिखाते';
 
   @override
-  String get qrSpaceProof =>
-      'दस्तावेज़ से इस जगह के उपयोग का अधिकार साबित नहीं होता';
+  String get qrSpaceProof => 'दस्तावेज़ से इस जगह के उपयोग का अधिकार साबित नहीं होता';
 
   @override
   String get qrSpacePin => 'लोकेशन पिन पते से मेल नहीं खाता';
@@ -866,8 +841,7 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get spaceRejectedToast =>
-      'अस्वीकार किया। मेज़बान को आपका कारण दिखेगा।';
+  String get spaceRejectedToast => 'अस्वीकार किया। मेज़बान को आपका कारण दिखेगा।';
 
   @override
   String get verifiersHint =>
@@ -901,8 +875,7 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get removeVerifierBody =>
-      'वे अब किसानों या जगहों की जाँच नहीं कर पाएँगे।';
+  String get removeVerifierBody => 'वे अब किसानों या जगहों की जाँच नहीं कर पाएँगे।';
 
   @override
   String removeVerifierMoves(int count) {
@@ -985,16 +958,14 @@ class AppLocalizationsHi extends AppLocalizations {
       'आपका सत्यापन जाँच का इंतज़ार कर रहा है। सबूत हटाने से यह कतार से हट जाएगा: नई फ़ोटो अपलोड करके फिर से जमा करें।';
 
   @override
-  String get evidenceWithdrawnToast =>
-      'फ़ोटो हटा दी गई। नई फ़ोटो अपलोड करके फिर से जमा करें।';
+  String get evidenceWithdrawnToast => 'फ़ोटो हटा दी गई। नई फ़ोटो अपलोड करके फिर से जमा करें।';
 
   @override
   String get spaceWithdrawWarning =>
       'यह जगह मंज़ूरी का इंतज़ार कर रही है। अगर 3 से कम फ़ोटो रह जाएँ या सबूत न रहे, तो यह ड्राफ़्ट में चली जाएगी और आपको फिर से जमा करना होगा।';
 
   @override
-  String get spaceWithdrawnToast =>
-      'फ़ोटो हटा दी गई। जगह ड्राफ़्ट में चली गई: जो कमी है वह जोड़कर फिर से जमा करें।';
+  String get spaceWithdrawnToast => 'फ़ोटो हटा दी गई। जगह ड्राफ़्ट में चली गई: जो कमी है वह जोड़कर फिर से जमा करें।';
 
   @override
   String get photoDeletedToast => 'फ़ोटो हटा दी गई';
@@ -1008,8 +979,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get yourDocument => 'आपका दस्तावेज़';
 
   @override
-  String get yourDocumentPendingHint =>
-      'जाँच के इंतज़ार के दौरान भी आप इसे बदल या हटा सकते हैं।';
+  String get yourDocumentPendingHint => 'जाँच के इंतज़ार के दौरान भी आप इसे बदल या हटा सकते हैं।';
 
   @override
   String get bookingRequested => 'मेज़बान का इंतज़ार';
@@ -1040,8 +1010,7 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get bookingSlotTaken =>
-      'मेज़बान ने इस दिन के लिए दूसरे किसान की पुष्टि कर दी।';
+  String get bookingSlotTaken => 'मेज़बान ने इस दिन के लिए दूसरे किसान की पुष्टि कर दी।';
 
   @override
   String bookingDeclinedBecause(String reason) {
@@ -1071,8 +1040,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get noTripsTitle => 'अभी कोई यात्रा नहीं';
 
   @override
-  String get noTripsBody =>
-      'जिस दिन आप शहर में बेचने आएँगे उसकी योजना बनाएँ, फिर अपने खरीदारों के पास जगह बुक करें।';
+  String get noTripsBody => 'जिस दिन आप शहर में बेचने आएँगे उसकी योजना बनाएँ, फिर अपने खरीदारों के पास जगह बुक करें।';
 
   @override
   String get noSpaceYet => 'अभी कोई जगह बुक नहीं';
@@ -1084,8 +1052,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get tripWhen => 'आप कब आ रहे हैं?';
 
   @override
-  String get tripDateLocked =>
-      'जगह माँगी या बुक होने पर तारीख और वाहन नहीं बदल सकते। बदलने के लिए बुकिंग रद्द करें।';
+  String get tripDateLocked => 'जगह माँगी या बुक होने पर तारीख और वाहन नहीं बदल सकते। बदलने के लिए बुकिंग रद्द करें।';
 
   @override
   String get chooseDate => 'तारीख चुनें';
@@ -1094,15 +1061,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get tripVehicle => 'आपका वाहन';
 
   @override
-  String get tripVehicleHint =>
-      'हम सिर्फ़ वही जगहें दिखाते हैं जहाँ यह जा सके।';
+  String get tripVehicleHint => 'हम सिर्फ़ वही जगहें दिखाते हैं जहाँ यह जा सके।';
 
   @override
   String get tripProduce => 'आप क्या लाएँगे?';
 
   @override
-  String get tripProduceHint =>
-      'फसलें चुनें। मात्रा और दाम वैकल्पिक हैं और मेज़बान की मदद करते हैं।';
+  String get tripProduceHint => 'फसलें चुनें। मात्रा और दाम वैकल्पिक हैं और मेज़बान की मदद करते हैं।';
 
   @override
   String get quantityKg => 'किलो';
@@ -1135,8 +1100,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get cancelTripQ => 'यह यात्रा रद्द करें?';
 
   @override
-  String get cancelTripBody =>
-      'इसके लिए माँगी या बुक की गई जगह भी रद्द हो जाएगी, और मेज़बान को बताया जाएगा।';
+  String get cancelTripBody => 'इसके लिए माँगी या बुक की गई जगह भी रद्द हो जाएगी, और मेज़बान को बताया जाएगा।';
 
   @override
   String get tripCancelledToast => 'यात्रा रद्द हुई';
@@ -1148,8 +1112,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get cancelBookingQ => 'यह बुकिंग रद्द करें?';
 
   @override
-  String get cancelBookingBody =>
-      'दूसरे पक्ष को बताया जाएगा और स्लॉट फिर से खाली हो जाएगा।';
+  String get cancelBookingBody => 'दूसरे पक्ष को बताया जाएगा और स्लॉट फिर से खाली हो जाएगा।';
 
   @override
   String get cancelBooking => 'बुकिंग रद्द करें';
@@ -1180,12 +1143,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get spaceForTrip => 'इस यात्रा के लिए जगह';
 
   @override
-  String get findSpaceIntro =>
-      'ऐसी जगह खोजें जो इस दिन खुली हो और जहाँ आपका वाहन आ सके।';
+  String get findSpaceIntro => 'ऐसी जगह खोजें जो इस दिन खुली हो और जहाँ आपका वाहन आ सके।';
 
   @override
-  String get findAnotherSpaceIntro =>
-      'आप इस दिन के लिए दूसरी जगह माँग सकते हैं।';
+  String get findAnotherSpaceIntro => 'आप इस दिन के लिए दूसरी जगह माँग सकते हैं।';
 
   @override
   String get findSpace => 'जगह खोजें';
@@ -1208,15 +1169,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get messageToHost => 'मेज़बान के लिए संदेश (वैकल्पिक)';
 
   @override
-  String get messageToHostHint =>
-      'जैसे मैं ऑटो में टमाटर की 3 पेटियाँ लेकर आऊँगा';
+  String get messageToHostHint => 'जैसे मैं ऑटो में टमाटर की 3 पेटियाँ लेकर आऊँगा';
 
   @override
   String get sendRequest => 'अनुरोध भेजें';
 
   @override
-  String get requestSentToast =>
-      'अनुरोध भेजा गया। जवाब आपकी यात्रा में दिखेगा।';
+  String get requestSentToast => 'अनुरोध भेजा गया। जवाब आपकी यात्रा में दिखेगा।';
 
   @override
   String spacesFor(String date) {
@@ -1235,12 +1194,10 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get noSpacesThatDay =>
-      'इस दिन आपके वाहन के लायक कोई खाली जगह नहीं है। दूसरी तारीख आज़माएँ।';
+  String get noSpacesThatDay => 'इस दिन आपके वाहन के लायक कोई खाली जगह नहीं है। दूसरी तारीख आज़माएँ।';
 
   @override
-  String get noSpacesInArea =>
-      'इस दिन इस इलाके में कोई खाली जगह नहीं है। सभी इलाके देखने के लिए खोज हटाएँ।';
+  String get noSpacesInArea => 'इस दिन इस इलाके में कोई खाली जगह नहीं है। सभी इलाके देखने के लिए खोज हटाएँ।';
 
   @override
   String get requestThisSpace => 'यह जगह माँगें';
@@ -1271,8 +1228,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get pastTab => 'पिछली';
 
   @override
-  String get noRequests =>
-      'कोई नया अनुरोध नहीं। आपकी जगहों के लिए किसानों के अनुरोध यहाँ दिखेंगे।';
+  String get noRequests => 'कोई नया अनुरोध नहीं। आपकी जगहों के लिए किसानों के अनुरोध यहाँ दिखेंगे।';
 
   @override
   String get noUpcoming => 'कोई पक्की बुकिंग आगे नहीं है।';
@@ -1287,8 +1243,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get verifiedFarmerTag => 'सत्यापित किसान';
 
   @override
-  String get hostAutoDeclined =>
-      'अपने आप अस्वीकार: आपने इस दिन के लिए दूसरे किसान की पुष्टि की।';
+  String get hostAutoDeclined => 'अपने आप अस्वीकार: आपने इस दिन के लिए दूसरे किसान की पुष्टि की।';
 
   @override
   String get farmerCancelled => 'किसान ने रद्द किया।';
@@ -1305,8 +1260,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get decline => 'अस्वीकार करें';
 
   @override
-  String get acceptedToast =>
-      'स्वीकार किया। अब किसान को आपका पता और फ़ोन दिखेगा।';
+  String get acceptedToast => 'स्वीकार किया। अब किसान को आपका पता और फ़ोन दिखेगा।';
 
   @override
   String get declineQ => 'यह अनुरोध अस्वीकार करें?';
@@ -1338,12 +1292,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get greetingNoName => 'नमस्ते';
 
   @override
-  String get farmerBannerVerified =>
-      'आप सत्यापित किसान हैं। अपने अगले बिक्री के दिन की योजना बनाएँ।';
+  String get farmerBannerVerified => 'आप सत्यापित किसान हैं। अपने अगले बिक्री के दिन की योजना बनाएँ।';
 
   @override
-  String get farmerBannerNotVerified =>
-      'एक बार सत्यापन कराएँ, फिर शहर में अपनी ताज़ी उपज बेचें।';
+  String get farmerBannerNotVerified => 'एक बार सत्यापन कराएँ, फिर शहर में अपनी ताज़ी उपज बेचें।';
 
   @override
   String get statUpcomingTrips => 'आने वाली यात्राएँ';
@@ -1364,8 +1316,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get noUpcomingTitle => 'कोई यात्रा तय नहीं';
 
   @override
-  String get noUpcomingBody =>
-      'शहर आने का दिन चुनें, फिर खरीदारों के पास जगह बुक करें।';
+  String get noUpcomingBody => 'शहर आने का दिन चुनें, फिर खरीदारों के पास जगह बुक करें।';
 
   @override
   String get viewTrip => 'यात्रा देखें';
@@ -1383,8 +1334,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get howStepVerify => 'सत्यापन कराएँ';
 
   @override
-  String get howStepVerifyBody =>
-      'अपनी खेती के बारे में बताएँ और एक सबूत जोड़ें। सत्यापनकर्ता उसे जाँचते हैं।';
+  String get howStepVerifyBody => 'अपनी खेती के बारे में बताएँ और एक सबूत जोड़ें। सत्यापनकर्ता उसे जाँचते हैं।';
 
   @override
   String get howStepTrip => 'यात्रा की योजना बनाएँ';
@@ -1396,15 +1346,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get howStepBook => 'जगह बुक करें';
 
   @override
-  String get howStepBookBody =>
-      'खरीदारों के पास ड्राइववे या आँगन माँगें। मेज़बान स्वीकार करते हैं।';
+  String get howStepBookBody => 'खरीदारों के पास ड्राइववे या आँगन माँगें। मेज़बान स्वीकार करते हैं।';
 
   @override
   String get howStepSell => 'ताज़ा बेचें';
 
   @override
-  String get howStepSellBody =>
-      'अपना स्टॉल लगाएँ और पास के परिवारों को सीधे बेचें।';
+  String get howStepSellBody => 'अपना स्टॉल लगाएँ और पास के परिवारों को सीधे बेचें।';
 
   @override
   String bookedAt(String space) {
@@ -1422,8 +1370,7 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get hostBannerNew =>
-      'अपना ड्राइववे या आँगन जोड़ें और किसानों के वहाँ बेचने पर कमाएँ।';
+  String get hostBannerNew => 'अपना ड्राइववे या आँगन जोड़ें और किसानों के वहाँ बेचने पर कमाएँ।';
 
   @override
   String get statNewRequests => 'नए अनुरोध';
@@ -1441,8 +1388,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get nextBooking => 'अगली बुकिंग';
 
   @override
-  String get noBookingYet =>
-      'अभी कोई पक्की बुकिंग नहीं। स्वीकार किए गए अनुरोध यहाँ दिखेंगे।';
+  String get noBookingYet => 'अभी कोई पक्की बुकिंग नहीं। स्वीकार किए गए अनुरोध यहाँ दिखेंगे।';
 
   @override
   String get answer => 'जवाब दें';
@@ -1451,29 +1397,25 @@ class AppLocalizationsHi extends AppLocalizations {
   String get hostHowList => 'अपनी जगह जोड़ें';
 
   @override
-  String get hostHowListBody =>
-      'फ़ोटो, दिन और समय, शुल्क, और जगह के उपयोग के अधिकार का सबूत।';
+  String get hostHowListBody => 'फ़ोटो, दिन और समय, शुल्क, और जगह के उपयोग के अधिकार का सबूत।';
 
   @override
   String get hostHowApproved => 'मंज़ूरी पाएँ';
 
   @override
-  String get hostHowApprovedBody =>
-      'हमारी टीम फ़ोटो, लोकेशन और सबूत जाँचती है।';
+  String get hostHowApprovedBody => 'हमारी टीम फ़ोटो, लोकेशन और सबूत जाँचती है।';
 
   @override
   String get hostHowRequests => 'किसान एक दिन माँगते हैं';
 
   @override
-  String get hostHowRequestsBody =>
-      'सत्यापित किसान अपने बिक्री के दिन के लिए आपकी जगह माँगते हैं।';
+  String get hostHowRequestsBody => 'सत्यापित किसान अपने बिक्री के दिन के लिए आपकी जगह माँगते हैं।';
 
   @override
   String get hostHowAccept => 'स्वीकार करें और जगह दें';
 
   @override
-  String get hostHowAcceptBody =>
-      'स्वीकार करें, अपना पता साझा करें, और जगह पर शुल्क लें।';
+  String get hostHowAcceptBody => 'स्वीकार करें, अपना पता साझा करें, और जगह पर शुल्क लें।';
 
   @override
   String get catVegetable => 'सब्ज़ियाँ';
@@ -1518,8 +1460,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get addCropTitle => 'फसल जोड़ें';
 
   @override
-  String get addCropBody =>
-      'सूची में नहीं है? उसका नाम किसी भी भाषा में लिखें। वह वैसे ही दिखेगा जैसा आप लिखेंगे।';
+  String get addCropBody => 'सूची में नहीं है? उसका नाम किसी भी भाषा में लिखें। वह वैसे ही दिखेगा जैसा आप लिखेंगे।';
 
   @override
   String get addCropHint => 'फसल का नाम';
@@ -1542,8 +1483,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get logoutQ => 'लॉग आउट करें?';
 
   @override
-  String get logoutBody =>
-      'वापस आने के लिए आपको अपने मोबाइल नंबर और OTP से फिर से लॉग इन करना होगा।';
+  String get logoutBody => 'वापस आने के लिए आपको अपने मोबाइल नंबर और OTP से फिर से लॉग इन करना होगा।';
 
   @override
   String signedInAs(String phone) {
@@ -1579,8 +1519,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get emailOptional => 'ईमेल (वैकल्पिक)';
 
   @override
-  String get verifierEmailHint =>
-      'उन्हें स्वागत ईमेल और सौंपे गए हर किसान के लिए एक ईमेल मिलेगा।';
+  String get verifierEmailHint => 'उन्हें स्वागत ईमेल और सौंपे गए हर किसान के लिए एक ईमेल मिलेगा।';
 
   @override
   String get deleteSpace => 'जगह हटाएँ';
@@ -1589,12 +1528,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get deleteSpaceQ => 'यह जगह हटाएँ?';
 
   @override
-  String get deleteSpaceBody =>
-      'इसकी फ़ोटो और सबूत हट जाएँगे और यह खोज में नहीं दिखेगी। इसे वापस नहीं लाया जा सकता।';
+  String get deleteSpaceBody => 'इसकी फ़ोटो और सबूत हट जाएँगे और यह खोज में नहीं दिखेगी। इसे वापस नहीं लाया जा सकता।';
 
   @override
-  String get deleteSpaceBookings =>
-      'आज से आगे की इंतज़ार वाली और पक्की बुकिंग रद्द होंगी, और हर किसान को बताया जाएगा।';
+  String get deleteSpaceBookings => 'आज से आगे की इंतज़ार वाली और पक्की बुकिंग रद्द होंगी, और हर किसान को बताया जाएगा।';
 
   @override
   String spaceDeletedToast(int count) {
@@ -1623,15 +1560,13 @@ class AppLocalizationsHi extends AppLocalizations {
       'आपका सत्यापन जाँच का इंतज़ार कर रहा है। मिटाने से यह कतार से हट जाएगा, और आपको फिर से जमा करना होगा।';
 
   @override
-  String get verificationResetToast =>
-      'सत्यापन मिटा दिया गया। आप फिर से शुरू कर सकते हैं।';
+  String get verificationResetToast => 'सत्यापन मिटा दिया गया। आप फिर से शुरू कर सकते हैं।';
 
   @override
   String get iveArrived => 'मैं पहुँच गया';
 
   @override
-  String get checkInHint =>
-      'जगह पर पहुँचकर इसे दबाएँ। आपके फ़ोन की लोकेशन जगह से 200 मीटर के अंदर होनी चाहिए।';
+  String get checkInHint => 'जगह पर पहुँचकर इसे दबाएँ। आपके फ़ोन की लोकेशन जगह से 200 मीटर के अंदर होनी चाहिए।';
 
   @override
   String get locationNeededToCheckIn => 'चेक इन करने के लिए लोकेशन चालू करें';
@@ -1662,8 +1597,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get markNoShowQ => 'दर्ज करें कि किसान नहीं आए?';
 
   @override
-  String get markNoShowBody =>
-      'यह तभी करें जब किसान आपकी जगह पर बिल्कुल नहीं पहुँचे। यह बुकिंग पर सेव होगा।';
+  String get markNoShowBody => 'यह तभी करें जब किसान आपकी जगह पर बिल्कुल नहीं पहुँचे। यह बुकिंग पर सेव होगा।';
 
   @override
   String get noShowMarkedToast => 'नहीं आए के रूप में दर्ज किया';
@@ -1696,8 +1630,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get emailAlertsBody => 'एक शाम पहले, और जब किसान पहुँचें';
 
   @override
-  String get addEmailForAlerts =>
-      'ये सूचनाएँ पाने के लिए मेरी प्रोफ़ाइल में अपना ईमेल जोड़ें।';
+  String get addEmailForAlerts => 'ये सूचनाएँ पाने के लिए मेरी प्रोफ़ाइल में अपना ईमेल जोड़ें।';
 
   @override
   String get areaSavedToast => 'इलाका सेव हो गया';
@@ -1736,8 +1669,7 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get nearbyEmpty =>
-      'आज या कल के लिए आपके पास अभी कोई किसान बुक नहीं है। बुक होते ही हम आपको ईमेल करेंगे।';
+  String get nearbyEmpty => 'आज या कल के लिए आपके पास अभी कोई किसान बुक नहीं है। बुक होते ही हम आपको ईमेल करेंगे।';
 
   @override
   String get exactPlaceLater => 'किसान के पहुँचने पर सही जगह दिखेगी';
@@ -1762,13 +1694,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get messageCopied => 'संदेश कॉपी हो गया';
 
   @override
-  String shareStallMessage(
-    String date,
-    String time,
-    String space,
-    String crops,
-    String url,
-  ) {
+  String shareStallMessage(String date, String time, String space, String crops, String url) {
     return 'मेरे यहाँ सत्यापित किसान की ताज़ी उपज!\n$date, $time, $space पर।\nला रहे हैं: $crops\nजानकारी: $url';
   }
 
@@ -1779,12 +1705,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get ok => 'ठीक है';
 
   @override
-  String get noConnection =>
-      'आंगन मंडी से जुड़ नहीं पा रहे। अपना इंटरनेट देखें और फिर से कोशिश करें।';
+  String get noConnection => 'आंगन मंडी से जुड़ नहीं पा रहे। अपना इंटरनेट देखें और फिर से कोशिश करें।';
 
   @override
-  String get serverProblem =>
-      'हमारी तरफ़ से कुछ गड़बड़ हुई। कुछ मिनट बाद फिर से कोशिश करें।';
+  String get serverProblem => 'हमारी तरफ़ से कुछ गड़बड़ हुई। कुछ मिनट बाद फिर से कोशिश करें।';
 
   @override
   String get deleteAccount => 'मेरा खाता हटाएँ';
@@ -1800,9 +1724,142 @@ class AppLocalizationsHi extends AppLocalizations {
       'इससे आपका नाम, मोबाइल नंबर और ईमेल, खेती का विवरण और सबूत की फ़ोटो, आपकी जगहें और उनकी फ़ोटो, और सेव किया इलाका हट जाएगा। आने वाली बुकिंग रद्द होंगी और दूसरे व्यक्ति को बताया जाएगा।';
 
   @override
-  String get deleteAccountUnderstand =>
-      'मैं समझता/समझती हूँ कि इसे वापस नहीं लाया जा सकता';
+  String get deleteAccountUnderstand => 'मैं समझता/समझती हूँ कि इसे वापस नहीं लाया जा सकता';
 
   @override
   String get accountDeletedToast => 'आपका खाता हटा दिया गया';
+
+  @override
+  String get reportProblem => 'समस्या बताएँ';
+
+  @override
+  String get reportProblemTitle => 'क्या गड़बड़ हुई?';
+
+  @override
+  String get reportCatNoShow => 'कोई नहीं आया';
+
+  @override
+  String get reportCatSpaceProblem => 'जगह में समस्या';
+
+  @override
+  String get reportCatPaymentDispute => 'भुगतान या शुल्क';
+
+  @override
+  String get reportCatBehaviour => 'व्यवहार या सुरक्षा';
+
+  @override
+  String get reportCatAppProblem => 'ऐप में समस्या';
+
+  @override
+  String get reportCatOther => 'कुछ और';
+
+  @override
+  String get reportDescribe => 'बताएँ कि क्या हुआ';
+
+  @override
+  String get reportDescribeHint => 'कम से कम 10 अक्षर। हमारी टीम हर रिपोर्ट पढ़ती है और जवाब देती है।';
+
+  @override
+  String get reportSend => 'रिपोर्ट भेजें';
+
+  @override
+  String get reportSentToast => 'रिपोर्ट भेज दी गई। हम आपको जवाब देंगे।';
+
+  @override
+  String get myReports => 'मेरी रिपोर्ट';
+
+  @override
+  String get myReportsEmpty => 'आपने अभी तक कोई समस्या नहीं बताई है।';
+
+  @override
+  String get reportOpen => 'टीम के जवाब का इंतज़ार';
+
+  @override
+  String get reportResolved => 'जवाब दिया गया';
+
+  @override
+  String reportAbout(String space, String date) {
+    return '$date को $space की बुकिंग के बारे में';
+  }
+
+  @override
+  String reportAnswer(String text) {
+    return 'हमारा जवाब: $text';
+  }
+
+  @override
+  String get opsTabReports => 'रिपोर्ट';
+
+  @override
+  String get opsReportsOpen => 'खुली';
+
+  @override
+  String get opsReportsResolved => 'हल हो गईं';
+
+  @override
+  String get opsNoReports => 'यहाँ कोई रिपोर्ट नहीं है।';
+
+  @override
+  String get resolveReport => 'हल करें';
+
+  @override
+  String get resolveReportQ => 'यह रिपोर्ट हल करें?';
+
+  @override
+  String get resolveReportHint => 'क्या किया गया (रिपोर्ट करने वाले इसे देखेंगे)';
+
+  @override
+  String get reportResolvedToast => 'रिपोर्ट हल हो गई';
+
+  @override
+  String get roleWordFarmer => 'किसान';
+
+  @override
+  String get roleWordHost => 'मेज़बान';
+
+  @override
+  String get roleWordBuyer => 'खरीदार';
+
+  @override
+  String get roleWordVerifier => 'सत्यापनकर्ता';
+
+  @override
+  String get roleWordAdmin => 'एडमिन';
+
+  @override
+  String get consentTitle => 'शुरू करने से पहले';
+
+  @override
+  String get consentIntro => 'आंगन मंडी किसानों, मेज़बानों और खरीदारों को जोड़ती है। इसके लिए हम इस्तेमाल करते हैं:';
+
+  @override
+  String get consentData1 => 'आपका मोबाइल नंबर और नाम, और ईमेल अगर आप जोड़ें';
+
+  @override
+  String get consentData2 => 'किसान: खेती का विवरण और सबूत की फ़ोटो, जो सिर्फ़ हमारे सत्यापनकर्ता देखते हैं';
+
+  @override
+  String get consentData3 =>
+      'मेज़बान: आपकी जगह का पता, लोकेशन और फ़ोटो; पता बुकिंग स्वीकार करने के बाद ही बताया जाता है';
+
+  @override
+  String get consentData4 => 'चेक इन करते या इलाका सेव करते समय आपकी लोकेशन, सिर्फ़ उसी काम के लिए';
+
+  @override
+  String get consentPromise => 'हम आपका डेटा नहीं बेचते। आप मेरी प्रोफ़ाइल में कभी भी अपना खाता हटा सकते हैं।';
+
+  @override
+  String get readTerms => 'उपयोग की शर्तें';
+
+  @override
+  String get readPrivacy => 'गोपनीयता नीति';
+
+  @override
+  String get consentAgree => 'मैंने उपयोग की शर्तें और गोपनीयता नीति पढ़ ली हैं और मैं सहमत हूँ';
+
+  @override
+  String get consentContinue => 'सहमत हूँ, आगे बढ़ें';
+
+  @override
+  String get consentDecline => 'अभी नहीं (लॉग आउट)';
 }

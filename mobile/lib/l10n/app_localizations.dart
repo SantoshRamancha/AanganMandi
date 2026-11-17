@@ -63,8 +63,7 @@ import 'app_localizations_te.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -72,8 +71,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -85,20 +83,15 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[
-    Locale('en'),
-    Locale('hi'),
-    Locale('te'),
-  ];
+  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('te')];
 
   /// No description provided for @appTitle.
   ///
@@ -3218,13 +3211,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Fresh produce from a verified farmer at my place!\n{date}, {time} at {space}.\nBringing: {crops}\nDetails: {url}'**
-  String shareStallMessage(
-    String date,
-    String time,
-    String space,
-    String crops,
-    String url,
-  );
+  String shareStallMessage(String date, String time, String space, String crops, String url);
 
   /// No description provided for @errorTitle.
   ///
@@ -3285,10 +3272,267 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your account was deleted'**
   String get accountDeletedToast;
+
+  /// No description provided for @reportProblem.
+  ///
+  /// In en, this message translates to:
+  /// **'Report a problem'**
+  String get reportProblem;
+
+  /// No description provided for @reportProblemTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What went wrong?'**
+  String get reportProblemTitle;
+
+  /// No description provided for @reportCatNoShow.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone did not come'**
+  String get reportCatNoShow;
+
+  /// No description provided for @reportCatSpaceProblem.
+  ///
+  /// In en, this message translates to:
+  /// **'Problem with the space'**
+  String get reportCatSpaceProblem;
+
+  /// No description provided for @reportCatPaymentDispute.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment or fee'**
+  String get reportCatPaymentDispute;
+
+  /// No description provided for @reportCatBehaviour.
+  ///
+  /// In en, this message translates to:
+  /// **'Behaviour or safety'**
+  String get reportCatBehaviour;
+
+  /// No description provided for @reportCatAppProblem.
+  ///
+  /// In en, this message translates to:
+  /// **'Problem with the app'**
+  String get reportCatAppProblem;
+
+  /// No description provided for @reportCatOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Something else'**
+  String get reportCatOther;
+
+  /// No description provided for @reportDescribe.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us what happened'**
+  String get reportDescribe;
+
+  /// No description provided for @reportDescribeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 10 characters. Our team reads every report and replies.'**
+  String get reportDescribeHint;
+
+  /// No description provided for @reportSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send report'**
+  String get reportSend;
+
+  /// No description provided for @reportSentToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Report sent. We will get back to you.'**
+  String get reportSentToast;
+
+  /// No description provided for @myReports.
+  ///
+  /// In en, this message translates to:
+  /// **'My reports'**
+  String get myReports;
+
+  /// No description provided for @myReportsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'You have not reported any problems.'**
+  String get myReportsEmpty;
+
+  /// No description provided for @reportOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the team'**
+  String get reportOpen;
+
+  /// No description provided for @reportResolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Answered'**
+  String get reportResolved;
+
+  /// No description provided for @reportAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About the booking at {space} on {date}'**
+  String reportAbout(String space, String date);
+
+  /// No description provided for @reportAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Our answer: {text}'**
+  String reportAnswer(String text);
+
+  /// No description provided for @opsTabReports.
+  ///
+  /// In en, this message translates to:
+  /// **'Reports'**
+  String get opsTabReports;
+
+  /// No description provided for @opsReportsOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get opsReportsOpen;
+
+  /// No description provided for @opsReportsResolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved'**
+  String get opsReportsResolved;
+
+  /// No description provided for @opsNoReports.
+  ///
+  /// In en, this message translates to:
+  /// **'No reports here.'**
+  String get opsNoReports;
+
+  /// No description provided for @resolveReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolve'**
+  String get resolveReport;
+
+  /// No description provided for @resolveReportQ.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolve this report?'**
+  String get resolveReportQ;
+
+  /// No description provided for @resolveReportHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What was done (the person who reported sees this)'**
+  String get resolveReportHint;
+
+  /// No description provided for @reportResolvedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Report resolved'**
+  String get reportResolvedToast;
+
+  /// No description provided for @roleWordFarmer.
+  ///
+  /// In en, this message translates to:
+  /// **'Farmer'**
+  String get roleWordFarmer;
+
+  /// No description provided for @roleWordHost.
+  ///
+  /// In en, this message translates to:
+  /// **'Host'**
+  String get roleWordHost;
+
+  /// No description provided for @roleWordBuyer.
+  ///
+  /// In en, this message translates to:
+  /// **'Buyer'**
+  String get roleWordBuyer;
+
+  /// No description provided for @roleWordVerifier.
+  ///
+  /// In en, this message translates to:
+  /// **'Verifier'**
+  String get roleWordVerifier;
+
+  /// No description provided for @roleWordAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin'**
+  String get roleWordAdmin;
+
+  /// No description provided for @consentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Before you start'**
+  String get consentTitle;
+
+  /// No description provided for @consentIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Aangan Mandi connects farmers, hosts and buyers. To do that we use:'**
+  String get consentIntro;
+
+  /// No description provided for @consentData1.
+  ///
+  /// In en, this message translates to:
+  /// **'Your mobile number and name, and your email if you add one'**
+  String get consentData1;
+
+  /// No description provided for @consentData2.
+  ///
+  /// In en, this message translates to:
+  /// **'Farmers: farming details and a photo of your proof, seen only by our verifiers'**
+  String get consentData2;
+
+  /// No description provided for @consentData3.
+  ///
+  /// In en, this message translates to:
+  /// **'Hosts: your space\'s address, location and photos; the address is shared only after you accept a booking'**
+  String get consentData3;
+
+  /// No description provided for @consentData4.
+  ///
+  /// In en, this message translates to:
+  /// **'Your location when you check in or save your area, only for that'**
+  String get consentData4;
+
+  /// No description provided for @consentPromise.
+  ///
+  /// In en, this message translates to:
+  /// **'We do not sell your data. You can delete your account at any time in My profile.'**
+  String get consentPromise;
+
+  /// No description provided for @readTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of use'**
+  String get readTerms;
+
+  /// No description provided for @readPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy policy'**
+  String get readPrivacy;
+
+  /// No description provided for @consentAgree.
+  ///
+  /// In en, this message translates to:
+  /// **'I have read and agree to the Terms of use and the Privacy policy'**
+  String get consentAgree;
+
+  /// No description provided for @consentContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Agree and continue'**
+  String get consentContinue;
+
+  /// No description provided for @consentDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now (log out)'**
+  String get consentDecline;
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -3297,8 +3541,7 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'hi', 'te'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'hi', 'te'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;

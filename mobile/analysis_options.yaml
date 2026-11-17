@@ -9,6 +9,10 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+# `dart format` (and the IDE's format-on-save) uses 120-character lines, like the rest of the code.
+formatter:
+  page_width: 120
+
 analyzer:
   exclude:
     - build/**

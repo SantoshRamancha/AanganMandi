@@ -115,21 +115,27 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
     switch (_step) {
       case 0:
         if (!_detailsForm.currentState!.validate() || _crops.isEmpty || _source == null) return _error(incomplete);
-        _run(() => ref.read(farmerApiProvider).saveDetails(
-              name: _name.text.trim(),
-              village: _village.text.trim(),
-              district: _district!,
-              cropCodes: _crops.toList(),
-              farmSizeAcres: double.tryParse(_acres.text),
-              produceSource: _source!,
-            ), next: 1);
+        _run(
+          () => ref
+              .read(farmerApiProvider)
+              .saveDetails(
+                name: _name.text.trim(),
+                village: _village.text.trim(),
+                district: _district!,
+                cropCodes: _crops.toList(),
+                farmSizeAcres: double.tryParse(_acres.text),
+                produceSource: _source!,
+              ),
+          next: 1,
+        );
       case 1:
         if (!_evidenceForm.currentState!.validate()) return _error(incomplete);
         final details = _evidenceDetails.text.trim();
-        _run(() => ref.read(farmerApiProvider).saveEvidence(
-              type: _evidenceType!,
-              details: details.isEmpty ? null : details,
-            ), next: 2);
+        _run(
+          () =>
+              ref.read(farmerApiProvider).saveEvidence(type: _evidenceType!, details: details.isEmpty ? null : details),
+          next: 2,
+        );
     }
   }
 
@@ -148,9 +154,9 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
   }
 
   bool get _stepReady => switch (_step) {
-        1 => _evidenceType != null && _hasPhoto,
-        _ => true,
-      };
+    1 => _evidenceType != null && _hasPhoto,
+    _ => true,
+  };
 
   // UI -----------------------------------------------------------------------
 
@@ -167,23 +173,25 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
         error: (e, _) => Center(child: Text(apiErrorMessage(e, l10n.errorGeneric))),
         data: (f) {
           _load(f);
-          return Column(children: [
-            _StepHeader(titles: titles, current: _step),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.all(Breakpoints.gutter(context)),
-                child: MaxWidth(
-                  maxWidth: 860,
-                  child: switch (_step) {
-                    0 => _details(l10n),
-                    1 => _evidence(l10n),
-                    _ => _review(l10n),
-                  },
+          return Column(
+            children: [
+              _StepHeader(titles: titles, current: _step),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.all(Breakpoints.gutter(context)),
+                  child: MaxWidth(
+                    maxWidth: 860,
+                    child: switch (_step) {
+                      0 => _details(l10n),
+                      1 => _evidence(l10n),
+                      _ => _review(l10n),
+                    },
+                  ),
                 ),
               ),
-            ),
-            _navBar(l10n),
-          ]);
+              _navBar(l10n),
+            ],
+          );
         },
       ),
     );
@@ -199,27 +207,29 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
           padding: EdgeInsets.symmetric(horizontal: Breakpoints.gutter(context), vertical: 12),
           child: MaxWidth(
             maxWidth: 860,
-            child: Row(children: [
-              if (_step > 0)
+            child: Row(
+              children: [
+                if (_step > 0)
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.arrow_back),
+                      label: Text(l10n.back),
+                      onPressed: _busy ? null : () => setState(() => _step--),
+                    ),
+                  ),
+                if (_step > 0) const SizedBox(width: 12),
                 Expanded(
-                  child: OutlinedButton.icon(
-                    icon: const Icon(Icons.arrow_back),
-                    label: Text(l10n.back),
-                    onPressed: _busy ? null : () => setState(() => _step--),
+                  flex: 2,
+                  child: FilledButton.icon(
+                    icon: _busy
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                        : Icon(last ? Icons.send : Icons.arrow_forward),
+                    label: Text(last ? l10n.submitForReview : l10n.next),
+                    onPressed: _busy || !_stepReady || (last && !_consent) ? null : (last ? _submit : _next),
                   ),
                 ),
-              if (_step > 0) const SizedBox(width: 12),
-              Expanded(
-                flex: 2,
-                child: FilledButton.icon(
-                  icon: _busy
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                      : Icon(last ? Icons.send : Icons.arrow_forward),
-                  label: Text(last ? l10n.submitForReview : l10n.next),
-                  onPressed: _busy || !_stepReady || (last && !_consent) ? null : (last ? _submit : _next),
-                ),
-              ),
-            ]),
+              ],
+            ),
           ),
         ),
       ),
@@ -232,66 +242,82 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
     final crops = ref.watch(cropsProvider);
     return Form(
       key: _detailsForm,
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        FormSection(
-          title: l10n.stepAboutYou,
-          child: ResponsiveFields(children: [
-            TextFormField(controller: _name, decoration: InputDecoration(labelText: l10n.fullName), validator: required,
-                textCapitalization: TextCapitalization.words),
-            TextFormField(controller: _village, decoration: InputDecoration(labelText: l10n.village), validator: required,
-                textCapitalization: TextCapitalization.words),
-            DropdownButtonFormField<String>(
-              initialValue: _district,
-              decoration: InputDecoration(labelText: l10n.district),
-              menuMaxHeight: 420,
-              items: [
-                // Stored in English; shown in the app language.
-                for (final d in telanganaDistricts) DropdownMenuItem(value: d.$1, child: Text(districtName(d.$1, lang))),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          FormSection(
+            title: l10n.stepAboutYou,
+            child: ResponsiveFields(
+              children: [
+                TextFormField(
+                  controller: _name,
+                  decoration: InputDecoration(labelText: l10n.fullName),
+                  validator: required,
+                  textCapitalization: TextCapitalization.words,
+                ),
+                TextFormField(
+                  controller: _village,
+                  decoration: InputDecoration(labelText: l10n.village),
+                  validator: required,
+                  textCapitalization: TextCapitalization.words,
+                ),
+                DropdownButtonFormField<String>(
+                  initialValue: _district,
+                  decoration: InputDecoration(labelText: l10n.district),
+                  menuMaxHeight: 420,
+                  items: [
+                    // Stored in English; shown in the app language.
+                    for (final d in telanganaDistricts)
+                      DropdownMenuItem(value: d.$1, child: Text(districtName(d.$1, lang))),
+                  ],
+                  onChanged: (v) => setState(() => _district = v),
+                  validator: (v) => v == null ? l10n.required : null,
+                ),
+                TextFormField(
+                  controller: _acres,
+                  decoration: InputDecoration(labelText: l10n.farmSizeOptional),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  // Up to 4 digits and 2 decimals, a single point: 2.5, 10, 0.75.
+                  inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d{0,4}(\.\d{0,2})?'))],
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return null;
+                    final n = double.tryParse(v);
+                    return n == null || n <= 0 || n > 1000 ? l10n.farmSizeInvalid : null;
+                  },
+                ),
               ],
-              onChanged: (v) => setState(() => _district = v),
-              validator: (v) => v == null ? l10n.required : null,
-            ),
-            TextFormField(
-              controller: _acres,
-              decoration: InputDecoration(labelText: l10n.farmSizeOptional),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              // Up to 4 digits and 2 decimals, a single point: 2.5, 10, 0.75.
-              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d{0,4}(\.\d{0,2})?'))],
-              validator: (v) {
-                if (v == null || v.isEmpty) return null;
-                final n = double.tryParse(v);
-                return n == null || n <= 0 || n > 1000 ? l10n.farmSizeInvalid : null;
-              },
-            ),
-          ]),
-        ),
-        FormSection(
-          title: l10n.cropsYouGrow,
-          child: crops.when(
-            loading: () => const LinearProgressIndicator(),
-            error: (_, _) => Text(l10n.errorGeneric),
-            data: (_) => CropPicker(
-              selected: _crops,
-              onChanged: (code, on) => setState(() => on ? _crops.add(code) : _crops.remove(code)),
             ),
           ),
-        ),
-        FormSection(
-          title: l10n.produceSourceQuestion,
-          child: RadioGroup<String>(
-            groupValue: _source,
-            onChanged: (v) => setState(() => _source = v),
-            child: Column(children: [
-              for (final (value, label) in [
-                ('OwnFarm', l10n.sourceOwnFarm),
-                ('OwnAndOtherFarmers', l10n.sourceOwnAndOthers),
-                ('OtherFarmers', l10n.sourceOthers),
-              ])
-                RadioListTile<String>(contentPadding: EdgeInsets.zero, value: value, title: Text(label)),
-            ]),
+          FormSection(
+            title: l10n.cropsYouGrow,
+            child: crops.when(
+              loading: () => const LinearProgressIndicator(),
+              error: (_, _) => Text(l10n.errorGeneric),
+              data: (_) => CropPicker(
+                selected: _crops,
+                onChanged: (code, on) => setState(() => on ? _crops.add(code) : _crops.remove(code)),
+              ),
+            ),
           ),
-        ),
-      ]),
+          FormSection(
+            title: l10n.produceSourceQuestion,
+            child: RadioGroup<String>(
+              groupValue: _source,
+              onChanged: (v) => setState(() => _source = v),
+              child: Column(
+                children: [
+                  for (final (value, label) in [
+                    ('OwnFarm', l10n.sourceOwnFarm),
+                    ('OwnAndOtherFarmers', l10n.sourceOwnAndOthers),
+                    ('OtherFarmers', l10n.sourceOthers),
+                  ])
+                    RadioListTile<String>(contentPadding: EdgeInsets.zero, value: value, title: Text(label)),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -311,53 +337,61 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
     };
     return Form(
       key: _evidenceForm,
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        FormSection(
-          title: l10n.evidenceQuestion,
-          subtitle: l10n.evidenceSubtitle,
-          child: RadioGroup<String>(
-            groupValue: _evidenceType,
-            onChanged: (v) => setState(() => _evidenceType = v),
-            child: Column(children: [
-              for (final (value, icon, title, hint) in options)
-                Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(
-                        color: _evidenceType == value ? scheme.primary : scheme.outlineVariant,
-                        width: _evidenceType == value ? 2 : 1),
-                  ),
-                  child: RadioListTile<String>(
-                    value: value,
-                    secondary: Icon(icon, color: scheme.primary),
-                    title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-                    subtitle: Text(hint),
-                  ),
-                ),
-            ]),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          FormSection(
+            title: l10n.evidenceQuestion,
+            subtitle: l10n.evidenceSubtitle,
+            child: RadioGroup<String>(
+              groupValue: _evidenceType,
+              onChanged: (v) => setState(() => _evidenceType = v),
+              child: Column(
+                children: [
+                  for (final (value, icon, title, hint) in options)
+                    Card(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(
+                          color: _evidenceType == value ? scheme.primary : scheme.outlineVariant,
+                          width: _evidenceType == value ? 2 : 1,
+                        ),
+                      ),
+                      child: RadioListTile<String>(
+                        value: value,
+                        secondary: Icon(icon, color: scheme.primary),
+                        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+                        subtitle: Text(hint),
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
-        ),
-        if (_evidenceType != null)
-          ResponsiveFields(children: [
-            TextFormField(
-              controller: _evidenceDetails,
-              decoration: InputDecoration(labelText: detailsLabel),
-              maxLength: 200,
-              validator: (v) => detailsRequired && (v == null || v.trim().isEmpty) ? l10n.required : null,
+          if (_evidenceType != null)
+            ResponsiveFields(
+              children: [
+                TextFormField(
+                  controller: _evidenceDetails,
+                  decoration: InputDecoration(labelText: detailsLabel),
+                  maxLength: 200,
+                  validator: (v) => detailsRequired && (v == null || v.trim().isEmpty) ? l10n.required : null,
+                ),
+                DocumentTile(
+                  label: l10n.evidencePhoto,
+                  hint: l10n.evidencePhotoHint,
+                  icon: Icons.photo_camera_outlined,
+                  filePath: _hasPhoto ? evidencePhotoPath(_photoAt) : null,
+                  fileName: 'evidence',
+                  canChange: true,
+                  onUpload: _uploadPhoto,
+                  onDelete: _deletePhoto,
+                ),
+              ],
             ),
-            DocumentTile(
-              label: l10n.evidencePhoto,
-              hint: l10n.evidencePhotoHint,
-              icon: Icons.photo_camera_outlined,
-              filePath: _hasPhoto ? evidencePhotoPath(_photoAt) : null,
-              fileName: 'evidence',
-              canChange: true,
-              onUpload: _uploadPhoto,
-              onDelete: _deletePhoto,
-            ),
-          ]),
-      ]),
+        ],
+      ),
     );
   }
 
@@ -375,30 +409,39 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
     };
     final details = _evidenceDetails.text.trim();
     final items = [
-      (l10n.stepAboutYou, '${_name.text}, ${_village.text}, ${_district == null ? '' : districtName(_district!, lang)}'),
+      (
+        l10n.stepAboutYou,
+        '${_name.text}, ${_village.text}, ${_district == null ? '' : districtName(_district!, lang)}',
+      ),
       (l10n.cropsYouGrow, cropNames.isEmpty ? '—' : cropNames),
       (l10n.stepEvidence, details.isEmpty ? evidenceName : '$evidenceName · $details'),
       (l10n.evidencePhoto, _hasPhoto ? l10n.uploaded : '—'),
     ];
     return FormSection(
       title: l10n.reviewChecklist,
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        for (final (label, value) in items)
-          ListTile(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (final (label, value) in items)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Icon(
+                value == '—' ? Icons.cancel : Icons.check_circle,
+                color: value == '—' ? scheme.error : scheme.primary,
+              ),
+              title: Text(label),
+              subtitle: Text(value),
+            ),
+          const Divider(height: 32),
+          CheckboxListTile(
             contentPadding: EdgeInsets.zero,
-            leading: Icon(value == '—' ? Icons.cancel : Icons.check_circle, color: value == '—' ? scheme.error : scheme.primary),
-            title: Text(label),
-            subtitle: Text(value),
+            value: _consent,
+            onChanged: (v) => setState(() => _consent = v ?? false),
+            controlAffinity: ListTileControlAffinity.leading,
+            title: Text(l10n.consentText),
           ),
-        const Divider(height: 32),
-        CheckboxListTile(
-          contentPadding: EdgeInsets.zero,
-          value: _consent,
-          onChanged: (v) => setState(() => _consent = v ?? false),
-          controlAffinity: ListTileControlAffinity.leading,
-          title: Text(l10n.consentText),
-        ),
-      ]),
+        ],
+      ),
     );
   }
 }
@@ -419,27 +462,34 @@ class _StepHeader extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: Breakpoints.gutter(context), vertical: 12),
         child: MaxWidth(
           maxWidth: 860,
-          child: Row(children: [
-            for (final (i, t) in titles.indexed) ...[
-              CircleAvatar(
-                radius: 16,
-                backgroundColor: i <= current ? scheme.primary : scheme.surfaceContainerHighest,
-                child: i < current
-                    ? Icon(Icons.check, size: 18, color: scheme.onPrimary)
-                    : Text('${i + 1}', style: TextStyle(color: i <= current ? scheme.onPrimary : scheme.onSurfaceVariant)),
-              ),
-              if (showTitles || i == current) ...[
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Text(t,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontWeight: i == current ? FontWeight.w600 : FontWeight.normal)),
+          child: Row(
+            children: [
+              for (final (i, t) in titles.indexed) ...[
+                CircleAvatar(
+                  radius: 16,
+                  backgroundColor: i <= current ? scheme.primary : scheme.surfaceContainerHighest,
+                  child: i < current
+                      ? Icon(Icons.check, size: 18, color: scheme.onPrimary)
+                      : Text(
+                          '${i + 1}',
+                          style: TextStyle(color: i <= current ? scheme.onPrimary : scheme.onSurfaceVariant),
+                        ),
                 ),
+                if (showTitles || i == current) ...[
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      t,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontWeight: i == current ? FontWeight.w600 : FontWeight.normal),
+                    ),
+                  ),
+                ],
+                if (i < titles.length - 1)
+                  Expanded(child: Divider(indent: 8, endIndent: 8, color: i < current ? scheme.primary : null)),
               ],
-              if (i < titles.length - 1)
-                Expanded(child: Divider(indent: 8, endIndent: 8, color: i < current ? scheme.primary : null)),
             ],
-          ]),
+          ),
         ),
       ),
     );

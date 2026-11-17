@@ -385,6 +385,12 @@ namespace AanganMandi.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("TermsAcceptedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TermsVersion")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -1449,6 +1455,61 @@ namespace AanganMandi.Infrastructure.Persistence.Migrations
                     b.ToTable("SpacePhotos");
                 });
 
+            modelBuilder.Entity("AanganMandi.Domain.Support.ProblemReport", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("BookingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("nvarchar(24)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<Guid>("ReporterUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Resolution")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("ResolvedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("ResolvedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReporterUserId");
+
+                    b.HasIndex("Status", "CreatedAt");
+
+                    b.ToTable("ProblemReports");
+                });
+
             modelBuilder.Entity("AanganMandi.Domain.Trips.Booking", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1497,6 +1558,9 @@ namespace AanganMandi.Infrastructure.Persistence.Migrations
                     b.Property<string>("Reason")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("ReminderSentAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("RespondedAt")
                         .HasColumnType("datetime2");

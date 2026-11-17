@@ -1,3 +1,4 @@
+using AanganMandi.Domain.Common;
 using AanganMandi.Api.Auth;
 using AanganMandi.Application.Files;
 using AanganMandi.Application.Notifications;
@@ -51,17 +52,17 @@ public class FarmersController(AppDbContext db, IFileStorage storage, INotifier 
     public async Task<IActionResult> SaveDetails(DetailsRequest req, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(req.Name) || string.IsNullOrWhiteSpace(req.Village) || string.IsNullOrWhiteSpace(req.District))
-            return Problem(statusCode: 400, title: "Name, village and district are required");
+            return this.Fail(400, "farmer_details_required");
         if (req.FarmSizeAcres is <= 0 or > 1000)
-            return Problem(statusCode: 400, title: "Farm size must be between 0 and 1000 acres");
+            return this.Fail(400, "farm_size_range");
         if (!Enum.IsDefined(req.ProduceSource))
-            return Problem(statusCode: 400, title: "Say whether you grow your own crops");
+            return this.Fail(400, "produce_source_required");
         // Master crops by code; crops the farmer added themselves as "custom:<name>".
         var requested = req.CropCodes.Select(c => c.Trim()).ToArray();
         var master = await db.Crops.Where(c => requested.Contains(c.Code)).Select(c => c.Code).ToListAsync(ct);
         var (codes, cropError) = CropCodes.Normalize(requested, master.ToHashSet());
-        if (cropError is not null) return Problem(statusCode: 400, title: cropError);
-        if (codes!.Length == 0) return Problem(statusCode: 400, title: "Choose at least one crop you grow or sell");
+        if (cropError is not null) return this.Fail(400, cropError);
+        if (codes!.Length == 0) return this.Fail(400, "crops_required");
 
         var userId = User.UserId();
         var farmer = await GetOrCreateAsync(userId, ct);
@@ -83,10 +84,10 @@ public class FarmersController(AppDbContext db, IFileStorage storage, INotifier 
     [HttpPut("evidence")]
     public async Task<IActionResult> SaveEvidence(EvidenceRequest req, CancellationToken ct)
     {
-        if (!Enum.IsDefined(req.Type)) return Problem(statusCode: 400, title: "Choose the type of evidence");
+        if (!Enum.IsDefined(req.Type)) return this.Fail(400, "evidence_type_required");
         var details = string.IsNullOrWhiteSpace(req.Details) ? null : req.Details.Trim();
-        if (details?.Length > 200) return Problem(statusCode: 400, title: "Keep the details under 200 characters");
-        if (details is null && DetailsRequired(req.Type)) return Problem(statusCode: 400, title: DetailsPrompt(req.Type));
+        if (details?.Length > 200) return this.Fail(400, "details_too_long", ("max", 200));
+        if (details is null && DetailsRequired(req.Type)) return this.Fail(400, DetailsPrompt(req.Type));
 
         var farmer = await GetOrCreateAsync(User.UserId(), ct);
         if (!farmer.CanEdit) return Locked(farmer);
@@ -115,12 +116,12 @@ public class FarmersController(AppDbContext db, IFileStorage storage, INotifier 
     public async Task<IActionResult> UploadEvidencePhoto(IFormFile file, CancellationToken ct)
     {
         if (file.Length is 0 or > MaxUploadBytes)
-            return Problem(statusCode: 400, title: "Photo must be under 8 MB");
+            return this.Fail(400, "photo_too_big", ("mb", 8));
         // The real format comes from the bytes: the label the browser sends can be wrong (see ImageFormat).
         ImageFormat.Kind? kind;
         await using (var head = file.OpenReadStream()) kind = await ImageFormat.DetectAsync(head, ct);
         if (kind is null)
-            return Problem(statusCode: 400, title: "Only JPEG, PNG or WebP photos are accepted");
+            return this.Fail(400, "photo_format");
 
         var userId = User.UserId();
         var farmer = await GetOrCreateAsync(userId, ct);
@@ -202,7 +203,8 @@ public class FarmersController(AppDbContext db, IFileStorage storage, INotifier 
         if (!farmer.CanEdit) return Locked(farmer);
         var missing = Missing(user.Name, farmer, await HasEvidencePhotoAsync(userId, ct));
         if (missing.Length > 0)
-            return Problem(statusCode: 422, title: "Verification is incomplete", detail: string.Join(", ", missing));
+            return this.Fail(422, ApiError.Of("verification_incomplete", ("missing", string.Join(", ", missing))),
+                detail: string.Join(", ", missing));
 
         farmer.Status = VerificationStatus.Pending;
         farmer.SubmittedAt = DateTime.UtcNow;
@@ -230,9 +232,9 @@ public class FarmersController(AppDbContext db, IFileStorage storage, INotifier 
 
     private static string DetailsPrompt(EvidenceType t) => t switch
     {
-        EvidenceType.AgriStackFarmerId => "Enter your Farmer ID number",
-        EvidenceType.FpoMembership => "Enter the FPO name, or who referred you",
-        _ => "Enter the officer's or organisation's name and phone number",
+        EvidenceType.AgriStackFarmerId => "farmer_id_required",
+        EvidenceType.FpoMembership => "fpo_required",
+        _ => "referee_required",
     };
 
     private Task<bool> HasEvidencePhotoAsync(Guid userId, CancellationToken ct) => EvidencePhotos(userId).AnyAsync(ct);
@@ -252,8 +254,8 @@ public class FarmersController(AppDbContext db, IFileStorage storage, INotifier 
         return farmer;
     }
 
-    private ObjectResult Locked(FarmerProfile f) => Problem(statusCode: 409,
-        title: f.Status == VerificationStatus.Pending ? "Verification is under review" : "Farmer is already verified");
+    private ObjectResult Locked(FarmerProfile f) =>
+        this.Fail(409, f.Status == VerificationStatus.Pending ? "verification_under_review" : "farmer_already_verified");
 
     private static string Extension(string contentType) => contentType switch
     {

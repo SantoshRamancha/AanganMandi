@@ -132,7 +132,7 @@ public static class AdminSetup
     public static async Task<string> MakeAdminAsync(AppDbContext db, string phoneInput, string? name, CancellationToken ct)
     {
         var (phone, error) = Application.Identity.PhoneNumbers.Normalize(phoneInput);
-        if (phone is null) return error!;
+        if (phone is null) return Errors.ErrorText.Render(error!, "en");
         var user = await db.Users.Include(u => u.Roles).SingleOrDefaultAsync(u => u.Phone == phone, ct);
         var created = user is null;
         if (user is null)

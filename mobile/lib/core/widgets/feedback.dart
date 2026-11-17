@@ -17,22 +17,28 @@ void showSuccess(BuildContext context, String message) {
   final scheme = Theme.of(themed).colorScheme;
   messenger
     ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(
-      behavior: SnackBarBehavior.floating,
-      duration: const Duration(seconds: 3),
-      backgroundColor: scheme.success,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-      elevation: 6,
-      content: Row(children: [
-        Icon(Icons.check_circle, color: scheme.onSuccess),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(message,
-              style: TextStyle(color: scheme.onSuccess, fontSize: 15, fontWeight: FontWeight.w600)),
+    ..showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
+        backgroundColor: scheme.success,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+        elevation: 6,
+        content: Row(
+          children: [
+            Icon(Icons.check_circle, color: scheme.onSuccess),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                message,
+                style: TextStyle(color: scheme.onSuccess, fontSize: 15, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
         ),
-      ]),
-    ));
+      ),
+    );
 }
 
 /// "That didn't work": a dialog with the reason, closed with OK, so it is never missed.

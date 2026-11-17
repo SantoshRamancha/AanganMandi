@@ -198,6 +198,93 @@ public sealed class EmailNotifier(AppDbContext db, IEmailQueue queue, IOptions<N
         if (buyers.Count > 0) await db.SaveChangesAsync(ct);
     });
 
+    public Task ProblemReportedAsync(Guid reportId, CancellationToken ct) => Safe("problem reported", async () =>
+    {
+        var r = await db.ProblemReports.AsNoTracking().SingleOrDefaultAsync(x => x.Id == reportId, ct);
+        if (r is null) return;
+        var reporter = await db.Users.AsNoTracking().SingleOrDefaultAsync(u => u.Id == r.ReporterUserId, ct);
+        var booking = r.BookingId is { } bid ? await db.Bookings.AsNoTracking().SingleOrDefaultAsync(b => b.Id == bid, ct) : null;
+        var space = booking is null ? null : await db.Spaces.AsNoTracking().IgnoreQueryFilters().SingleOrDefaultAsync(s => s.Id == booking.SpaceId, ct);
+        var who = reporter is null ? "–" : $"{reporter.Name ?? "–"} · {reporter.Phone}";
+        var admins = await (from u in db.Users.AsNoTracking()
+                            join ro in db.UserRoles on u.Id equals ro.UserId
+                            where ro.Role == Role.Admin && u.Email != null
+                            select u).ToListAsync(ct);
+        foreach (var admin in admins)
+        {
+            var lang = Lang(admin);
+            var details = new List<MailDetail>
+            {
+                new(MailText.Category, MailText.ReportCategory(r.Category.ToString()).For(lang)),
+                new(MailText.Reporter, who),
+            };
+            if (booking is not null)
+                details.Add(new(MailText.Booking, $"{space?.Title ?? "–"} · {FormatDate(booking.Date, lang)}"));
+            await SendAsync(admin, MailText.ReportNew, new()
+            {
+                ["category"] = MailText.ReportCategory(r.Category.ToString()).For(lang), ["reporter"] = reporter?.Name ?? reporter?.Phone ?? "–",
+            }, details, Note(MailText.WhatTheyWrote, r.Message), ct);
+        }
+    });
+
+    public Task ProblemResolvedAsync(Guid reportId, CancellationToken ct) => Safe("problem resolved", async () =>
+    {
+        var r = await db.ProblemReports.AsNoTracking().SingleOrDefaultAsync(x => x.Id == reportId, ct);
+        var reporter = r is null ? null : await db.Users.AsNoTracking().SingleOrDefaultAsync(u => u.Id == r.ReporterUserId, ct);
+        if (r is null || reporter is null) return;
+        var lang = Lang(reporter);
+        await SendAsync(reporter, MailText.ReportResolved, [],
+        [
+            new(MailText.Category, MailText.ReportCategory(r.Category.ToString()).For(lang)),
+            new(MailText.YourReport, r.Message.Length > 300 ? r.Message[..300] + "…" : r.Message),
+        ], Note(MailText.WhatWasDone, r.Resolution), ct);
+    });
+
+    public Task BookingRemindersAsync(CancellationToken ct) => Safe("booking reminders", async () =>
+    {
+        var tomorrow = TripRules.TodayInIndia(DateTime.UtcNow).AddDays(1);
+        var due = await db.Bookings
+            .Where(b => b.Date == tomorrow && b.Status == BookingStatus.Accepted && b.ReminderSentAt == null)
+            .ToListAsync(ct);
+        foreach (var b in due)
+        {
+            var space = await db.Spaces.AsNoTracking().SingleOrDefaultAsync(s => s.Id == b.SpaceId, ct);
+            if (space is null) continue;
+            var trip = await db.Trips.AsNoTracking().Include(t => t.Produce).SingleAsync(t => t.Id == b.TripId, ct);
+            var farmer = await db.Users.AsNoTracking().SingleOrDefaultAsync(u => u.Id == b.FarmerUserId, ct);
+            var host = await db.Users.AsNoTracking().SingleOrDefaultAsync(u => u.Id == b.HostUserId, ct);
+            var time = $"{b.From.ToString("HH:mm")} – {b.To.ToString("HH:mm")}";
+            var farmerName = farmer?.Name ?? farmer?.Phone ?? "–";
+
+            if (farmer is not null)
+            {
+                var lang = Lang(farmer);
+                await SendAsync(farmer, MailText.ReminderFarmer, new() { ["space"] = space.Title, ["time"] = time },
+                [
+                    new(MailText.Date, FormatDate(b.Date, lang)),
+                    new(MailText.Time, time),
+                    new(MailText.Address, $"{space.Address}, {space.Locality}"),
+                    new(MailText.Host, host is null ? "–" : $"{host.Name} · {host.Phone}"),
+                    new(MailText.Crops, await CropNamesAsync(trip.Produce, lang, ct, withPrices: true)),
+                ], ct: ct);
+            }
+            if (host is not null)
+            {
+                var lang = Lang(host);
+                await SendAsync(host, MailText.ReminderHost, new() { ["space"] = space.Title, ["farmer"] = farmerName },
+                [
+                    new(MailText.Date, FormatDate(b.Date, lang)),
+                    new(MailText.Time, time),
+                    new(MailText.Farmer, farmer is null ? "–" : $"{farmerName} · {farmer.Phone}"),
+                    new(MailText.Vehicle, MailText.VehicleName(trip.Vehicle.ToString()).For(lang)),
+                    new(MailText.Crops, await CropNamesAsync(trip.Produce, lang, ct)),
+                ], ct: ct);
+            }
+            b.ReminderSentAt = DateTime.UtcNow;
+        }
+        if (due.Count > 0) await db.SaveChangesAsync(ct);
+    });
+
     public Task NearbyTomorrowAsync(CancellationToken ct) => Safe("nearby tomorrow", async () =>
     {
         var tomorrow = TripRules.TodayInIndia(DateTime.UtcNow).AddDays(1);
@@ -284,7 +371,8 @@ public sealed class EmailNotifier(AppDbContext db, IEmailQueue queue, IOptions<N
         var mail = MailLayout.Render(template, Lang(to), to.Name, values, details, note, options.Value.AppUrl);
         var category = template.Key.Split('-')[0] switch
         {
-            "farmer" or "verifier" => "verification", "space" => "spaces", "nearby" => "nearby", _ => "bookings",
+            "farmer" or "verifier" => "verification", "space" => "spaces", "nearby" => "nearby", "report" => "reports",
+            _ => "bookings",
         };
         await queue.EnqueueAsync(new EmailMessage([new EmailAddress(to.Email, to.Name)], mail.Subject) { HtmlBody = mail.Html },
             category, template.Key, ct: ct);
