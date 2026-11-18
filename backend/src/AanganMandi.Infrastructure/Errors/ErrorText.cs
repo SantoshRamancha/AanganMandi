@@ -13,6 +13,9 @@ public static class ErrorText
 {
     public static readonly IReadOnlyDictionary<string, L> All = new Dictionary<string, L>
     {
+        // General ----------------------------------------------------------------------------------------
+        ["not_found"] = new("Not found. It may have been removed", "కనబడలేదు. దీన్ని తీసివేసి ఉండవచ్చు", "नहीं मिला। शायद इसे हटा दिया गया है"),
+
         // Login and account ---------------------------------------------------------------------------
         ["phone_invalid"] = new("Enter a 10-digit Indian mobile number", "10 అంకెల భారతీయ మొబైల్ నంబర్ నమోదు చేయండి", "10 अंकों का भारतीय मोबाइल नंबर डालें"),
         ["otp_wait"] = new("Please wait {{seconds}} seconds before asking for a new OTP", "కొత్త OTP అడగడానికి ముందు {{seconds}} సెకన్లు ఆగండి", "नया OTP माँगने से पहले {{seconds}} सेकंड रुकें"),
@@ -125,6 +128,17 @@ public static class ErrorText
         ["report_too_many"] = new("You have sent many reports today. Please try again tomorrow", "ఈరోజు మీరు చాలా రిపోర్టులు పంపారు. దయచేసి రేపు మళ్లీ ప్రయత్నించండి", "आज आपने बहुत सारी रिपोर्ट भेजी हैं। कृपया कल फिर कोशिश करें"),
         ["report_already_resolved"] = new("This report is already resolved", "ఈ రిపోర్ట్ ఇప్పటికే పరిష్కరించబడింది", "यह रिपोर्ट पहले ही हल हो चुकी है"),
         ["report_resolution_required"] = new("Write what was done; the person who reported sees it", "ఏమి చేశారో రాయండి; రిపోర్ట్ చేసిన వారు దాన్ని చూస్తారు", "लिखें कि क्या किया गया; रिपोर्ट करने वाले इसे देखेंगे"),
+
+        // Ratings and no-shows ----------------------------------------------------------------------------------
+        ["rating_not_confirmed"] = new("Only a confirmed stall can be rated", "నిర్ధారించిన స్టాల్‌కు మాత్రమే రేటింగ్ ఇవ్వవచ్చు", "सिर्फ़ पक्के स्टॉल को ही रेटिंग दी जा सकती है"),
+        ["rating_too_early"] = new("You can rate once the stall is over", "స్టాల్ ముగిసిన తర్వాత రేటింగ్ ఇవ్వవచ్చు", "स्टॉल ख़त्म होने के बाद रेटिंग दे सकते हैं"),
+        ["rating_too_late"] = new("Stalls can be rated for {{days}} days only", "స్టాల్‌లకు {{days}} రోజుల వరకే రేటింగ్ ఇవ్వవచ్చు", "स्टॉल को सिर्फ़ {{days}} दिन तक रेटिंग दी जा सकती है"),
+        ["rating_no_show"] = new("This booking was marked as not attended, so it cannot be rated", "ఈ బుకింగ్‌కు రాలేదని నమోదైంది, కాబట్టి రేటింగ్ ఇవ్వలేరు", "इस बुकिंग में न आना दर्ज है, इसलिए रेटिंग नहीं दे सकते"),
+        ["rating_stars"] = new("Choose 1 to 5 stars", "1 నుండి 5 నక్షత్రాలు ఎంచుకోండి", "1 से 5 सितारे चुनें"),
+        ["rating_comment_long"] = new("Keep the comment under {{max}} characters", "వ్యాఖ్యను {{max}} అక్షరాల లోపు ఉంచండి", "टिप्पणी {{max}} अक्षरों से कम रखें"),
+        ["rating_already_given"] = new("You have already rated this stall", "మీరు ఈ స్టాల్‌కు ఇప్పటికే రేటింగ్ ఇచ్చారు", "आप इस स्टॉल को पहले ही रेटिंग दे चुके हैं"),
+        ["too_many_no_shows"] = new("You missed {{count}} booked stalls in the last {{days}} days, so you cannot request new slots for now. If a no-show was wrong, report a problem", "గత {{days}} రోజుల్లో మీరు {{count}} బుక్ చేసిన స్టాల్‌లకు రాలేదు, కాబట్టి ప్రస్తుతం కొత్త స్లాట్‌లు అడగలేరు. రాలేదని తప్పుగా నమోదైతే, సమస్యను రిపోర్ట్ చేయండి", "पिछले {{days}} दिनों में आप {{count}} बुक किए स्टॉल पर नहीं आए, इसलिए अभी नए स्लॉट नहीं माँग सकते। अगर न आना ग़लत दर्ज हुआ है, तो समस्या की रिपोर्ट करें"),
+        ["no_show_not_marked"] = new("This booking is not marked as a no-show", "ఈ బుకింగ్‌కు రాలేదని నమోదు కాలేదు", "इस बुकिंग में न आना दर्ज नहीं है"),
 
         // Consent ---------------------------------------------------------------------------------------------
         ["consent_version_outdated"] = new("Please read and accept the latest terms and privacy policy", "దయచేసి తాజా నిబంధనలు, గోప్యతా విధానం చదివి అంగీకరించండి", "कृपया नई शर्तें और गोपनीयता नीति पढ़कर स्वीकार करें"),

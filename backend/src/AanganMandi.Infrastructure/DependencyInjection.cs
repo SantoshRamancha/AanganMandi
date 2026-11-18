@@ -44,6 +44,15 @@ public static class DependencyInjection
         services.Configure<NotificationOptions>(config.GetSection("Notifications"));
         services.AddScoped<INotifier, EmailNotifier>();
         services.AddScoped<Accounts.AccountDeletion>();
+        // The rules and state changes behind the controllers (see Services/).
+        services.AddScoped<Services.TripService>();
+        services.AddScoped<Services.HostBookingService>();
+        services.AddScoped<Services.SpaceService>();
+        services.AddScoped<Services.FarmerVerificationService>();
+        services.AddScoped<Services.ReviewService>();
+        services.AddScoped<Services.ReportService>();
+        services.AddScoped<Services.BuyerService>();
+        services.AddScoped<Services.RatingService>();
 
         // Error alerts: Serilog hands Error/Fatal events to the sink; the hosted service emails them (Alerts section).
         services.Configure<Logging.ErrorAlertOptions>(config.GetSection("Alerts"));

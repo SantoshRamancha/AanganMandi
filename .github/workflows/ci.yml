@@ -1,0 +1,102 @@
+# Checks every pull request and every push to development and main:
+#   backend - build, unit tests, then integration tests (the whole API against a throw-away SQL Server)
+#   mobile  - formatting, analyzer, widget tests
+# Nothing is deployed and no secrets are needed: the SQL Server container lives only for the run, and its password
+# is made from the run id, so none is stored in the repository.
+name: CI
+
+on:
+  pull_request:
+    branches: [development, main]
+  push:
+    branches: [development, main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend (build and tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      SA_PASSWORD: Ci-${{ github.run_id }}-${{ github.run_attempt }}-Aa1!
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+    services:
+      sql:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: "Y"
+          MSSQL_SA_PASSWORD: Ci-${{ github.run_id }}-${{ github.run_attempt }}-Aa1!
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' -b"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 12
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: backend/global.json
+
+      - name: Restore
+        run: dotnet restore AanganMandi.sln
+
+      - name: Build
+        run: dotnet build AanganMandi.sln --configuration Release --no-restore
+
+      - name: Unit tests
+        run: dotnet test tests/AanganMandi.Tests --configuration Release --no-build --logger "trx;LogFileName=unit.trx"
+
+      - name: Integration tests
+        env:
+          AANGAN_TEST_SQL: Server=localhost,1433;User Id=sa;Password=${{ env.SA_PASSWORD }};TrustServerCertificate=True;Encrypt=False
+        run: dotnet test tests/AanganMandi.IntegrationTests --configuration Release --no-build --logger "trx;LogFileName=integration.trx"
+
+      - name: Keep test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-results
+          path: backend/tests/**/TestResults/*.trx
+          retention-days: 7
+
+  mobile:
+    name: Mobile (format, analyze, tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.9
+          cache: true
+
+      - name: Get packages
+        run: flutter pub get
+
+      - name: Formatting (page width 120, see analysis_options.yaml)
+        run: dart format --output=none --set-exit-if-changed lib test
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Tests
+        run: flutter test

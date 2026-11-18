@@ -3530,6 +3530,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Not now (log out)'**
   String get consentDecline;
+
+  /// No description provided for @notRatedYet.
+  ///
+  /// In en, this message translates to:
+  /// **'New, no ratings yet'**
+  String get notRatedYet;
+
+  /// No description provided for @ratingCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 rating} other{{count} ratings}}'**
+  String ratingCount(int count);
+
+  /// No description provided for @youRated.
+  ///
+  /// In en, this message translates to:
+  /// **'You rated'**
+  String get youRated;
+
+  /// No description provided for @starsTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 star} other{{count} stars}}'**
+  String starsTooltip(int count);
+
+  /// No description provided for @ratingCommentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Anything others should know? (optional)'**
+  String get ratingCommentHint;
+
+  /// No description provided for @sendRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Send rating'**
+  String get sendRating;
+
+  /// No description provided for @ratingThanks.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks for rating'**
+  String get ratingThanks;
+
+  /// No description provided for @rateSpace.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate this space'**
+  String get rateSpace;
+
+  /// No description provided for @rateSpaceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How was selling at {space}?'**
+  String rateSpaceTitle(String space);
+
+  /// No description provided for @rateFarmer.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate the farmer'**
+  String get rateFarmer;
+
+  /// No description provided for @rateFarmerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How was {name} at your space?'**
+  String rateFarmerTitle(String name);
+
+  /// No description provided for @yourRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'Your ratings and record'**
+  String get yourRecord;
+
+  /// No description provided for @asFarmerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'As a farmer (from hosts)'**
+  String get asFarmerLabel;
+
+  /// No description provided for @asHostLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'As a host (from farmers)'**
+  String get asHostLabel;
+
+  /// No description provided for @stallsDone.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 stall done} other{{count} stalls done}}'**
+  String stallsDone(int count);
+
+  /// No description provided for @recentNoShows.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 no-show in 90 days} other{{count} no-shows in 90 days}}'**
+  String recentNoShows(int count);
+
+  /// No description provided for @noShowsOfLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'No-shows in the last {days} days: {count} of {limit}'**
+  String noShowsOfLimit(int count, int limit, int days);
+
+  /// No description provided for @noShowRule.
+  ///
+  /// In en, this message translates to:
+  /// **'Hosts see this on your requests. With {limit} no-shows in {days} days you cannot request new slots. If one is wrong, report a problem.'**
+  String noShowRule(int limit, int days);
+
+  /// No description provided for @sellingRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'Selling record'**
+  String get sellingRecord;
+
+  /// No description provided for @stallsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Stalls done'**
+  String get stallsLabel;
+
+  /// No description provided for @noShowsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'No-shows (90 days)'**
+  String get noShowsLabel;
+
+  /// No description provided for @clearNoShow.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clearNoShow;
+
+  /// No description provided for @clearNoShowQ.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear this no-show?'**
+  String get clearNoShowQ;
+
+  /// No description provided for @clearNoShowBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Do this when the farmer did come (for example they could not check in). It will no longer count against them.'**
+  String get clearNoShowBody;
+
+  /// No description provided for @noShowClearedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'No-show cleared'**
+  String get noShowClearedToast;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

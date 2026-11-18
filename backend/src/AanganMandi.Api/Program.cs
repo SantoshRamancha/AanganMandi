@@ -36,7 +36,7 @@ builder.Host.UseSerilog((ctx, cfg) => cfg
 
 builder.Services.AddInfrastructure(builder.Configuration, builder.Environment.ContentRootPath);
 builder.Services.AddScoped<TokenService>();
-builder.Services.AddControllers()
+builder.Services.AddControllers(o => o.Filters.Add<ApiExceptionFilter>())
     .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddProblemDetails();
 builder.Services.AddEndpointsApiExplorer();
@@ -89,13 +89,15 @@ builder.Services.AddCors(o => o.AddPolicy("App", p => p
     .AllowAnyHeader()
     .AllowAnyMethod()));
 // OTP endpoints per IP address: 20 calls per 10 minutes (per phone limits are in AuthController). Behind a proxy,
-// set up forwarded headers when deploying so this sees the client's address, not the proxy's.
+// set up forwarded headers when deploying so this sees the client's address, not the proxy's. RateLimits:OtpPerIp
+// changes the 20 (the integration tests sign in many users from one address).
+var otpPerIp = builder.Configuration.GetValue("RateLimits:OtpPerIp", 20);
 builder.Services.AddRateLimiter(o =>
 {
     o.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
     o.AddPolicy("otp", http => RateLimitPartition.GetFixedWindowLimiter(
         http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-        _ => new FixedWindowRateLimiterOptions { PermitLimit = 20, Window = TimeSpan.FromMinutes(10), QueueLimit = 0 }));
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = otpPerIp, Window = TimeSpan.FromMinutes(10), QueueLimit = 0 }));
     o.OnRejected = async (ctx, ct) =>
     {
         ctx.HttpContext.Response.Headers.RetryAfter = "600";
@@ -108,8 +110,10 @@ builder.Services.AddRateLimiter(o =>
     };
 });
 // Background jobs (Hangfire tables in this database): sends the queued emails.
+// BackgroundJobs:Enabled=false (the integration tests) keeps the job server and the schedules off.
+var backgroundJobs = builder.Configuration.GetValue("BackgroundJobs:Enabled", true);
 builder.Services.AddHangfire(c => c.UseSqlServerStorage(builder.Configuration.GetConnectionString("Default")));
-builder.Services.AddHangfireServer();
+if (backgroundJobs) builder.Services.AddHangfireServer();
 
 var app = builder.Build();
 
@@ -148,7 +152,7 @@ if (Array.IndexOf(args, "create-admin") is var at and >= 0)
     return;
 }
 
-app.Services.ScheduleBackgroundJobs();
+if (backgroundJobs) app.Services.ScheduleBackgroundJobs();
 
 if (app.Environment.IsDevelopment())
 {
@@ -170,3 +174,6 @@ app.MapControllers();
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 app.Run();
+
+/// <summary>Visible to the integration tests (WebApplicationFactory).</summary>
+public partial class Program;

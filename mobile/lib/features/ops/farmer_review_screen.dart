@@ -12,6 +12,8 @@ import '../../core/storage/prefs.dart';
 import '../../core/widgets/responsive.dart';
 import '../../core/widgets/feedback.dart';
 import '../../l10n/app_localizations.dart';
+import '../ratings/ratings.dart';
+import '../trips/trip_widgets.dart';
 import 'ops_widgets.dart';
 
 /// One farmer's details and proof; the assigned verifier (or an admin) approves or rejects, an admin can reassign.
@@ -95,6 +97,8 @@ class FarmerReviewScreen extends ConsumerWidget {
                         ),
                       ],
                     ),
+                  if (f.record case final record? when f.status == 'Verified')
+                    _SellingRecordCard(farmerId: f.id, record: record),
                   _VerifierCard(farmer: f),
                   if (f.canDecide)
                     DecisionPanel(
@@ -123,6 +127,60 @@ class FarmerReviewScreen extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// A verified farmer's record as a seller: hosts' stars, stalls, and recent no-shows an admin can clear.
+class _SellingRecordCard extends ConsumerWidget {
+  const _SellingRecordCard({required this.farmerId, required this.record});
+  final String farmerId;
+  final SellingRecord record;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    return InfoCard(
+      title: l10n.sellingRecord,
+      children: [
+        Padding(padding: const EdgeInsets.only(bottom: 8), child: StarsLabel(record.stars)),
+        Fact(l10n.stallsLabel, '${record.completedStalls}'),
+        Fact(l10n.noShowsLabel, '${record.recentNoShows}', warn: record.recentNoShows > 0),
+        for (final n in record.noShows)
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(Icons.person_off_outlined, color: scheme.error),
+            title: Text(n.spaceTitle),
+            subtitle: Text(tripDate(n.date)),
+            trailing: record.canClearNoShows
+                ? TextButton(
+                    onPressed: () async {
+                      final ok = await showDialog<bool>(
+                        context: context,
+                        builder: (dialog) => AlertDialog(
+                          title: Text(l10n.clearNoShowQ),
+                          content: Text(l10n.clearNoShowBody),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(dialog, false), child: Text(l10n.back)),
+                            FilledButton(onPressed: () => Navigator.pop(dialog, true), child: Text(l10n.clearNoShow)),
+                          ],
+                        ),
+                      );
+                      if (ok != true || !context.mounted) return;
+                      if (await runWithToast(
+                        context,
+                        () => ref.read(opsApiProvider).clearNoShow(farmerId, n.bookingId),
+                        success: l10n.noShowClearedToast,
+                      )) {
+                        ref.invalidate(opsFarmerProvider(farmerId));
+                      }
+                    },
+                    child: Text(l10n.clearNoShow),
+                  )
+                : null,
+          ),
+      ],
     );
   }
 }

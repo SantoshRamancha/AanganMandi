@@ -8,9 +8,12 @@ mobile/    Flutter 3.47 app, Android + web (Riverpod, go_router, Dio, Hive CE, e
 backend/   .NET 8 modular monolith
   src/AanganMandi.Domain          entities
   src/AanganMandi.Application     use cases, interfaces
-  src/AanganMandi.Infrastructure  EF Core + SQL Server (NetTopologySuite), file storage
+  src/AanganMandi.Infrastructure  EF Core + SQL Server (NetTopologySuite), file storage, email,
+                                  Services/ — the rules and state changes behind the API (see "How the API is built")
   src/AanganMandi.Api             REST API /api/v1 (JWT, Serilog, Swagger) — used by the app; staff endpoints under /ops
-  tests/AanganMandi.Tests         xUnit
+  tests/AanganMandi.Tests              xUnit unit tests (rules, texts, storage; no database)
+  tests/AanganMandi.IntegrationTests   the whole API against a throw-away SQL Server database
+.github/workflows/ci.yml  build and test on every pull request (see "Tests and CI")
 ```
 
 ## Roles
@@ -49,6 +52,9 @@ role in the database on every call, so a removed verifier loses access at once.
 | Report a problem about a booking or the app; see the team's answer | farmer, host, buyer | app → a booking → Report a problem; My profile → Report a problem / My reports |
 | Problem reports: open and resolved, call the reporter, resolve with a note they see | admin | app → Operations → Reports |
 | Reminder the evening before a booking | farmer, host | email |
+| Rate after the stall: the farmer rates the space, the host rates the farmer (1–5 stars, optional comment, once, within 14 days); stars show on space cards and on the farmer's requests (see [Ratings and no-shows](#ratings-and-no-shows)) | verified farmer, host | app → My trips → the trip; Bookings → Past |
+| Farmer's record on every request: hosts' stars, stalls done, no-shows in the last 90 days; 3 no-shows block new requests | host sees, farmer is held to it | app → Bookings; My profile → Your ratings and record |
+| A farmer's selling record and recent no-shows; clear a wrong no-show | verifier (see), admin (clear) | app → Operations → a verified farmer |
 
 Not built yet: in-app payment, produce browsing beyond the nearby list, maps, push notifications (alerts and booking news arrive by email, and in the app when it is opened).
 
@@ -311,9 +317,80 @@ request's `Accept-Language` header (the app sends its language on every call):
 { "status": 429, "code": "otp_wait", "args": { "seconds": 30 }, "title": "కొత్త OTP అడగడానికి ముందు 30 సెకన్లు ఆగండి" }
 ```
 
-Rules return an `ApiError` (`Domain/Common`), controllers answer with `this.Fail(status, "code", ("name", value))`, and
-the words live in one catalogue: `Infrastructure/Errors/ErrorText.cs` (English, Telugu, Hindi). A test scans the API for
-every code it uses and fails if one has no words, and another renders every code in all three languages.
+Rules return an `ApiError` (`Domain/Common`); services refuse with `throw ApiException.Conflict("code", ("name", value))`
+(also `BadRequest`, `Forbidden`, `NotFound`, `Unprocessable`), which `ApiExceptionFilter` turns into the answer above;
+controllers can still answer directly with `this.Fail(status, "code", ...)`. The words live in one catalogue:
+`Infrastructure/Errors/ErrorText.cs` (English, Telugu, Hindi). A test scans the controllers, rules and services for every
+code they use and fails if one has no words, and another renders every code in all three languages. Something missing,
+or someone else's, is always `404 not_found` (never told apart, so ids can't be probed).
+
+## How the API is built
+
+Controllers only translate HTTP: read the request, call a service with the signed-in user's id, and turn the result into
+the response records the app reads. The rules and state changes live in `Infrastructure/Services`:
+
+| Service | What it owns |
+|---|---|
+| `TripService` | plan, edit and cancel trips; space search; request, cancel and check in to a booking (verified farmers only; the no-show limit) |
+| `HostBookingService` | accept (declining the day's other requests), decline, cancel, mark a no-show, the share code |
+| `SpaceService` | create and edit spaces, photos and proof (format and size checks), submit, delete |
+| `FarmerVerificationService` | details, evidence and its photo, reset, submit (routes to a verifier) |
+| `ReviewService` | staff decisions on farmers and spaces, reassigning a farmer |
+| `ReportService` | file a problem report, resolve one |
+| `BuyerService` | the saved area, the nearby list |
+| `RatingService` | ratings, a space's stars, a farmer's record, clearing a no-show |
+
+A service refuses with an `ApiException` and never sees `HttpContext`, so the same rule holds from any caller, and the
+integration tests exercise it through the real endpoints. Small account settings (email, language, role, consent) stay
+in `UsersController`.
+
+## Ratings and no-shows
+
+- **Rating**: `POST /api/v1/bookings/{id}/rating { stars, comment? }` by the booking's farmer (about the space and its
+  host) or its host (about the farmer): 1–5 stars, a comment of up to 300 characters, once per side, from the end of the
+  slot until 14 days after (`RatingRules`). A farmer marked as not coming cannot rate; the host still can.
+- **Where it shows**: the space search card (`rating`, `ratingCount`), the host's request card (the farmer's `rating`,
+  `ratingCount`, `completedStalls`, `recentNoShows`), the trip and booking (`canRate`, `myStars`), My profile
+  (`GET /users/me/record`), and the farmer review in Operations (`record`, with the no-shows behind it).
+- **No-shows**: the host marks one after the slot when the farmer never checked in (as before). With
+  `NoShowPolicy.Limit` (3) in the last 90 days, a farmer's new requests are refused (`too_many_no_shows`) until one
+  drops out of the window or an admin clears a wrong one:
+  `POST /api/v1/ops/farmers/{id}/no-shows/{bookingId}/clear` (admins only). A farmer who thinks one is wrong reports a
+  problem from the booking.
+- **Deleting an account** clears the comments the person wrote (their stars stay in averages that name nobody) and
+  deletes ratings about them.
+
+Migration: `RatingsAndNoShows` (the `Ratings` table, one per booking and side; an index for counting no-shows).
+
+## Tests and CI
+
+```bash
+cd backend
+dotnet test tests/AanganMandi.Tests              # unit tests, no database (seconds)
+dotnet test tests/AanganMandi.IntegrationTests   # the API end to end against SQL Server
+```
+```bash
+cd mobile && flutter analyze && flutter test
+```
+
+The integration tests start the whole API in memory (`WebApplicationFactory`: real routing, JWT sign-in through the OTP
+flow, controllers, services, EF Core) against a new database `AanganMandi_IT_<random>` built from the migrations and
+dropped at the end, so the dev database is never touched. Files go to a temp folder, emails to the log, and the
+background jobs are off (`BackgroundJobs:Enabled=false`). They cover sign-in and refusals in each language, role checks,
+farmer verification to approval, booking and confirming a space, problem reports, ratings and the no-show limit.
+SQL Server comes from `AANGAN_TEST_SQL` (a connection string without a database); without it, the local default
+instance with Windows sign-in is used.
+
+GitHub Actions (`.github/workflows/ci.yml`) runs on every pull request and push to `development` and `main`:
+
+| Job | Steps |
+|---|---|
+| Backend | restore, build (Release), unit tests, integration tests against a SQL Server 2022 container started for the run |
+| Mobile | `flutter pub get`, `dart format` check (page width 120), `flutter analyze`, `flutter test` |
+
+No secrets are needed: the container's password is made from the run id. A failed backend run keeps the test results
+(`.trx`) as an artifact for a week. To require a green run before merging, add the two jobs as required checks in the
+repository's branch protection for `development` (Settings → Branches).
 
 ## Dates and times
 

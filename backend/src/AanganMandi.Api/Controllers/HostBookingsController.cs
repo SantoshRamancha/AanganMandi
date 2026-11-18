@@ -1,9 +1,8 @@
-using AanganMandi.Api.Auth;
-using AanganMandi.Application.Notifications;
-using AanganMandi.Application.Trips;
 using AanganMandi.Domain.Spaces;
 using AanganMandi.Domain.Trips;
+using AanganMandi.Api.Auth;
 using AanganMandi.Infrastructure.Persistence;
+using AanganMandi.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,23 +12,29 @@ namespace AanganMandi.Api.Controllers;
 /// <summary>
 /// Hosts see farmers' requests for their spaces and accept or decline them. Accepting confirms that farmer for the
 /// day and declines the other requests for the same space and day; then both sides see each other's phone.
+/// The rules are in <see cref="HostBookingService"/>.
 /// </summary>
 [ApiController]
 [Authorize(Roles = "Host")]
 [Route("api/v1/hosts/me/bookings")]
-public class HostBookingsController(AppDbContext db, INotifier notifier) : ControllerBase
+public class HostBookingsController(AppDbContext db, HostBookingService bookings, RatingService ratings) : ControllerBase
 {
     public record ProduceItem(string CropCode, decimal? QuantityKg, decimal? PricePerKg);
-    /// <summary>Phone only for an accepted booking (FR-1.9 works both ways).</summary>
-    public record FarmerCard(string? Name, string? Village, string? District, string? Phone);
+    /// <summary>
+    /// Phone only for an accepted booking (FR-1.9 works both ways). The farmer's record: Rating (hosts' average stars,
+    /// null until rated) from RatingCount ratings, RecentNoShows in the last 90 days, CompletedStalls they came to.
+    /// </summary>
+    public record FarmerCard(string? Name, string? Village, string? District, string? Phone,
+        double? Rating, int RatingCount, int RecentNoShows, int CompletedStalls);
     /// <summary>
     /// ArrivedAt: when the farmer checked in at the space (UTC). NoShow: marked by the host. CanMarkNoShow: the slot
-    /// is over and the farmer never checked in.
+    /// is over and the farmer never checked in. CanRate: the stall is over and the host has not rated the farmer yet;
+    /// MyStars: the host's rating once given.
     /// </summary>
     public record HostBookingDto(Guid Id, BookingStatus Status, DateOnly Date, TimeOnly From, TimeOnly To, decimal Fee,
         string? Message, string? Reason, bool SlotTaken, string? CancelledBy, Guid SpaceId, string SpaceTitle,
         VehicleType Vehicle, ProduceItem[] Produce, FarmerCard Farmer, DateTime RequestedAt,
-        DateTime? ArrivedAt, bool NoShow, bool CanMarkNoShow);
+        DateTime? ArrivedAt, bool NoShow, bool CanMarkNoShow, bool CanRate, int? MyStars);
     public record ReasonRequest(string? Reason);
     /// <summary>The public stall page, e.g. https://aanganmandi.in/s/7kQ2mNp4xR.</summary>
     public record ShareLink(string Url);
@@ -38,7 +43,7 @@ public class HostBookingsController(AppDbContext db, INotifier notifier) : Contr
     [HttpGet]
     public async Task<ActionResult<IEnumerable<HostBookingDto>>> List([FromQuery] string view, CancellationToken ct)
     {
-        var today = TripRules.TodayInIndia(DateTime.UtcNow);
+        var today = TripService.Today;
         var q = db.Bookings.Where(b => b.HostUserId == User.UserId());
         q = view switch
         {
@@ -56,13 +61,22 @@ public class HostBookingsController(AppDbContext db, INotifier notifier) : Contr
             from f in fs.DefaultIfEmpty()
             select new { b, t, s.Title, u.Name, u.Phone, Village = f == null ? null : f.Village, District = f == null ? null : f.District })
             .ToListAsync(ct);
+        var records = await ratings.FarmerRecordsAsync(rows.Select(r => r.b.FarmerUserId).Distinct().ToList(), ct);
+        var given = await ratings.BookingStarsAsync(rows.Select(r => r.b.Id).ToList(), ct);
         var ordered = view == "past" ? rows.OrderByDescending(r => r.b.Date) : rows.OrderBy(r => r.b.Date).ThenBy(r => r.b.CreatedAt);
         var indiaNow = ArrivalRules.IndiaTime(DateTime.UtcNow);
-        return ordered.Select(r => new HostBookingDto(r.b.Id, r.b.Status, r.b.Date, r.b.From, r.b.To, r.b.Fee, r.b.Message,
-            r.b.Reason, r.b.SlotTaken, r.b.CancelledBy, r.b.SpaceId, r.Title, r.t.Vehicle,
-            r.t.Produce.Select(p => new ProduceItem(p.CropCode, p.QuantityKg, p.PricePerKg)).ToArray(),
-            new FarmerCard(r.Name, r.Village, r.District, r.b.Status == BookingStatus.Accepted ? r.Phone : null),
-            r.b.CreatedAt, r.b.ArrivedAt, r.b.NoShowAt is not null, ArrivalRules.CanMarkNoShow(r.b, indiaNow))).ToList();
+        return ordered.Select(r =>
+        {
+            var record = records.GetValueOrDefault(r.b.FarmerUserId) ?? FarmerRecord.Empty;
+            var myStars = given.GetValueOrDefault(r.b.Id)?.ByHost;
+            return new HostBookingDto(r.b.Id, r.b.Status, r.b.Date, r.b.From, r.b.To, r.b.Fee, r.b.Message,
+                r.b.Reason, r.b.SlotTaken, r.b.CancelledBy, r.b.SpaceId, r.Title, r.t.Vehicle,
+                r.t.Produce.Select(p => new ProduceItem(p.CropCode, p.QuantityKg, p.PricePerKg)).ToArray(),
+                new FarmerCard(r.Name, r.Village, r.District, r.b.Status == BookingStatus.Accepted ? r.Phone : null,
+                    record.Average, record.Ratings, record.RecentNoShows, record.Completed),
+                r.b.CreatedAt, r.b.ArrivedAt, r.b.NoShowAt is not null, ArrivalRules.CanMarkNoShow(r.b, indiaNow),
+                myStars is null && RatingRules.CanRate(r.b, RatingSide.Host, indiaNow), myStars);
+        }).ToList();
     }
 
     /// <summary>
@@ -72,37 +86,23 @@ public class HostBookingsController(AppDbContext db, INotifier notifier) : Contr
     /// API's own address.
     /// </summary>
     [HttpPost("{id:guid}/share")]
-    public async Task<ActionResult<ShareLink>> Share(Guid id, [FromServices] IConfiguration config, CancellationToken ct)
+    public async Task<ShareLink> Share(Guid id, [FromServices] IConfiguration config, CancellationToken ct)
     {
-        var booking = await FindAsync(id, ct);
-        if (booking is null) return NotFound();
-        if (StallStatus.StateOf(booking, ArrivalRules.IndiaTime(DateTime.UtcNow)) == StallState.Over)
-            return this.Fail(409, "share_not_allowed");
-        if (booking.ShareCode is null)
-        {
-            booking.ShareCode = StallStatus.NewCode();
-            booking.UpdatedAt = DateTime.UtcNow;
-            await db.SaveChangesAsync(ct);
-        }
+        var code = await bookings.ShareCodeAsync(User.UserId(), id, ct);
         var origin = config["Sharing:PublicBaseUrl"] is { Length: > 0 } configured
             ? configured.TrimEnd('/')
             : $"{Request.Scheme}://{Request.Host}";
-        return new ShareLink($"{origin}/s/{booking.ShareCode}");
+        return new ShareLink($"{origin}/s/{code}");
     }
 
     /// <summary>
     /// The farmer did not come: allowed once the slot is over and the farmer never checked in. It is recorded on the
-    /// booking (shown to both sides); nothing is emailed.
+    /// booking (shown to both sides) and counts towards the farmer's no-shows; nothing is emailed.
     /// </summary>
     [HttpPost("{id:guid}/no-show")]
     public async Task<IActionResult> NoShow(Guid id, CancellationToken ct)
     {
-        var booking = await FindAsync(id, ct);
-        if (booking is null) return NotFound();
-        if (!ArrivalRules.CanMarkNoShow(booking, ArrivalRules.IndiaTime(DateTime.UtcNow)))
-            return this.Fail(409, booking.ArrivedAt is not null ? "no_show_checked_in" : "no_show_too_early");
-        booking.NoShowAt = booking.UpdatedAt = DateTime.UtcNow;
-        await db.SaveChangesAsync(ct);
+        await bookings.MarkNoShowAsync(User.UserId(), id, ct);
         return NoContent();
     }
 
@@ -110,55 +110,14 @@ public class HostBookingsController(AppDbContext db, INotifier notifier) : Contr
     [HttpPost("{id:guid}/accept")]
     public async Task<IActionResult> Accept(Guid id, CancellationToken ct)
     {
-        var booking = await FindAsync(id, ct);
-        if (booking is null) return NotFound();
-        if (booking.Status != BookingStatus.Requested) return this.Fail(409, "request_answered");
-        if (booking.Date < TripRules.TodayInIndia(DateTime.UtcNow)) return this.Fail(409, "date_passed");
-        var space = await db.Spaces.SingleAsync(s => s.Id == booking.SpaceId, ct);
-        if (space.Status != SpaceStatus.Live) return this.Fail(409, "space_not_live");
-
-        var sameDay = await db.Bookings.Where(b => b.SpaceId == booking.SpaceId && b.Date == booking.Date && b.Id != id
-            && (b.Status == BookingStatus.Requested || b.Status == BookingStatus.Accepted)).ToListAsync(ct);
-        if (sameDay.Any(b => b.Status == BookingStatus.Accepted))
-            return this.Fail(409, "farmer_already_confirmed");
-
-        var now = DateTime.UtcNow;
-        booking.Status = BookingStatus.Accepted;
-        booking.RespondedAt = now;
-        booking.UpdatedAt = now;
-        foreach (var other in sameDay)
-        {
-            other.Status = BookingStatus.Declined;
-            other.SlotTaken = true;
-            other.RespondedAt = now;
-            other.UpdatedAt = now;
-        }
-        try
-        {
-            await db.SaveChangesAsync(ct);
-        }
-        catch (DbUpdateException)
-        {
-            // The unique "one accepted per space and day" index caught a race with another accept.
-            return this.Fail(409, "farmer_already_confirmed");
-        }
-        await notifier.BookingChangedAsync(booking.Id, ct);
-        foreach (var other in sameDay) await notifier.BookingChangedAsync(other.Id, ct); // declined: slot taken
+        await bookings.AcceptAsync(User.UserId(), id, ct);
         return NoContent();
     }
 
     [HttpPost("{id:guid}/decline")]
     public async Task<IActionResult> Decline(Guid id, ReasonRequest req, CancellationToken ct)
     {
-        var booking = await FindAsync(id, ct);
-        if (booking is null) return NotFound();
-        if (booking.Status != BookingStatus.Requested) return this.Fail(409, "request_answered");
-        if (ReasonError(req.Reason) is { } error) return error;
-        booking.Status = BookingStatus.Declined;
-        booking.Reason = req.Reason!.Trim();
-        booking.RespondedAt = booking.UpdatedAt = DateTime.UtcNow;
-        await db.SaveChangesAsync(ct);
-        await notifier.BookingChangedAsync(booking.Id, ct);
+        await bookings.DeclineAsync(User.UserId(), id, req.Reason, ct);
         return NoContent();
     }
 
@@ -166,23 +125,7 @@ public class HostBookingsController(AppDbContext db, INotifier notifier) : Contr
     [HttpPost("{id:guid}/cancel")]
     public async Task<IActionResult> Cancel(Guid id, ReasonRequest req, CancellationToken ct)
     {
-        var booking = await FindAsync(id, ct);
-        if (booking is null) return NotFound();
-        if (booking.Status != BookingStatus.Accepted) return this.Fail(409, "cancel_not_confirmed");
-        if (booking.Date < TripRules.TodayInIndia(DateTime.UtcNow)) return this.Fail(409, "date_passed");
-        if (ReasonError(req.Reason) is { } error) return error;
-        booking.Cancel("Host", req.Reason!.Trim());
-        await db.SaveChangesAsync(ct);
-        await notifier.BookingChangedAsync(booking.Id, ct);
+        await bookings.CancelAsync(User.UserId(), id, req.Reason, ct);
         return NoContent();
     }
-
-    private Task<Booking?> FindAsync(Guid id, CancellationToken ct) =>
-        db.Bookings.SingleOrDefaultAsync(b => b.Id == id && b.HostUserId == User.UserId(), ct);
-
-    /// <summary>The farmer needs to know why, so a reason is required.</summary>
-    private ObjectResult? ReasonError(string? reason) =>
-        string.IsNullOrWhiteSpace(reason) ? this.Fail(400, "reason_required_farmer") :
-        reason.Trim().Length > 200 ? this.Fail(400, "reason_too_long", ("max", 200)) :
-        null;
 }

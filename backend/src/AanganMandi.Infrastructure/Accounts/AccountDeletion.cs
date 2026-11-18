@@ -44,6 +44,7 @@ public enum AccountDeletionResult { Deleted, NotFound, StaffAccount }
 /// plots and the evidence photo deleted;</item>
 /// <item>host: every space deleted with its photos and proof, upcoming bookings cancelled (farmers told);</item>
 /// <item>buyer: saved area and alert history deleted;</item>
+/// <item>ratings: comments they wrote cleared, ratings about them deleted;</item>
 /// <item>the account: name, email and phone cleared (the phone can sign up again as a new user), roles and logins
 /// removed, marked deleted.</item>
 /// </list>
@@ -93,6 +94,11 @@ public class AccountDeletion(AppDbContext db, IFileStorage storage, INotifier no
         // As a buyer.
         db.BuyerAreas.RemoveRange(await db.BuyerAreas.Where(a => a.UserId == userId).ToListAsync(ct));
         db.NearbyAlerts.RemoveRange(await db.NearbyAlerts.Where(a => a.BuyerUserId == userId).ToListAsync(ct));
+
+        // Ratings: the words they wrote go (the stars stay in the averages, which name nobody); ratings about them go.
+        foreach (var r in await db.Ratings.Where(r => r.RaterUserId == userId && r.Comment != null).ToListAsync(ct))
+            r.Comment = null;
+        db.Ratings.RemoveRange(await db.Ratings.Where(r => r.RatedUserId == userId).ToListAsync(ct));
 
         // The account itself.
         db.RefreshTokens.RemoveRange(await db.RefreshTokens.Where(t => t.UserId == userId).ToListAsync(ct));

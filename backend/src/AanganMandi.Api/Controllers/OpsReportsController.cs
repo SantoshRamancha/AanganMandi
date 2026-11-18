@@ -2,6 +2,7 @@ using AanganMandi.Api.Auth;
 using AanganMandi.Application.Notifications;
 using AanganMandi.Domain.Support;
 using AanganMandi.Infrastructure.Persistence;
+using AanganMandi.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +14,7 @@ namespace AanganMandi.Api.Controllers;
 [Authorize]
 [StaffOnly(AdminOnly = true)]
 [Route("api/v1/ops/reports")]
-public class OpsReportsController(AppDbContext db, INotifier notifier) : ControllerBase
+public class OpsReportsController(AppDbContext db, ReportService reports) : ControllerBase
 {
     public record ReportRow(Guid Id, ReportCategory Category, string Message, ReportStatus Status, string? Resolution,
         DateTime CreatedAt, DateTime? ResolvedAt, string? ReporterName, string ReporterPhone, string[] ReporterRoles,
@@ -48,18 +49,7 @@ public class OpsReportsController(AppDbContext db, INotifier notifier) : Control
     [HttpPost("{id:guid}/resolve")]
     public async Task<IActionResult> Resolve(Guid id, ResolveRequest req, CancellationToken ct)
     {
-        var report = await db.ProblemReports.SingleOrDefaultAsync(r => r.Id == id, ct);
-        if (report is null) return NotFound();
-        if (report.Status == ReportStatus.Resolved) return this.Fail(409, "report_already_resolved");
-        var note = req.Resolution?.Trim() ?? "";
-        if (note.Length == 0) return this.Fail(400, "report_resolution_required");
-        if (note.Length > ProblemReport.MaxResolution) return this.Fail(400, "reason_too_long", ("max", ProblemReport.MaxResolution));
-        report.Status = ReportStatus.Resolved;
-        report.Resolution = note;
-        report.ResolvedAt = report.UpdatedAt = DateTime.UtcNow;
-        report.ResolvedBy = User.UserId();
-        await db.SaveChangesAsync(ct);
-        await notifier.ProblemResolvedAsync(report.Id, ct);
+        await reports.ResolveAsync(User.UserId(), id, req.Resolution, ct);
         return NoContent();
     }
 }

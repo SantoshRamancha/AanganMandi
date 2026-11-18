@@ -7,6 +7,7 @@ import '../../core/api/trip_models.dart';
 import '../../core/labels.dart';
 import '../../core/widgets/responsive.dart';
 import '../../l10n/app_localizations.dart';
+import '../ratings/ratings.dart';
 import 'trip_widgets.dart';
 
 /// Spaces a farmer can request for one trip: live, open that weekday, fit the vehicle, nobody booked that day.
@@ -236,6 +237,8 @@ class _SpaceResult extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(s.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 4),
+                StarsLabel(s.stars, dense: true),
                 const SizedBox(height: 10),
                 ...spaceFacts(l10n, s),
                 if (s.rules != null) IconFact(Icons.rule, s.rules!),

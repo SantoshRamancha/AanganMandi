@@ -8,6 +8,7 @@ import '../../core/api/trip_models.dart';
 import '../../core/labels.dart';
 import '../../core/widgets/responsive.dart';
 import '../../l10n/app_localizations.dart';
+import '../ratings/ratings.dart';
 import '../support/report_problem.dart';
 import '../trips/trip_widgets.dart';
 import 'share_stall_sheet.dart';
@@ -147,6 +148,7 @@ class _HostBookingCard extends ConsumerWidget {
               Icons.verified_user_outlined,
               '${b.farmerName ?? l10n.noName}${farmerFrom.isEmpty ? '' : ' · $farmerFrom'} · ${l10n.verifiedFarmerTag}',
             ),
+            FarmerRecordLine(b),
             IconFact(vehicleIcon(b.vehicle), l10n.vehicle(b.vehicle)),
             if (b.farmerPhone != null) IconFact(Icons.phone_outlined, b.farmerPhone!, bold: true),
             if (b.message != null) IconFact(Icons.chat_bubble_outline, '“${b.message}”'),
@@ -272,6 +274,24 @@ class _HostBookingCard extends ConsumerWidget {
                 ],
               ),
             ],
+            // After the stall: rate the farmer (once), also after marking a no-show.
+            if (b.myStars case final stars?)
+              Padding(padding: const EdgeInsets.only(top: 8), child: YouRated(stars))
+            else if (b.canRate)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: FilledButton.tonalIcon(
+                    icon: const Icon(Icons.star_outline_rounded),
+                    label: Text(l10n.rateFarmer),
+                    onPressed: () async {
+                      final title = l10n.rateFarmerTitle(b.farmerName ?? l10n.noName);
+                      if (await showRateSheet(context, bookingId: b.id, title: title)) refresh();
+                    },
+                  ),
+                ),
+              ),
             // A confirmed booking, upcoming or past, can be reported (a no-show, a problem at the space, …).
             if (b.status == 'Accepted' && view != 'requests')
               Align(

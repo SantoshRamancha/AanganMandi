@@ -1864,4 +1864,110 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get consentDecline => 'ఇప్పుడు కాదు (లాగ్ అవుట్)';
+
+  @override
+  String get notRatedYet => 'కొత్తది, ఇంకా రేటింగ్‌లు లేవు';
+
+  @override
+  String ratingCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count రేటింగ్‌లు', one: '1 రేటింగ్');
+    return '$_temp0';
+  }
+
+  @override
+  String get youRated => 'మీ రేటింగ్';
+
+  @override
+  String starsTooltip(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count నక్షత్రాలు', one: '1 నక్షత్రం');
+    return '$_temp0';
+  }
+
+  @override
+  String get ratingCommentHint => 'ఇతరులు తెలుసుకోవాల్సింది ఏమైనా ఉందా? (ఐచ్ఛికం)';
+
+  @override
+  String get sendRating => 'రేటింగ్ పంపండి';
+
+  @override
+  String get ratingThanks => 'రేటింగ్ ఇచ్చినందుకు ధన్యవాదాలు';
+
+  @override
+  String get rateSpace => 'ఈ స్థలానికి రేటింగ్ ఇవ్వండి';
+
+  @override
+  String rateSpaceTitle(String space) {
+    return '$spaceలో అమ్మకం ఎలా జరిగింది?';
+  }
+
+  @override
+  String get rateFarmer => 'రైతుకు రేటింగ్ ఇవ్వండి';
+
+  @override
+  String rateFarmerTitle(String name) {
+    return 'మీ స్థలంలో $name ఎలా ఉన్నారు?';
+  }
+
+  @override
+  String get yourRecord => 'మీ రేటింగ్‌లు, రికార్డు';
+
+  @override
+  String get asFarmerLabel => 'రైతుగా (యజమానుల నుండి)';
+
+  @override
+  String get asHostLabel => 'యజమానిగా (రైతుల నుండి)';
+
+  @override
+  String stallsDone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count స్టాల్‌లు పూర్తి',
+      one: '1 స్టాల్ పూర్తి',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String recentNoShows(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '90 రోజుల్లో $count సార్లు రాలేదు',
+      one: '90 రోజుల్లో 1 సారి రాలేదు',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String noShowsOfLimit(int count, int limit, int days) {
+    return 'గత $days రోజుల్లో రాని సందర్భాలు: $limitలో $count';
+  }
+
+  @override
+  String noShowRule(int limit, int days) {
+    return 'మీ అభ్యర్థనలపై యజమానులు దీన్ని చూస్తారు. $days రోజుల్లో $limit సార్లు రాకపోతే కొత్త స్లాట్‌లు అడగలేరు. ఏదైనా తప్పుగా ఉంటే, సమస్యను రిపోర్ట్ చేయండి.';
+  }
+
+  @override
+  String get sellingRecord => 'అమ్మకాల రికార్డు';
+
+  @override
+  String get stallsLabel => 'పూర్తైన స్టాల్‌లు';
+
+  @override
+  String get noShowsLabel => 'రాని సందర్భాలు (90 రోజులు)';
+
+  @override
+  String get clearNoShow => 'తొలగించు';
+
+  @override
+  String get clearNoShowQ => 'ఈ రాని నమోదును తొలగించాలా?';
+
+  @override
+  String get clearNoShowBody =>
+      'రైతు నిజంగా వచ్చినప్పుడు (ఉదాహరణకు చెక్ ఇన్ చేయలేకపోయినప్పుడు) ఇలా చేయండి. ఇది ఇకపై వారిపై లెక్కించబడదు.';
+
+  @override
+  String get noShowClearedToast => 'రాని నమోదు తొలగించబడింది';
 }

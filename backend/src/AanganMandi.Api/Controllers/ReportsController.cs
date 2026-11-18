@@ -2,6 +2,7 @@ using AanganMandi.Api.Auth;
 using AanganMandi.Application.Notifications;
 using AanganMandi.Domain.Support;
 using AanganMandi.Infrastructure.Persistence;
+using AanganMandi.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +16,7 @@ namespace AanganMandi.Api.Controllers;
 [ApiController]
 [Authorize]
 [Route("api/v1/reports")]
-public class ReportsController(AppDbContext db, INotifier notifier) : ControllerBase
+public class ReportsController(AppDbContext db, ReportService reports) : ControllerBase
 {
     public record ReportRequest(ReportCategory Category, string Message, Guid? BookingId);
     public record ReportDto(Guid Id, ReportCategory Category, string Message, Guid? BookingId, string? SpaceTitle,
@@ -25,21 +26,7 @@ public class ReportsController(AppDbContext db, INotifier notifier) : Controller
     public async Task<ActionResult<ReportDto>> Create(ReportRequest req, CancellationToken ct)
     {
         var me = User.UserId();
-        var since = DateTime.UtcNow.AddDays(-1);
-        var filedToday = await db.ProblemReports.CountAsync(r => r.ReporterUserId == me && r.CreatedAt >= since, ct);
-        if (ProblemReport.Check(req.Category, req.Message, filedToday) is { } error)
-            return this.Fail(error.Code == "report_too_many" ? 429 : 400, error);
-        if (req.BookingId is { } bookingId
-            && !await db.Bookings.AnyAsync(b => b.Id == bookingId && (b.FarmerUserId == me || b.HostUserId == me), ct))
-            return NotFound();
-
-        var report = new ProblemReport
-        {
-            ReporterUserId = me, BookingId = req.BookingId, Category = req.Category, Message = req.Message.Trim(),
-        };
-        db.ProblemReports.Add(report);
-        await db.SaveChangesAsync(ct);
-        await notifier.ProblemReportedAsync(report.Id, ct);
+        var report = await reports.CreateAsync(me, req.Category, req.Message, req.BookingId, ct);
         return (await MineAsync(me, report.Id, ct)).Single();
     }
 
