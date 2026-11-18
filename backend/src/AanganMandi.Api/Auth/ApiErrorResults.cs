@@ -1,6 +1,8 @@
 using AanganMandi.Domain.Common;
 using AanganMandi.Infrastructure.Errors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace AanganMandi.Api.Auth;
 
@@ -11,19 +13,32 @@ namespace AanganMandi.Api.Auth;
 /// </summary>
 public static class ApiErrorResults
 {
-    public static ObjectResult Fail(this ControllerBase c, int status, ApiError error, string? detail = null)
-    {
-        var lang = ErrorText.LanguageOf(c.Request.Headers.AcceptLanguage.ToString());
-        var result = c.Problem(statusCode: status, title: ErrorText.Render(error, lang), detail: detail);
-        if (result.Value is ProblemDetails pd)
-        {
-            pd.Extensions["code"] = error.Code;
-            if (error.Args.Count > 0) pd.Extensions["args"] = error.Args;
-        }
-        return result;
-    }
+    public static ObjectResult Fail(this ControllerBase c, int status, ApiError error, string? detail = null) =>
+        Problem(c.HttpContext, status, error, detail);
 
     /// <summary><c>this.Fail(409, "trip_locked")</c> or <c>this.Fail(400, "space_max_photos", ("max", 8))</c>.</summary>
     public static ObjectResult Fail(this ControllerBase c, int status, string code, params (string Key, object? Value)[] args) =>
         c.Fail(status, ApiError.Of(code, args));
+
+    public static ObjectResult Problem(HttpContext http, int status, ApiError error, string? detail = null)
+    {
+        var lang = ErrorText.LanguageOf(http.Request.Headers.AcceptLanguage.ToString());
+        var factory = http.RequestServices.GetRequiredService<ProblemDetailsFactory>();
+        var pd = factory.CreateProblemDetails(http, statusCode: status, title: ErrorText.Render(error, lang), detail: detail);
+        pd.Extensions["code"] = error.Code;
+        if (error.Args.Count > 0) pd.Extensions["args"] = error.Args;
+        return new ObjectResult(pd) { StatusCode = status, ContentTypes = { "application/problem+json" } };
+    }
+}
+
+/// <summary>Turns an <see cref="ApiException"/> from a service into the refusal the user sees.</summary>
+public sealed class ApiExceptionFilter : IExceptionFilter
+{
+    public void OnException(ExceptionContext context)
+    {
+        if (context.Exception is not ApiException e) return;
+        context.Result = ApiErrorResults.Problem(context.HttpContext, e.Status, e.Error,
+            e.Error.Code == "verification_incomplete" ? e.Error.Args.GetValueOrDefault("missing") as string : null);
+        context.ExceptionHandled = true;
+    }
 }

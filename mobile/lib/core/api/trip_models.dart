@@ -39,7 +39,8 @@ class SpaceCard {
       openFrom = _time(j['openFrom']),
       openTo = _time(j['openTo']),
       rules = j['rules'] as String?,
-      photoUrls = (j['photoUrls'] as List).cast<String>();
+      photoUrls = (j['photoUrls'] as List).cast<String>(),
+      stars = Stars.fromJson(j);
 
   final String id, title, type, locality, maxStallSize, maxVehicle, openFrom, openTo;
   final String? rules;
@@ -47,6 +48,24 @@ class SpaceCard {
   final bool isFree;
   final double fee;
   final List<String> amenities, photoUrls;
+
+  /// What farmers who sold here gave it.
+  final Stars stars;
+}
+
+/// An average of 1–5 stars from [count] ratings; [average] is null until someone rates.
+class Stars {
+  const Stars(this.average, this.count);
+
+  /// Reads "rating" and "ratingCount" (the API's names on every card that carries stars).
+  Stars.fromJson(Map<dynamic, dynamic> j)
+    : average = (j['rating'] as num?)?.toDouble(),
+      count = j['ratingCount'] as int? ?? 0;
+
+  final double? average;
+  final int count;
+
+  bool get any => average != null && count > 0;
 }
 
 /// The host's details, sent only once the booking is accepted.
@@ -79,7 +98,9 @@ class Booking {
       space = SpaceCard.fromJson(j['space'] as Map<String, dynamic>),
       host = j['host'] == null ? null : HostContact.fromJson(j['host'] as Map<String, dynamic>),
       arrivedAt = _instant(j['arrivedAt']),
-      noShow = j['noShow'] as bool? ?? false;
+      noShow = j['noShow'] as bool? ?? false,
+      canRate = j['canRate'] as bool? ?? false,
+      myStars = j['myStars'] as int?;
 
   final String id, status, from, to;
   final DateTime date;
@@ -88,6 +109,10 @@ class Booking {
   final bool slotTaken, noShow;
   final SpaceCard space;
   final HostContact? host;
+
+  /// The stall is over and the farmer has not rated the space yet; [myStars] once they have.
+  final bool canRate;
+  final int? myStars;
 
   /// When the farmer checked in at the space (local time), or null.
   final DateTime? arrivedAt;
@@ -151,9 +176,14 @@ class HostBooking {
       farmerVillage = (j['farmer'] as Map)['village'] as String?,
       farmerDistrict = (j['farmer'] as Map)['district'] as String?,
       farmerPhone = (j['farmer'] as Map)['phone'] as String?,
+      farmerStars = Stars.fromJson(j['farmer'] as Map),
+      farmerNoShows = (j['farmer'] as Map)['recentNoShows'] as int? ?? 0,
+      farmerStalls = (j['farmer'] as Map)['completedStalls'] as int? ?? 0,
       arrivedAt = _instant(j['arrivedAt']),
       noShow = j['noShow'] as bool? ?? false,
-      canMarkNoShow = j['canMarkNoShow'] as bool? ?? false;
+      canMarkNoShow = j['canMarkNoShow'] as bool? ?? false,
+      canRate = j['canRate'] as bool? ?? false,
+      myStars = j['myStars'] as int?;
 
   final String id, status, from, to, spaceTitle, vehicle;
   final DateTime date;
@@ -161,6 +191,14 @@ class HostBooking {
   final String? message, reason, cancelledBy, farmerName, farmerVillage, farmerDistrict, farmerPhone;
   final bool slotTaken, noShow, canMarkNoShow;
   final List<ProduceItem> produce;
+
+  /// The farmer's record: hosts' stars, no-shows in the last 90 days, stalls they came to.
+  final Stars farmerStars;
+  final int farmerNoShows, farmerStalls;
+
+  /// The stall is over and the host has not rated the farmer yet; [myStars] once they have.
+  final bool canRate;
+  final int? myStars;
 
   /// When the farmer checked in at the space (local time), or null.
   final DateTime? arrivedAt;

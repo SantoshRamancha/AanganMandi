@@ -15,6 +15,7 @@ import '../../core/router/app_router.dart';
 import '../../core/widgets/responsive.dart';
 import '../../core/widgets/feedback.dart';
 import '../../l10n/app_localizations.dart';
+import '../ratings/ratings.dart';
 import '../support/report_problem.dart';
 import '../onboarding/consent_screen.dart';
 import '../home/home_screen.dart';
@@ -62,6 +63,8 @@ class ProfileScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
+                  if (profile.value case final p? when p.roles.contains('Farmer') || p.roles.contains('Host'))
+                    const MyRecordCard(),
                   const _AppearanceCard(),
                   const _LanguageCard(),
                   const SizedBox(height: 8),

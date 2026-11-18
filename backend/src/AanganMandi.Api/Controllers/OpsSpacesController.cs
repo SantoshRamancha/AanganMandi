@@ -2,6 +2,7 @@ using AanganMandi.Api.Auth;
 using AanganMandi.Application.Notifications;
 using AanganMandi.Domain.Spaces;
 using AanganMandi.Infrastructure.Persistence;
+using AanganMandi.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +14,7 @@ namespace AanganMandi.Api.Controllers;
 [Authorize]
 [StaffOnly]
 [Route("api/v1/ops/spaces")]
-public class OpsSpacesController(AppDbContext db, INotifier notifier) : ControllerBase
+public class OpsSpacesController(AppDbContext db, ReviewService reviews) : ControllerBase
 {
     public record SpaceRow(Guid Id, string Title, SpaceType Type, string Locality, string HostName, DateTime UpdatedAt);
     public record SpaceDetail(Guid Id, string Title, SpaceType Type, string Address, string Locality, double Latitude,
@@ -49,19 +50,7 @@ public class OpsSpacesController(AppDbContext db, INotifier notifier) : Controll
     [HttpPost("{id:guid}/decision")]
     public async Task<IActionResult> Decide(Guid id, DecisionRequest req, CancellationToken ct)
     {
-        var reason = string.IsNullOrWhiteSpace(req.Reason) ? null : req.Reason.Trim();
-        if (!req.Approve && reason is null) return this.Fail(400, "reject_reason_host");
-        if (reason?.Length > 500) return this.Fail(400, "reason_too_long", ("max", 500));
-
-        var s = await db.Spaces.SingleOrDefaultAsync(x => x.Id == id, ct);
-        if (s is null) return NotFound();
-        if (s.Status != SpaceStatus.PendingReview) return this.Fail(409, "space_already_reviewed");
-        s.Status = req.Approve ? SpaceStatus.Live : SpaceStatus.Rejected;
-        s.RejectionReason = req.Approve ? null : reason;
-        s.ReviewedAt = DateTime.UtcNow;
-        s.UpdatedAt = DateTime.UtcNow;
-        await db.SaveChangesAsync(ct);
-        await notifier.SpaceDecidedAsync(s.Id, ct);
+        await reviews.DecideSpaceAsync(id, req.Approve, req.Reason, ct);
         return NoContent();
     }
 }

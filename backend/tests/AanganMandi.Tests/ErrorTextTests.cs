@@ -11,7 +11,7 @@ public class ErrorTextTests
     private static readonly (string, object?)[] AllArgs =
     [
         ("seconds", 30), ("minutes", 40), ("radii", "1, 2, 5"), ("max", 200), ("min", 3), ("mb", 8), ("days", 60),
-        ("time", "15:00"), ("meters", 730), ("phone", "+919000000009"), ("missing", "details"),
+        ("time", "15:00"), ("meters", 730), ("phone", "+919000000009"), ("missing", "details"), ("count", 3),
     ];
 
     public static TheoryData<string, string> EveryCodeInEveryLanguage()
@@ -57,7 +57,8 @@ public class ErrorTextTests
 
     /// <summary>
     /// Every code the API can send has words: scans the controllers and rule files for snake_case codes passed to
-    /// Fail(...) or ApiError, so a typo or a new code without a translation fails here, not in front of a user.
+    /// Fail(...), ApiError or ApiException (controllers, rules and the services), so a typo or a new code without a
+    /// translation fails here, not in front of a user.
     /// </summary>
     [Fact]
     public void Every_code_used_in_the_source_has_words()
@@ -66,6 +67,7 @@ public class ErrorTextTests
         var files = Directory.GetFiles(Path.Combine(src, "AanganMandi.Api"), "*.cs", SearchOption.AllDirectories)
             .Concat(Directory.GetFiles(Path.Combine(src, "AanganMandi.Application"), "*.cs", SearchOption.AllDirectories))
             .Concat(Directory.GetFiles(Path.Combine(src, "AanganMandi.Domain"), "*.cs", SearchOption.AllDirectories))
+            .Concat(Directory.GetFiles(Path.Combine(src, "AanganMandi.Infrastructure", "Services"), "*.cs"))
             .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}")
                 && !f.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}"));
         // Codes appear as Fail(400, "x_y"), new ApiError("x_y"), ApiError.Of("x_y", ...), new("x_y") in rules,
@@ -75,7 +77,7 @@ public class ErrorTextTests
         foreach (var file in files)
         {
             var text = File.ReadAllText(file);
-            if (!text.Contains("Fail(") && !text.Contains("ApiError")) continue;
+            if (!text.Contains("Fail(") && !text.Contains("ApiError") && !text.Contains("ApiException")) continue;
             foreach (Match m in codeLiteral.Matches(text)) used.Add(m.Groups[1].Value);
         }
         // snake_case strings in those files that are not error codes.
@@ -83,6 +85,8 @@ public class ErrorTextTests
         var missing = used.Where(c => !ErrorText.All.ContainsKey(c)).Order().ToList();
         Assert.True(missing.Count == 0, "Codes without words in ErrorText: " + string.Join(", ", missing));
         Assert.True(used.Count > 60, $"Only {used.Count} codes found: is the scan still finding the controllers?");
+        Assert.Contains("trip_locked", used);          // moved to TripService: the services are scanned too
+        Assert.Contains("too_many_no_shows", used);
     }
 
     private static string FindSourceFolder()

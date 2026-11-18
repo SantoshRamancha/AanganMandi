@@ -103,6 +103,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<BuyerArea> BuyerAreas => Set<BuyerArea>();
     public DbSet<NearbyAlert> NearbyAlerts => Set<NearbyAlert>();
     public DbSet<ProblemReport> ProblemReports => Set<ProblemReport>();
+    public DbSet<Rating> Ratings => Set<Rating>();
 
     /// <summary>All DateTimes are UTC, also when read back (see <see cref="UtcDateTimes"/>).</summary>
     protected override void ConfigureConventions(ModelConfigurationBuilder b)
@@ -199,6 +200,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasIndex(x => new { x.SpaceId, x.Date, x.Status });
             e.HasIndex(x => new { x.HostUserId, x.Status });
             e.HasIndex(x => x.TripId);
+            e.HasIndex(x => new { x.FarmerUserId, x.NoShowAt }); // no-show counts
             // At most one confirmed farmer per space and day, even if two hosts' clicks race.
             e.HasIndex(x => new { x.SpaceId, x.Date }).IsUnique().HasFilter("[Status] = 'Accepted'")
                 .HasDatabaseName("IX_Bookings_OneAcceptedPerSpaceDay");
@@ -228,6 +230,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.Property(r => r.Status).HasConversion<string>().HasMaxLength(16);
             e.Property(r => r.Message).HasMaxLength(ProblemReport.MaxMessage);
             e.Property(r => r.Resolution).HasMaxLength(ProblemReport.MaxResolution);
+        });
+        b.Entity<Rating>(e =>
+        {
+            // One rating from each side per booking.
+            e.HasIndex(r => new { r.BookingId, r.By }).IsUnique();
+            e.HasIndex(r => new { r.RatedUserId, r.By });
+            e.HasIndex(r => r.SpaceId);
+            e.Property(r => r.By).HasConversion<string>().HasMaxLength(8);
+            e.Property(r => r.Comment).HasMaxLength(RatingRules.MaxComment);
         });
         b.Entity<NearbyAlert>(e =>
         {

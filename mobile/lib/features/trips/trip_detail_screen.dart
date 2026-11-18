@@ -12,6 +12,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/widgets/responsive.dart';
 import '../../core/widgets/feedback.dart';
 import '../../l10n/app_localizations.dart';
+import '../ratings/ratings.dart';
 import '../support/report_problem.dart';
 import 'trip_widgets.dart';
 
@@ -191,6 +192,21 @@ class _BookingCard extends ConsumerWidget {
           IconFact(Icons.home_outlined, h.address),
           IconFact(Icons.person_outline, '${h.name ?? ''}  ${h.phone}'),
           IconFact(Icons.currency_rupee, '${feeLabel(l10n, b.fee == 0, b.fee)} · ${l10n.payAtSpace}'),
+          // After the stall: rate the space (once).
+          if (b.myStars case final stars?)
+            Padding(padding: const EdgeInsets.only(top: 4), child: YouRated(stars))
+          else if (b.canRate) ...[
+            const SizedBox(height: 4),
+            FilledButton.tonalIcon(
+              icon: const Icon(Icons.star_outline_rounded),
+              label: Text(l10n.rateSpace),
+              onPressed: () async {
+                if (await showRateSheet(context, bookingId: b.id, title: l10n.rateSpaceTitle(b.space.title))) {
+                  onChanged();
+                }
+              },
+            ),
+          ],
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,

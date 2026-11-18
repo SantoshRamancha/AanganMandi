@@ -1597,6 +1597,8 @@ namespace AanganMandi.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("TripId");
 
+                    b.HasIndex("FarmerUserId", "NoShowAt");
+
                     b.HasIndex("HostUserId", "Status");
 
                     b.HasIndex("SpaceId", "Date")
@@ -1607,6 +1609,57 @@ namespace AanganMandi.Infrastructure.Persistence.Migrations
                     b.HasIndex("SpaceId", "Date", "Status");
 
                     b.ToTable("Bookings");
+                });
+
+            modelBuilder.Entity("AanganMandi.Domain.Trips.Rating", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BookingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("By")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("nvarchar(8)");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("RatedUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("RaterUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("SpaceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Stars")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SpaceId");
+
+                    b.HasIndex("BookingId", "By")
+                        .IsUnique();
+
+                    b.HasIndex("RatedUserId", "By");
+
+                    b.ToTable("Ratings");
                 });
 
             modelBuilder.Entity("AanganMandi.Domain.Trips.Trip", b =>

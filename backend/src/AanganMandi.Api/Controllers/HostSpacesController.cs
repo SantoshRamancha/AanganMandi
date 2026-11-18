@@ -1,33 +1,32 @@
 using AanganMandi.Api.Auth;
 using AanganMandi.Application.Files;
-using AanganMandi.Application.Notifications;
-using AanganMandi.Application.Storage;
-using AanganMandi.Application.Trips;
 using AanganMandi.Domain.Spaces;
-using AanganMandi.Infrastructure.Accounts;
-using AanganMandi.Infrastructure.Persistence;
+using AanganMandi.Domain.Trips;
+using AanganMandi.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using NetTopologySuite.Geometries;
 
 namespace AanganMandi.Api.Controllers;
 
-/// <summary>Host flow: create a draft space, add 3–8 photos and a right-to-use proof, submit for admin review.</summary>
+/// <summary>
+/// Host flow: create a draft space, add 3–8 photos and a right-to-use proof, submit for admin review. The rules are
+/// in <see cref="SpaceService"/>.
+/// </summary>
 [ApiController]
 [Authorize(Roles = "Host")]
 [Route("api/v1/hosts/me/spaces")]
-public class HostSpacesController(AppDbContext db, IFileStorage storage, INotifier notifier) : ControllerBase
+public class HostSpacesController(SpaceService spaces, RatingService ratings) : ControllerBase
 {
     public record SpaceRequest(string Title, SpaceType Type, string Address, string Locality,
         double Latitude, double Longitude, int AreaSqFt, string MaxStallSize, VehicleType MaxVehicle,
         Amenities[] Amenities, bool IsFree, decimal Fee, string? Rules, DayOfWeek[] AvailableDays,
         TimeOnly OpenFrom, TimeOnly OpenTo);
+    /// <summary>Rating: farmers' average stars for this space (null until rated), from RatingCount ratings.</summary>
     public record SpaceDto(Guid Id, string Title, SpaceType Type, string Address, string Locality,
         double Latitude, double Longitude, int AreaSqFt, string MaxStallSize, VehicleType MaxVehicle,
         Amenities[] Amenities, bool IsFree, decimal Fee, string? Rules, DayOfWeek[] AvailableDays,
         TimeOnly OpenFrom, TimeOnly OpenTo, SpaceStatus Status, string? RejectionReason,
-        string[] PhotoUrls, bool HasProof, FileRef[] Photos, FileRef? Proof);
+        string[] PhotoUrls, bool HasProof, FileRef[] Photos, FileRef? Proof, double? Rating, int RatingCount);
     /// <summary>One stored photo or proof; Id is used to preview, download, replace or delete it.</summary>
     public record FileRef(Guid Id, DateTime UploadedAt);
     /// <summary>Withdrawn: the change left a waiting space incomplete, so it went back to Draft.</summary>
@@ -35,84 +34,39 @@ public class HostSpacesController(AppDbContext db, IFileStorage storage, INotifi
     /// <summary>How many upcoming bookings deleting the space cancelled.</summary>
     public record SpaceDeleted(int CancelledBookings);
 
-    /// <summary>The reason a farmer sees on a booking cancelled because the host deleted the space.</summary>
-    public const string SpaceDeletedReason = "The host removed this space from Aangan Mandi";
-
-    private static readonly GeometryFactory Geo = NetTopologySuite.NtsGeometryServices.Instance.CreateGeometryFactory(4326);
-    private const long MaxUploadBytes = 8 * 1024 * 1024;
-    private const int MinPhotos = 3, MaxPhotos = 8;
+    private const long UploadLimit = SpaceService.MaxUploadBytes + 64 * 1024;
 
     [HttpGet]
     public async Task<IEnumerable<SpaceDto>> List(CancellationToken ct)
     {
-        var spaces = await db.Spaces.Include(s => s.Photos).Where(s => s.HostUserId == User.UserId())
-            .OrderByDescending(s => s.CreatedAt).ToListAsync(ct);
-        return spaces.Select(ToDto);
+        var mine = await spaces.ListAsync(User.UserId(), ct);
+        var stars = await ratings.SpaceStarsAsync(mine.Select(s => s.Id).ToList(), ct);
+        return mine.Select(s => ToDto(s, stars.GetValueOrDefault(s.Id)));
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<SpaceDto>> Get(Guid id, CancellationToken ct)
-    {
-        var space = await FindAsync(id, ct);
-        return space is null ? NotFound() : ToDto(space);
-    }
+    public async Task<SpaceDto> Get(Guid id, CancellationToken ct) => await DtoAsync(await spaces.GetAsync(User.UserId(), id, ct), ct);
 
     [HttpPost]
     public async Task<ActionResult<SpaceDto>> Create(SpaceRequest req, CancellationToken ct)
     {
-        if (Validate(req) is { } error) return error;
-        var space = new Space
-        {
-            HostUserId = User.UserId(),
-            Title = req.Title.Trim(),
-            Address = req.Address.Trim(),
-            Locality = req.Locality.Trim(),
-            Location = Geo.CreatePoint(new Coordinate(req.Longitude, req.Latitude)),
-            AvailableDays = "",
-        };
-        Apply(space, req);
-        db.Spaces.Add(space);
-        await db.SaveChangesAsync(ct);
-        return CreatedAtAction(nameof(Get), new { id = space.Id }, ToDto(space));
+        var space = await spaces.CreateAsync(User.UserId(), Input(req), ct);
+        return CreatedAtAction(nameof(Get), new { id = space.Id }, ToDto(space, null));
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<ActionResult<SpaceDto>> Update(Guid id, SpaceRequest req, CancellationToken ct)
-    {
-        var space = await FindAsync(id, ct);
-        if (space is null) return NotFound();
-        if (space.Status is SpaceStatus.PendingReview) return this.Fail(409, "space_under_review");
-        if (Validate(req) is { } error) return error;
-        Apply(space, req);
-        // Any change to a live or rejected space sends it back through review.
-        if (space.Status is SpaceStatus.Live or SpaceStatus.Rejected) space.Status = SpaceStatus.Draft;
-        await db.SaveChangesAsync(ct);
-        return ToDto(space);
-    }
+    public async Task<SpaceDto> Update(Guid id, SpaceRequest req, CancellationToken ct) =>
+        await DtoAsync(await spaces.UpdateAsync(User.UserId(), id, Input(req), ct), ct);
 
     /// <summary>
     /// Adds a photo, or sets the proof (replacing any earlier one). Photos and proof can be changed until the space
     /// is approved; while it waits for review it stays in the queue and the reviewer sees the new file.
     /// </summary>
     [HttpPost("{id:guid}/photos")]
-    [RequestSizeLimit(MaxUploadBytes + 64 * 1024)]
+    [RequestSizeLimit(UploadLimit)]
     public async Task<IActionResult> AddPhoto(Guid id, IFormFile file, [FromForm] bool isProof, CancellationToken ct)
     {
-        var space = await FindAsync(id, ct);
-        if (space is null) return NotFound();
-        if (LockedFiles(space) is { } locked) return locked;
-        var (invalid, kind) = await CheckUploadAsync(file, ct);
-        if (invalid is not null) return invalid;
-        if (!isProof && space.Photos.Count(p => !p.IsRightToUseProof) >= MaxPhotos)
-            return this.Fail(400, "space_max_photos", ("max", MaxPhotos));
-
-        var path = await SaveAsync(space, file, kind, isProof, ct);
-        var oldProof = isProof ? space.Photos.Where(p => p.IsRightToUseProof).ToList() : [];
-        db.SpacePhotos.RemoveRange(oldProof);
-        db.SpacePhotos.Add(new SpacePhoto { SpaceId = space.Id, FilePath = path, IsRightToUseProof = isProof });
-        Touch(space);
-        await db.SaveChangesAsync(ct);
-        foreach (var p in oldProof) await storage.DeleteAsync(p.FilePath, ct);
+        await spaces.AddFileAsync(User.UserId(), id, AsUpload(file), isProof, ct);
         return NoContent();
     }
 
@@ -120,29 +74,16 @@ public class HostSpacesController(AppDbContext db, IFileStorage storage, INotifi
     [HttpGet("{id:guid}/photos/{photoId:guid}")]
     public async Task<IActionResult> GetPhoto(Guid id, Guid photoId, CancellationToken ct)
     {
-        var photo = (await FindAsync(id, ct))?.Photos.SingleOrDefault(p => p.Id == photoId);
-        var stream = photo is null ? null : await storage.OpenReadAsync(photo.FilePath, ct);
-        return stream is null ? NotFound() : File(stream, ContentType(photo!.FilePath), Path.GetFileName(photo.FilePath));
+        var (stream, path) = await spaces.OpenFileAsync(User.UserId(), id, photoId, ct);
+        return File(stream, ContentType(path), Path.GetFileName(path));
     }
 
     /// <summary>Replaces one photo or the proof with a new file, keeping its place in the list.</summary>
     [HttpPut("{id:guid}/photos/{photoId:guid}")]
-    [RequestSizeLimit(MaxUploadBytes + 64 * 1024)]
+    [RequestSizeLimit(UploadLimit)]
     public async Task<IActionResult> ReplacePhoto(Guid id, Guid photoId, IFormFile file, CancellationToken ct)
     {
-        var space = await FindAsync(id, ct);
-        var photo = space?.Photos.SingleOrDefault(p => p.Id == photoId);
-        if (photo is null) return NotFound();
-        if (LockedFiles(space!) is { } locked) return locked;
-        var (invalid, kind) = await CheckUploadAsync(file, ct);
-        if (invalid is not null) return invalid;
-
-        var old = photo.FilePath;
-        photo.FilePath = await SaveAsync(space!, file, kind, photo.IsRightToUseProof, ct);
-        photo.UpdatedAt = DateTime.UtcNow;
-        Touch(space!);
-        await db.SaveChangesAsync(ct);
-        await storage.DeleteAsync(old, ct);
+        await spaces.ReplaceFileAsync(User.UserId(), id, photoId, AsUpload(file), ct);
         return NoContent();
     }
 
@@ -151,23 +92,8 @@ public class HostSpacesController(AppDbContext db, IFileStorage storage, INotifi
     /// it cannot be reviewed, so it goes back to Draft and the host submits again.
     /// </summary>
     [HttpDelete("{id:guid}/photos/{photoId:guid}")]
-    public async Task<ActionResult<DocumentChange>> DeletePhoto(Guid id, Guid photoId, CancellationToken ct)
-    {
-        var space = await FindAsync(id, ct);
-        var photo = space?.Photos.SingleOrDefault(p => p.Id == photoId);
-        if (photo is null) return NotFound();
-        if (LockedFiles(space!) is { } locked) return locked;
-
-        db.SpacePhotos.Remove(photo);
-        space!.Photos.Remove(photo);
-        var complete = space.Photos.Count(p => !p.IsRightToUseProof) >= MinPhotos && space.Photos.Any(p => p.IsRightToUseProof);
-        var withdrawn = space.Status is SpaceStatus.PendingReview && !complete;
-        if (withdrawn) space.Status = SpaceStatus.Draft;
-        Touch(space);
-        await db.SaveChangesAsync(ct);
-        await storage.DeleteAsync(photo.FilePath, ct);
-        return new DocumentChange(withdrawn);
-    }
+    public async Task<DocumentChange> DeletePhoto(Guid id, Guid photoId, CancellationToken ct) =>
+        new(await spaces.DeleteFileAsync(User.UserId(), id, photoId, ct));
 
     /// <summary>
     /// Deletes the space, whatever its status. It leaves search and the review queue, its photos and proof are
@@ -175,59 +101,21 @@ public class HostSpacesController(AppDbContext db, IFileStorage storage, INotifi
     /// told why. Past bookings keep showing the space's name.
     /// </summary>
     [HttpDelete("{id:guid}")]
-    public async Task<ActionResult<SpaceDeleted>> Delete(Guid id, CancellationToken ct)
-    {
-        var space = await FindAsync(id, ct);
-        if (space is null) return NotFound();
-        var (files, cancelled) = await SpaceRemoval.PrepareAsync(db, space, SpaceDeletedReason, ct);
-        await db.SaveChangesAsync(ct);
-        foreach (var f in files) await storage.DeleteAsync(f, ct);
-        foreach (var b in cancelled) await notifier.BookingChangedAsync(b.Id, ct);
-        return new SpaceDeleted(cancelled.Count);
-    }
+    public async Task<SpaceDeleted> Delete(Guid id, CancellationToken ct) => new(await spaces.DeleteAsync(User.UserId(), id, ct));
 
     [HttpPost("{id:guid}/submit")]
     public async Task<IActionResult> Submit(Guid id, CancellationToken ct)
     {
-        var space = await FindAsync(id, ct);
-        if (space is null) return NotFound();
-        if (space.Status is not (SpaceStatus.Draft or SpaceStatus.Rejected))
-            return this.Fail(409, "space_already_submitted");
-        var photos = space.Photos.Count(p => !p.IsRightToUseProof);
-        if (photos < MinPhotos)
-            return this.Fail(422, "space_min_photos", ("min", MinPhotos));
-        if (!space.Photos.Any(p => p.IsRightToUseProof))
-            return this.Fail(422, "space_proof_required");
-        space.Status = SpaceStatus.PendingReview;
-        space.RejectionReason = null;
-        space.UpdatedAt = DateTime.UtcNow;
-        await db.SaveChangesAsync(ct);
-        await notifier.SpaceSubmittedAsync(space.Id, ct);
+        await spaces.SubmitAsync(User.UserId(), id, ct);
         return NoContent();
     }
 
-    /// <summary>An approved (live) space's photos and proof are final: preview and download only.</summary>
-    private ObjectResult? LockedFiles(Space s) => s.Status is SpaceStatus.Live
-        ? this.Fail(409, "space_files_locked")
-        : null;
+    // ---------------------------------------------------------------------------------------------
 
-    /// <summary>The photo's real format, read from its bytes (the label the browser sends can be wrong), or the error.</summary>
-    private async Task<(ObjectResult? Error, ImageFormat.Kind Kind)> CheckUploadAsync(IFormFile file, CancellationToken ct)
-    {
-        if (file.Length is 0 or > MaxUploadBytes) return (this.Fail(400, "photo_too_big", ("mb", 8)), ImageFormat.Jpeg);
-        await using var head = file.OpenReadStream();
-        return await ImageFormat.DetectAsync(head, ct) is { } kind
-            ? (null, kind)
-            : (this.Fail(400, "photo_format"), ImageFormat.Jpeg);
-    }
+    internal static Upload AsUpload(IFormFile file) => new(file.Length, file.OpenReadStream);
 
-    /// <summary>Proof documents are private (kyc/); space photos are public (spaces/).</summary>
-    private async Task<string> SaveAsync(Space space, IFormFile file, ImageFormat.Kind kind, bool isProof, CancellationToken ct)
-    {
-        var folder = isProof ? $"kyc/spaces/{space.Id:N}" : $"spaces/{space.Id:N}";
-        await using var stream = file.OpenReadStream();
-        return await storage.SaveAsync(stream, folder, kind.Extension, ct);
-    }
+    private static SpaceInput Input(SpaceRequest r) => new(r.Title, r.Type, r.Address, r.Locality, r.Latitude, r.Longitude,
+        r.AreaSqFt, r.MaxStallSize, r.MaxVehicle, r.Amenities, r.IsFree, r.Fee, r.Rules, r.AvailableDays, r.OpenFrom, r.OpenTo);
 
     private static string ContentType(string path) => Path.GetExtension(path).ToLowerInvariant() switch
     {
@@ -236,51 +124,10 @@ public class HostSpacesController(AppDbContext db, IFileStorage storage, INotifi
         _ => "image/jpeg",
     };
 
-    /// <summary>A change to a rejected space starts a new draft; a waiting one stays in the queue.</summary>
-    private static void Touch(Space s)
-    {
-        if (s.Status is SpaceStatus.Rejected) s.Status = SpaceStatus.Draft;
-        s.UpdatedAt = DateTime.UtcNow;
-    }
+    private async Task<SpaceDto> DtoAsync(Space s, CancellationToken ct) =>
+        ToDto(s, (await ratings.SpaceStarsAsync([s.Id], ct)).GetValueOrDefault(s.Id));
 
-    private Task<Space?> FindAsync(Guid id, CancellationToken ct) =>
-        db.Spaces.Include(s => s.Photos).SingleOrDefaultAsync(s => s.Id == id && s.HostUserId == User.UserId(), ct);
-
-    private ObjectResult? Validate(SpaceRequest r)
-    {
-        string? error =
-            string.IsNullOrWhiteSpace(r.Title) ? "space_name_required" :
-            string.IsNullOrWhiteSpace(r.Address) || string.IsNullOrWhiteSpace(r.Locality) ? "space_address_required" :
-            r.Latitude is < -90 or > 90 || r.Longitude is < -180 or > 180 || (r.Latitude == 0 && r.Longitude == 0) ? "space_location_required" :
-            r.AreaSqFt is < 50 or > 100_000 ? "space_area_range" :
-            !r.IsFree && r.Fee is <= 0 or > 100_000 ? "space_fee_required" :
-            r.AvailableDays.Length == 0 ? "space_days_required" :
-            (r.OpenTo - r.OpenFrom).TotalHours is < 2 or > 6 ? "space_slot_length" :
-            null;
-        return error is null ? null : this.Fail(400, error);
-    }
-
-    private static void Apply(Space s, SpaceRequest r)
-    {
-        s.Title = r.Title.Trim();
-        s.Type = r.Type;
-        s.Address = r.Address.Trim();
-        s.Locality = r.Locality.Trim();
-        s.Location = Geo.CreatePoint(new Coordinate(r.Longitude, r.Latitude));
-        s.AreaSqFt = r.AreaSqFt;
-        s.MaxStallSize = string.IsNullOrWhiteSpace(r.MaxStallSize) ? "10x10 ft" : r.MaxStallSize.Trim();
-        s.MaxVehicle = r.MaxVehicle;
-        s.Amenities = r.Amenities.Aggregate(Amenities.None, (all, a) => all | a);
-        s.IsFree = r.IsFree;
-        s.Fee = r.IsFree ? 0 : r.Fee;
-        s.Rules = r.Rules?.Trim();
-        s.AvailableDays = string.Join(',', r.AvailableDays.Distinct().Order());
-        s.OpenFrom = r.OpenFrom;
-        s.OpenTo = r.OpenTo;
-        s.UpdatedAt = DateTime.UtcNow;
-    }
-
-    private SpaceDto ToDto(Space s) => new(s.Id, s.Title, s.Type, s.Address, s.Locality, s.Location.Y, s.Location.X,
+    private SpaceDto ToDto(Space s, StarSummary? stars) => new(s.Id, s.Title, s.Type, s.Address, s.Locality, s.Location.Y, s.Location.X,
         s.AreaSqFt, s.MaxStallSize, s.MaxVehicle,
         Enum.GetValues<Amenities>().Where(a => a != Amenities.None && s.Amenities.HasFlag(a)).ToArray(),
         s.IsFree, s.Fee, s.Rules,
@@ -290,5 +137,6 @@ public class HostSpacesController(AppDbContext db, IFileStorage storage, INotifi
             .Select(p => Url.Content($"~/api/v1/files/{p.FilePath}")).ToArray(),
         s.Photos.Any(p => p.IsRightToUseProof),
         s.Photos.Where(p => !p.IsRightToUseProof).OrderBy(p => p.CreatedAt).Select(p => new FileRef(p.Id, p.UpdatedAt)).ToArray(),
-        s.Photos.Where(p => p.IsRightToUseProof).Select(p => new FileRef(p.Id, p.UpdatedAt)).FirstOrDefault());
+        s.Photos.Where(p => p.IsRightToUseProof).Select(p => new FileRef(p.Id, p.UpdatedAt)).FirstOrDefault(),
+        stars?.Average, stars?.Count ?? 0);
 }

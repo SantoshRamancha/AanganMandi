@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'api_client.dart';
 import 'api_dates.dart';
+import 'trip_models.dart';
 
 // Staff (Verifier / Admin) API: farmer verification, space approvals and, for admins, verifier management.
 // Labels for its enum values are in core/labels.dart, translated like the rest of the app.
@@ -77,7 +78,8 @@ class OpsFarmer {
       reviewedAt = _utc(j['reviewedAt']),
       canDecide = j['canDecide'] as bool,
       canAssign = j['canAssign'] as bool,
-      verifiers = [for (final v in j['verifiers'] as List) VerifierOption.fromJson(v as Map<String, dynamic>)];
+      verifiers = [for (final v in j['verifiers'] as List) VerifierOption.fromJson(v as Map<String, dynamic>)],
+      record = j['record'] == null ? null : SellingRecord.fromJson(j['record'] as Map<String, dynamic>);
 
   final String id, phone, status;
   final String? name, village, district, produceSource, evidenceType, evidenceDetails, evidencePhoto;
@@ -88,6 +90,31 @@ class OpsFarmer {
   final DateTime? submittedAt, assignedAt, reviewedAt;
   final bool canDecide, canAssign;
   final List<VerifierOption> verifiers;
+
+  /// How the farmer has done as a seller (null from an older server).
+  final SellingRecord? record;
+}
+
+/// Hosts' stars, stalls the farmer came to, and the no-shows of the last 90 days (an admin can clear a wrong one).
+class SellingRecord {
+  SellingRecord.fromJson(Map<String, dynamic> j)
+    : stars = Stars.fromJson(j),
+      completedStalls = j['completedStalls'] as int,
+      recentNoShows = j['recentNoShows'] as int,
+      canClearNoShows = j['canClearNoShows'] as bool? ?? false,
+      noShows = [
+        for (final n in j['noShows'] as List)
+          (
+            bookingId: n['bookingId'] as String,
+            date: DateTime.parse(n['date'] as String),
+            spaceTitle: n['spaceTitle'] as String,
+          ),
+      ];
+
+  final Stars stars;
+  final int completedStalls, recentNoShows;
+  final bool canClearNoShows;
+  final List<({String bookingId, DateTime date, String spaceTitle})> noShows;
 }
 
 class OpsSpaceRow {
@@ -184,6 +211,10 @@ class OpsApi {
 
   Future<void> decideFarmer(String id, {required bool approve, String? reason}) =>
       _dio.post('/ops/farmers/$id/decision', data: {'approve': approve, 'reason': reason});
+
+  /// Admin: removes a wrong no-show from one of the farmer's bookings.
+  Future<void> clearNoShow(String farmerId, String bookingId) =>
+      _dio.post('/ops/farmers/$farmerId/no-shows/$bookingId/clear');
 
   /// status: PendingReview, Live, Rejected or Draft.
   Future<List<OpsSpaceRow>> spaces(String status) async => [

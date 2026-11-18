@@ -1,7 +1,9 @@
 using AanganMandi.Api.Auth;
 using AanganMandi.Application.Notifications;
 using AanganMandi.Domain.Farmers;
+using AanganMandi.Domain.Trips;
 using AanganMandi.Infrastructure.Persistence;
+using AanganMandi.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,23 +12,29 @@ namespace AanganMandi.Api.Controllers;
 
 /// <summary>
 /// Farmer verification for staff. A verifier sees and decides only the farmers assigned to them;
-/// an admin sees everyone and can reassign.
+/// an admin sees everyone and can reassign. Decisions are in <see cref="ReviewService"/>.
 /// </summary>
 [ApiController]
 [Authorize]
 [StaffOnly]
 [Route("api/v1/ops/farmers")]
-public class OpsFarmersController(AppDbContext db, INotifier notifier) : ControllerBase
+public class OpsFarmersController(AppDbContext db, ReviewService reviews, RatingService ratings) : ControllerBase
 {
     public record FarmerRow(Guid Id, string? Name, string Phone, string? Village, string? District, EvidenceType? EvidenceType,
         DateTime? SubmittedAt, string? VerifierName);
     public record DocumentDto(DocumentType Type, string Path);
     public record VerifierOption(Guid Id, string Name, int Waiting);
+    /// <summary>The farmer's selling record: hosts' stars, stalls they came to, and their recent no-shows.</summary>
+    public record SellingRecord(double? Rating, int RatingCount, int CompletedStalls, int RecentNoShows, NoShowRow[] NoShows,
+        bool CanClearNoShows);
+    /// <summary>One booking a host marked as a no-show; an admin can clear a wrong one.</summary>
+    public record NoShowRow(Guid BookingId, DateOnly Date, string SpaceTitle, DateTime MarkedAt);
     public record FarmerDetail(Guid Id, string? Name, string Phone, string? Village, string? District, string[] Crops,
         decimal? FarmSizeAcres, ProduceSource? ProduceSource, EvidenceType? EvidenceType, string? EvidenceDetails,
         string? EvidencePhoto, DocumentDto[] OlderDocuments, VerificationStatus Status, string? RejectionReason,
         DateTime? SubmittedAt, Guid? AssignedVerifierId, string? AssignedVerifierName, DateTime? AssignedAt,
-        string? ReviewedByName, DateTime? ReviewedAt, bool CanDecide, bool CanAssign, VerifierOption[] Verifiers);
+        string? ReviewedByName, DateTime? ReviewedAt, bool CanDecide, bool CanAssign, VerifierOption[] Verifiers,
+        SellingRecord Record);
     public record AssignRequest(Guid VerifierId);
     public record DecisionRequest(bool Approve, string? Reason);
 
@@ -49,11 +57,8 @@ public class OpsFarmersController(AppDbContext db, INotifier notifier) : Control
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<FarmerDetail>> Get(Guid id, CancellationToken ct)
     {
-        var farmer = await db.FarmerProfiles.Include(f => f.Crops).SingleOrDefaultAsync(f => f.Id == id, ct);
-        if (farmer is null) return NotFound();
         var isAdmin = StaffAccessFilter.IsAdmin(HttpContext);
-        if (!isAdmin && farmer.AssignedVerifierId != User.UserId())
-            return this.Fail(403, "farmer_other_verifier");
+        var farmer = await reviews.GetFarmerAsync(Me, id, ct);
 
         var user = await db.Users.SingleAsync(u => u.Id == farmer.UserId, ct);
         // Codes, not names: the app shows them in the reviewer's language (custom crops as the farmer typed them).
@@ -69,51 +74,51 @@ public class OpsFarmersController(AppDbContext db, INotifier notifier) : Control
             farmer.AssignedVerifierId, await NameAsync(farmer.AssignedVerifierId, ct), farmer.AssignedAt,
             await NameAsync(farmer.ReviewedBy, ct), farmer.ReviewedAt,
             CanDecide: pending, CanAssign: pending && isAdmin,
-            verifiers.Where(v => v.Id != farmer.UserId).ToArray());
+            verifiers.Where(v => v.Id != farmer.UserId).ToArray(),
+            await RecordAsync(farmer.UserId, isAdmin, ct));
     }
 
     [HttpPost("{id:guid}/assign")]
     [StaffOnly(AdminOnly = true)]
     public async Task<IActionResult> Assign(Guid id, AssignRequest req, CancellationToken ct)
     {
-        var farmer = await db.FarmerProfiles.SingleOrDefaultAsync(f => f.Id == id, ct);
-        if (farmer is null) return NotFound();
-        if (farmer.Status != VerificationStatus.Pending) return this.Fail(409, "farmer_not_waiting");
-        var candidates = await VerifierAssignment.CandidatesAsync(db, ct);
-        if (req.VerifierId == farmer.UserId || candidates.All(c => c.UserId != req.VerifierId))
-            return this.Fail(400, "verifier_invalid");
-        farmer.AssignedVerifierId = req.VerifierId;
-        farmer.AssignedAt = DateTime.UtcNow;
-        farmer.UpdatedAt = DateTime.UtcNow;
-        await db.SaveChangesAsync(ct);
-        await notifier.FarmerAssignedAsync(farmer.UserId, ct);
+        await reviews.AssignFarmerAsync(id, req.VerifierId, ct);
         return NoContent();
     }
 
     [HttpPost("{id:guid}/decision")]
     public async Task<IActionResult> Decide(Guid id, DecisionRequest req, CancellationToken ct)
     {
-        var reason = string.IsNullOrWhiteSpace(req.Reason) ? null : req.Reason.Trim();
-        if (!req.Approve && reason is null) return this.Fail(400, "reject_reason_farmer");
-        if (reason?.Length > 500) return this.Fail(400, "reason_too_long", ("max", 500));
-
-        var farmer = await db.FarmerProfiles.SingleOrDefaultAsync(f => f.Id == id, ct);
-        if (farmer is null) return NotFound();
-        var me = User.UserId();
-        // Re-checked here, not trusted from the screen: the farmer may have been reassigned since it opened.
-        if (!StaffAccessFilter.IsAdmin(HttpContext) && farmer.AssignedVerifierId != me)
-            return this.Fail(403, "farmer_other_verifier");
-        if (farmer.Status != VerificationStatus.Pending) return this.Fail(409, "farmer_already_reviewed");
-
-        farmer.Status = req.Approve ? VerificationStatus.Verified : VerificationStatus.Rejected;
-        farmer.Level = req.Approve ? 2 : 1;
-        farmer.RejectionReason = req.Approve ? null : reason;
-        farmer.ReviewedAt = DateTime.UtcNow;
-        farmer.ReviewedBy = me;
-        farmer.UpdatedAt = DateTime.UtcNow;
-        await db.SaveChangesAsync(ct);
-        await notifier.FarmerDecidedAsync(farmer.UserId, ct);
+        // The assignment is re-checked there, not trusted from the screen: the farmer may have been reassigned since.
+        await reviews.DecideFarmerAsync(Me, id, req.Approve, req.Reason, ct);
         return NoContent();
+    }
+
+    /// <summary>
+    /// Admin: removes a wrong no-show mark from one of this farmer's bookings (for example the farmer came but could
+    /// not check in), so it no longer counts against them.
+    /// </summary>
+    [HttpPost("{id:guid}/no-shows/{bookingId:guid}/clear")]
+    [StaffOnly(AdminOnly = true)]
+    public async Task<IActionResult> ClearNoShow(Guid id, Guid bookingId, CancellationToken ct)
+    {
+        var farmer = await reviews.GetFarmerAsync(Me, id, ct);
+        if (!await db.Bookings.AnyAsync(b => b.Id == bookingId && b.FarmerUserId == farmer.UserId, ct))
+            return this.Fail(404, "not_found");
+        await ratings.ClearNoShowAsync(bookingId, ct);
+        return NoContent();
+    }
+
+    private Staff Me => new(User.UserId(), StaffAccessFilter.IsAdmin(HttpContext));
+
+    private async Task<SellingRecord> RecordAsync(Guid farmerUserId, bool isAdmin, CancellationToken ct)
+    {
+        var record = await ratings.FarmerRecordAsync(farmerUserId, ct);
+        var noShows = await ratings.RecentNoShowsAsync(farmerUserId, ct);
+        var spaceIds = noShows.Select(b => b.SpaceId).Distinct().ToList();
+        var titles = await db.Spaces.IgnoreQueryFilters().Where(s => spaceIds.Contains(s.Id)).ToDictionaryAsync(s => s.Id, s => s.Title, ct);
+        return new SellingRecord(record.Average, record.Ratings, record.Completed, record.RecentNoShows,
+            noShows.Select(b => new NoShowRow(b.Id, b.Date, titles.GetValueOrDefault(b.SpaceId, ""), b.NoShowAt!.Value)).ToArray(), isAdmin);
     }
 
     private async Task<List<VerifierOption>> VerifierOptionsAsync(CancellationToken ct)

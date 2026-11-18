@@ -1894,4 +1894,105 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get consentDecline => 'Not now (log out)';
+
+  @override
+  String get notRatedYet => 'New, no ratings yet';
+
+  @override
+  String ratingCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ratings', one: '1 rating');
+    return '$_temp0';
+  }
+
+  @override
+  String get youRated => 'You rated';
+
+  @override
+  String starsTooltip(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count stars', one: '1 star');
+    return '$_temp0';
+  }
+
+  @override
+  String get ratingCommentHint => 'Anything others should know? (optional)';
+
+  @override
+  String get sendRating => 'Send rating';
+
+  @override
+  String get ratingThanks => 'Thanks for rating';
+
+  @override
+  String get rateSpace => 'Rate this space';
+
+  @override
+  String rateSpaceTitle(String space) {
+    return 'How was selling at $space?';
+  }
+
+  @override
+  String get rateFarmer => 'Rate the farmer';
+
+  @override
+  String rateFarmerTitle(String name) {
+    return 'How was $name at your space?';
+  }
+
+  @override
+  String get yourRecord => 'Your ratings and record';
+
+  @override
+  String get asFarmerLabel => 'As a farmer (from hosts)';
+
+  @override
+  String get asHostLabel => 'As a host (from farmers)';
+
+  @override
+  String stallsDone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count stalls done', one: '1 stall done');
+    return '$_temp0';
+  }
+
+  @override
+  String recentNoShows(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count no-shows in 90 days',
+      one: '1 no-show in 90 days',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String noShowsOfLimit(int count, int limit, int days) {
+    return 'No-shows in the last $days days: $count of $limit';
+  }
+
+  @override
+  String noShowRule(int limit, int days) {
+    return 'Hosts see this on your requests. With $limit no-shows in $days days you cannot request new slots. If one is wrong, report a problem.';
+  }
+
+  @override
+  String get sellingRecord => 'Selling record';
+
+  @override
+  String get stallsLabel => 'Stalls done';
+
+  @override
+  String get noShowsLabel => 'No-shows (90 days)';
+
+  @override
+  String get clearNoShow => 'Clear';
+
+  @override
+  String get clearNoShowQ => 'Clear this no-show?';
+
+  @override
+  String get clearNoShowBody =>
+      'Do this when the farmer did come (for example they could not check in). It will no longer count against them.';
+
+  @override
+  String get noShowClearedToast => 'No-show cleared';
 }
