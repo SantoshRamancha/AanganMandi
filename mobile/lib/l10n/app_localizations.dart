@@ -3680,6 +3680,330 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No-show cleared'**
   String get noShowClearedToast;
+
+  /// No description provided for @lookingFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking for'**
+  String get lookingFor;
+
+  /// No description provided for @chooseCrops.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose crops'**
+  String get chooseCrops;
+
+  /// No description provided for @changeCrops.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get changeCrops;
+
+  /// No description provided for @allCropsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'All crops. Choose crops to see only farmers selling them.'**
+  String get allCropsHint;
+
+  /// No description provided for @cropFilterHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Only farmers selling these are listed, and email alerts follow them too.'**
+  String get cropFilterHint;
+
+  /// No description provided for @showAllCrops.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all crops'**
+  String get showAllCrops;
+
+  /// No description provided for @whatCropsQ.
+  ///
+  /// In en, this message translates to:
+  /// **'Which crops are you looking for?'**
+  String get whatCropsQ;
+
+  /// No description provided for @chooseAtMostCrops.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose at most {count} crops'**
+  String chooseAtMostCrops(int count);
+
+  /// No description provided for @showTheseCrops.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Show farmers with this crop} other{Show farmers with these {count} crops}}'**
+  String showTheseCrops(int count);
+
+  /// No description provided for @nearbyEmptyForCrops.
+  ///
+  /// In en, this message translates to:
+  /// **'No farmer nearby is selling these crops today or tomorrow. Choose more crops, or show all.'**
+  String get nearbyEmptyForCrops;
+
+  /// No description provided for @blockedDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Days you are closed'**
+  String get blockedDays;
+
+  /// No description provided for @blockedDaysHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Close the space on a day it is normally open, like a family function. Farmers will not see it for that day.'**
+  String get blockedDaysHint;
+
+  /// No description provided for @noBlockedDays.
+  ///
+  /// In en, this message translates to:
+  /// **'No days blocked'**
+  String get noBlockedDays;
+
+  /// No description provided for @blockDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Block a day'**
+  String get blockDay;
+
+  /// No description provided for @unblockDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Open this day again'**
+  String get unblockDay;
+
+  /// No description provided for @blockDayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the day to close'**
+  String get blockDayTitle;
+
+  /// No description provided for @blockDayQ.
+  ///
+  /// In en, this message translates to:
+  /// **'Close on {day}?'**
+  String blockDayQ(String day);
+
+  /// No description provided for @blockDayBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting requests for this day will be declined and the farmers told. A day with a confirmed farmer cannot be blocked: cancel that booking first.'**
+  String get blockDayBody;
+
+  /// No description provided for @blockNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Note for farmers (optional)'**
+  String get blockNoteHint;
+
+  /// No description provided for @dayBlockedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Day blocked} =1{Day blocked, 1 request declined} other{Day blocked, {count} requests declined}}'**
+  String dayBlockedToast(int count);
+
+  /// No description provided for @dayOpenedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Day open again'**
+  String get dayOpenedToast;
+
+  /// No description provided for @noDaysToBlock.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no open days left to block in the next 60 days.'**
+  String get noDaysToBlock;
+
+  /// No description provided for @opsTabAnalytics.
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics'**
+  String get opsTabAnalytics;
+
+  /// No description provided for @analyticsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics'**
+  String get analyticsTitle;
+
+  /// No description provided for @analyticsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How selling is going across Aangan Mandi'**
+  String get analyticsSubtitle;
+
+  /// No description provided for @lastDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} days'**
+  String lastDays(int days);
+
+  /// No description provided for @analyticsSelling.
+  ///
+  /// In en, this message translates to:
+  /// **'Selling'**
+  String get analyticsSelling;
+
+  /// No description provided for @figRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Requests'**
+  String get figRequests;
+
+  /// No description provided for @figRequestsDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'{accepted} accepted · {declined} declined · {waiting} waiting'**
+  String figRequestsDetail(int accepted, int declined, int waiting);
+
+  /// No description provided for @figAcceptance.
+  ///
+  /// In en, this message translates to:
+  /// **'Requests accepted'**
+  String get figAcceptance;
+
+  /// No description provided for @figStallsHeld.
+  ///
+  /// In en, this message translates to:
+  /// **'Stalls held / confirmed'**
+  String get figStallsHeld;
+
+  /// No description provided for @figShowRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Farmers who came'**
+  String get figShowRate;
+
+  /// No description provided for @figNoShows.
+  ///
+  /// In en, this message translates to:
+  /// **'No-shows'**
+  String get figNoShows;
+
+  /// No description provided for @figHostFees.
+  ///
+  /// In en, this message translates to:
+  /// **'Fees for hosts (stalls held)'**
+  String get figHostFees;
+
+  /// No description provided for @analyticsDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Day by day'**
+  String get analyticsDaily;
+
+  /// No description provided for @figHeld.
+  ///
+  /// In en, this message translates to:
+  /// **'Stalls held'**
+  String get figHeld;
+
+  /// No description provided for @analyticsNoActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing in this period yet'**
+  String get analyticsNoActivity;
+
+  /// No description provided for @analyticsTop.
+  ///
+  /// In en, this message translates to:
+  /// **'Most stalls'**
+  String get analyticsTop;
+
+  /// No description provided for @topCrops.
+  ///
+  /// In en, this message translates to:
+  /// **'Crops'**
+  String get topCrops;
+
+  /// No description provided for @topAreas.
+  ///
+  /// In en, this message translates to:
+  /// **'Areas'**
+  String get topAreas;
+
+  /// No description provided for @stallCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 stall} other{{count} stalls}}'**
+  String stallCount(int count);
+
+  /// No description provided for @analyticsPeople.
+  ///
+  /// In en, this message translates to:
+  /// **'People and spaces'**
+  String get analyticsPeople;
+
+  /// No description provided for @figUsers.
+  ///
+  /// In en, this message translates to:
+  /// **'Users'**
+  String get figUsers;
+
+  /// No description provided for @figNewInPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} new in this period'**
+  String figNewInPeriod(int count);
+
+  /// No description provided for @figVerifiedFarmers.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified farmers'**
+  String get figVerifiedFarmers;
+
+  /// No description provided for @figWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} waiting for review'**
+  String figWaiting(int count);
+
+  /// No description provided for @figHosts.
+  ///
+  /// In en, this message translates to:
+  /// **'Hosts'**
+  String get figHosts;
+
+  /// No description provided for @figBuyers.
+  ///
+  /// In en, this message translates to:
+  /// **'Buyers'**
+  String get figBuyers;
+
+  /// No description provided for @figBuyersWithArea.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} saved an area'**
+  String figBuyersWithArea(int count);
+
+  /// No description provided for @analyticsTrust.
+  ///
+  /// In en, this message translates to:
+  /// **'Ratings and problems'**
+  String get analyticsTrust;
+
+  /// No description provided for @figSpaceStars.
+  ///
+  /// In en, this message translates to:
+  /// **'Spaces’ stars from farmers'**
+  String get figSpaceStars;
+
+  /// No description provided for @figFarmerStars.
+  ///
+  /// In en, this message translates to:
+  /// **'Farmers’ stars from hosts'**
+  String get figFarmerStars;
+
+  /// No description provided for @figReportsOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Problem reports open'**
+  String get figReportsOpen;
+
+  /// No description provided for @figReportsDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'{opened} reported · {resolved} resolved in this period'**
+  String figReportsDetail(int opened, int resolved);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

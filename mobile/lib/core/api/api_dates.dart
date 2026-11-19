@@ -5,3 +5,7 @@ DateTime? apiInstant(Object? v) {
   final hasZone = v.endsWith('Z') || RegExp(r'[+-]\d{2}:?\d{2}$').hasMatch(v);
   return DateTime.parse(hasZone ? v : '${v}Z').toLocal();
 }
+
+/// A calendar day as the API sends and reads it ("2026-11-20"), whatever the phone's language.
+String apiDate(DateTime d) =>
+    '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';

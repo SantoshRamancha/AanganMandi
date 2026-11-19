@@ -1970,4 +1970,205 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get noShowClearedToast => 'రాని నమోదు తొలగించబడింది';
+
+  @override
+  String get lookingFor => 'వెతుకుతున్నవి';
+
+  @override
+  String get chooseCrops => 'పంటలు ఎంచుకోండి';
+
+  @override
+  String get changeCrops => 'మార్చండి';
+
+  @override
+  String get allCropsHint => 'అన్ని పంటలు. ఆ పంటలు అమ్మే రైతులను మాత్రమే చూడటానికి పంటలను ఎంచుకోండి.';
+
+  @override
+  String get cropFilterHint => 'ఇవి అమ్మే రైతులు మాత్రమే చూపబడతారు, ఈమెయిల్ అలర్ట్‌లు కూడా వీటికే వస్తాయి.';
+
+  @override
+  String get showAllCrops => 'అన్ని పంటలు చూపించు';
+
+  @override
+  String get whatCropsQ => 'మీరు ఏ పంటల కోసం వెతుకుతున్నారు?';
+
+  @override
+  String chooseAtMostCrops(int count) {
+    return 'గరిష్టంగా $count పంటలు ఎంచుకోండి';
+  }
+
+  @override
+  String showTheseCrops(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'ఈ $count పంటలు ఉన్న రైతులను చూపించు',
+      one: 'ఈ పంట ఉన్న రైతులను చూపించు',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get nearbyEmptyForCrops =>
+      'ఈ రోజు లేదా రేపు దగ్గరలో ఈ పంటలు అమ్మే రైతులు లేరు. మరిన్ని పంటలు ఎంచుకోండి, లేదా అన్నీ చూపించండి.';
+
+  @override
+  String get blockedDays => 'మీరు మూసి ఉంచే రోజులు';
+
+  @override
+  String get blockedDaysHint =>
+      'సాధారణంగా తెరిచి ఉండే రోజున స్థలాన్ని మూసివేయండి, ఉదాహరణకు ఇంట్లో వేడుక. ఆ రోజు రైతులకు ఇది కనిపించదు.';
+
+  @override
+  String get noBlockedDays => 'బ్లాక్ చేసిన రోజులు లేవు';
+
+  @override
+  String get blockDay => 'ఒక రోజు బ్లాక్ చేయండి';
+
+  @override
+  String get unblockDay => 'ఈ రోజును మళ్లీ తెరవండి';
+
+  @override
+  String get blockDayTitle => 'మూసివేయాల్సిన రోజు ఎంచుకోండి';
+
+  @override
+  String blockDayQ(String day) {
+    return '$day న మూసివేయాలా?';
+  }
+
+  @override
+  String get blockDayBody =>
+      'ఈ రోజు కోసం వేచి ఉన్న అభ్యర్థనలు తిరస్కరించబడతాయి, రైతులకు తెలియజేయబడుతుంది. నిర్ధారించిన రైతు ఉన్న రోజును బ్లాక్ చేయలేరు: ముందుగా ఆ బుకింగ్‌ను రద్దు చేయండి.';
+
+  @override
+  String get blockNoteHint => 'రైతుల కోసం నోట్ (ఐచ్ఛికం)';
+
+  @override
+  String dayBlockedToast(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'రోజు బ్లాక్ చేయబడింది, $count అభ్యర్థనలు తిరస్కరించబడ్డాయి',
+      one: 'రోజు బ్లాక్ చేయబడింది, 1 అభ్యర్థన తిరస్కరించబడింది',
+      zero: 'రోజు బ్లాక్ చేయబడింది',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dayOpenedToast => 'రోజు మళ్లీ తెరవబడింది';
+
+  @override
+  String get noDaysToBlock => 'రాబోయే 60 రోజుల్లో బ్లాక్ చేయడానికి తెరిచి ఉన్న రోజులు లేవు.';
+
+  @override
+  String get opsTabAnalytics => 'విశ్లేషణ';
+
+  @override
+  String get analyticsTitle => 'విశ్లేషణ';
+
+  @override
+  String get analyticsSubtitle => 'ఆంగన్ మండీలో అమ్మకాలు ఎలా జరుగుతున్నాయి';
+
+  @override
+  String lastDays(int days) {
+    return '$days రోజులు';
+  }
+
+  @override
+  String get analyticsSelling => 'అమ్మకాలు';
+
+  @override
+  String get figRequests => 'అభ్యర్థనలు';
+
+  @override
+  String figRequestsDetail(int accepted, int declined, int waiting) {
+    return '$accepted అంగీకరించారు · $declined తిరస్కరించారు · $waiting వేచి ఉన్నాయి';
+  }
+
+  @override
+  String get figAcceptance => 'అంగీకరించిన అభ్యర్థనలు';
+
+  @override
+  String get figStallsHeld => 'జరిగిన / నిర్ధారించిన స్టాల్‌లు';
+
+  @override
+  String get figShowRate => 'వచ్చిన రైతులు';
+
+  @override
+  String get figNoShows => 'రాని సందర్భాలు';
+
+  @override
+  String get figHostFees => 'యజమానుల ఫీజు (జరిగిన స్టాల్‌లు)';
+
+  @override
+  String get analyticsDaily => 'రోజువారీగా';
+
+  @override
+  String get figHeld => 'జరిగిన స్టాల్‌లు';
+
+  @override
+  String get analyticsNoActivity => 'ఈ వ్యవధిలో ఇంకా ఏమీ లేదు';
+
+  @override
+  String get analyticsTop => 'ఎక్కువ స్టాల్‌లు';
+
+  @override
+  String get topCrops => 'పంటలు';
+
+  @override
+  String get topAreas => 'ప్రాంతాలు';
+
+  @override
+  String stallCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count స్టాల్‌లు', one: '1 స్టాల్');
+    return '$_temp0';
+  }
+
+  @override
+  String get analyticsPeople => 'వ్యక్తులు, స్థలాలు';
+
+  @override
+  String get figUsers => 'వినియోగదారులు';
+
+  @override
+  String figNewInPeriod(int count) {
+    return 'ఈ వ్యవధిలో $count కొత్తవారు';
+  }
+
+  @override
+  String get figVerifiedFarmers => 'ధృవీకరించిన రైతులు';
+
+  @override
+  String figWaiting(int count) {
+    return '$count సమీక్ష కోసం వేచి ఉన్నాయి';
+  }
+
+  @override
+  String get figHosts => 'యజమానులు';
+
+  @override
+  String get figBuyers => 'కొనుగోలుదారులు';
+
+  @override
+  String figBuyersWithArea(int count) {
+    return '$count మంది ప్రాంతం సేవ్ చేశారు';
+  }
+
+  @override
+  String get analyticsTrust => 'రేటింగ్‌లు, సమస్యలు';
+
+  @override
+  String get figSpaceStars => 'రైతుల నుండి స్థలాల నక్షత్రాలు';
+
+  @override
+  String get figFarmerStars => 'యజమానుల నుండి రైతుల నక్షత్రాలు';
+
+  @override
+  String get figReportsOpen => 'తెరిచి ఉన్న సమస్య రిపోర్ట్‌లు';
+
+  @override
+  String figReportsDetail(int opened, int resolved) {
+    return 'ఈ వ్యవధిలో $opened రిపోర్ట్ అయ్యాయి · $resolved పరిష్కరించబడ్డాయి';
+  }
 }

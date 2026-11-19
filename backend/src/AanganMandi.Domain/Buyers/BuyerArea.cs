@@ -15,6 +15,11 @@ public class BuyerArea : Entity
     public int RadiusKm { get; set; } = 2;
     /// <summary>Email alerts (day before, selling now). The in-app list shows either way.</summary>
     public bool AlertsOn { get; set; } = true;
+    /// <summary>
+    /// Crops the buyer is looking for, comma-separated codes ("TOMATO,custom:Drumstick"); null for any. The nearby list
+    /// and the alerts show only farmers selling one of them.
+    /// </summary>
+    public string? Crops { get; set; }
 
     /// <summary>The radii a buyer can pick, in km.</summary>
     public static readonly int[] Radii = [1, 2, 5];

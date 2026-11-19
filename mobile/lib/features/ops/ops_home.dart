@@ -7,6 +7,7 @@ import '../../core/widgets/dashboard.dart';
 import '../../core/widgets/responsive.dart';
 import '../../l10n/app_localizations.dart';
 import '../home/home_screen.dart';
+import 'analytics_page.dart';
 import 'farmer_queue.dart';
 import 'ops_widgets.dart';
 import 'space_queue.dart';
@@ -56,6 +57,7 @@ class _OpsHomeState extends ConsumerState<OpsHome> {
               (Icons.home_work_outlined, Icons.home_work, l10n.opsTabSpaces, const SpaceQueue()),
               if (d.isAdmin) (Icons.badge_outlined, Icons.badge, l10n.opsTabVerifiers, const VerifiersPage()),
               if (d.isAdmin) (Icons.report_outlined, Icons.report, l10n.opsTabReports, const ReportsPage()),
+              if (d.isAdmin) (Icons.insights_outlined, Icons.insights, l10n.opsTabAnalytics, const AnalyticsPage()),
             ];
             final tab = _tab.clamp(0, pages.length - 1);
             final page = pages[tab].$4;

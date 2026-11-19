@@ -220,8 +220,11 @@ class NearbyStall {
       address = j['address'] as String?,
       latitude = (j['latitude'] as num?)?.toDouble(),
       longitude = (j['longitude'] as num?)?.toDouble(),
-      distanceKm = (j['distanceKm'] as num).toDouble();
+      distanceKm = (j['distanceKm'] as num).toDouble(),
+      matched = {...((j['matched'] as List?) ?? const []).cast<String>()};
 
+  /// Crop codes in [produce] the buyer is looking for (empty when they look for any).
+  final Set<String> matched;
   final String bookingId, from, to, spaceTitle, locality;
   final DateTime date;
   final bool sellingNow;
@@ -242,17 +245,28 @@ class BuyerSettings {
 }
 
 class BuyerArea {
-  const BuyerArea({required this.latitude, required this.longitude, required this.radiusKm, required this.alertsOn});
+  const BuyerArea({
+    required this.latitude,
+    required this.longitude,
+    required this.radiusKm,
+    required this.alertsOn,
+    this.crops = const [],
+  });
 
   BuyerArea.fromJson(Map<String, dynamic> j)
     : latitude = (j['latitude'] as num).toDouble(),
       longitude = (j['longitude'] as num).toDouble(),
       radiusKm = j['radiusKm'] as int,
-      alertsOn = j['alertsOn'] as bool;
+      alertsOn = j['alertsOn'] as bool,
+      crops = ((j['crops'] as List?) ?? const []).cast<String>();
 
   final double latitude, longitude;
   final int radiusKm;
   final bool alertsOn;
+
+  /// Crops the buyer is looking for (codes, `custom:<name>` for typed-in ones); empty for any. Saved separately
+  /// (BuyerApi.saveCrops), so toJson leaves them out.
+  final List<String> crops;
 
   Map<String, dynamic> toJson() => {
     'latitude': latitude,

@@ -35,6 +35,10 @@ namespace AanganMandi.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Crops")
+                        .HasMaxLength(700)
+                        .HasColumnType("nvarchar(700)");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -1423,6 +1427,39 @@ namespace AanganMandi.Infrastructure.Persistence.Migrations
                     b.ToTable("Spaces");
                 });
 
+            modelBuilder.Entity("AanganMandi.Domain.Spaces.SpaceBlockedDate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("SpaceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SpaceId", "Date")
+                        .IsUnique();
+
+                    b.ToTable("SpaceBlockedDates");
+                });
+
             modelBuilder.Entity("AanganMandi.Domain.Spaces.SpacePhoto", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1795,6 +1832,15 @@ namespace AanganMandi.Infrastructure.Persistence.Migrations
                     b.HasOne("AanganMandi.Domain.Identity.User", null)
                         .WithMany("Roles")
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AanganMandi.Domain.Spaces.SpaceBlockedDate", b =>
+                {
+                    b.HasOne("AanganMandi.Domain.Spaces.Space", null)
+                        .WithMany()
+                        .HasForeignKey("SpaceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

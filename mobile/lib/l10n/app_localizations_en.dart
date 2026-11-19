@@ -1995,4 +1995,205 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noShowClearedToast => 'No-show cleared';
+
+  @override
+  String get lookingFor => 'Looking for';
+
+  @override
+  String get chooseCrops => 'Choose crops';
+
+  @override
+  String get changeCrops => 'Change';
+
+  @override
+  String get allCropsHint => 'All crops. Choose crops to see only farmers selling them.';
+
+  @override
+  String get cropFilterHint => 'Only farmers selling these are listed, and email alerts follow them too.';
+
+  @override
+  String get showAllCrops => 'Show all crops';
+
+  @override
+  String get whatCropsQ => 'Which crops are you looking for?';
+
+  @override
+  String chooseAtMostCrops(int count) {
+    return 'Choose at most $count crops';
+  }
+
+  @override
+  String showTheseCrops(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Show farmers with these $count crops',
+      one: 'Show farmers with this crop',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get nearbyEmptyForCrops =>
+      'No farmer nearby is selling these crops today or tomorrow. Choose more crops, or show all.';
+
+  @override
+  String get blockedDays => 'Days you are closed';
+
+  @override
+  String get blockedDaysHint =>
+      'Close the space on a day it is normally open, like a family function. Farmers will not see it for that day.';
+
+  @override
+  String get noBlockedDays => 'No days blocked';
+
+  @override
+  String get blockDay => 'Block a day';
+
+  @override
+  String get unblockDay => 'Open this day again';
+
+  @override
+  String get blockDayTitle => 'Choose the day to close';
+
+  @override
+  String blockDayQ(String day) {
+    return 'Close on $day?';
+  }
+
+  @override
+  String get blockDayBody =>
+      'Waiting requests for this day will be declined and the farmers told. A day with a confirmed farmer cannot be blocked: cancel that booking first.';
+
+  @override
+  String get blockNoteHint => 'Note for farmers (optional)';
+
+  @override
+  String dayBlockedToast(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Day blocked, $count requests declined',
+      one: 'Day blocked, 1 request declined',
+      zero: 'Day blocked',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dayOpenedToast => 'Day open again';
+
+  @override
+  String get noDaysToBlock => 'There are no open days left to block in the next 60 days.';
+
+  @override
+  String get opsTabAnalytics => 'Analytics';
+
+  @override
+  String get analyticsTitle => 'Analytics';
+
+  @override
+  String get analyticsSubtitle => 'How selling is going across Aangan Mandi';
+
+  @override
+  String lastDays(int days) {
+    return '$days days';
+  }
+
+  @override
+  String get analyticsSelling => 'Selling';
+
+  @override
+  String get figRequests => 'Requests';
+
+  @override
+  String figRequestsDetail(int accepted, int declined, int waiting) {
+    return '$accepted accepted · $declined declined · $waiting waiting';
+  }
+
+  @override
+  String get figAcceptance => 'Requests accepted';
+
+  @override
+  String get figStallsHeld => 'Stalls held / confirmed';
+
+  @override
+  String get figShowRate => 'Farmers who came';
+
+  @override
+  String get figNoShows => 'No-shows';
+
+  @override
+  String get figHostFees => 'Fees for hosts (stalls held)';
+
+  @override
+  String get analyticsDaily => 'Day by day';
+
+  @override
+  String get figHeld => 'Stalls held';
+
+  @override
+  String get analyticsNoActivity => 'Nothing in this period yet';
+
+  @override
+  String get analyticsTop => 'Most stalls';
+
+  @override
+  String get topCrops => 'Crops';
+
+  @override
+  String get topAreas => 'Areas';
+
+  @override
+  String stallCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count stalls', one: '1 stall');
+    return '$_temp0';
+  }
+
+  @override
+  String get analyticsPeople => 'People and spaces';
+
+  @override
+  String get figUsers => 'Users';
+
+  @override
+  String figNewInPeriod(int count) {
+    return '$count new in this period';
+  }
+
+  @override
+  String get figVerifiedFarmers => 'Verified farmers';
+
+  @override
+  String figWaiting(int count) {
+    return '$count waiting for review';
+  }
+
+  @override
+  String get figHosts => 'Hosts';
+
+  @override
+  String get figBuyers => 'Buyers';
+
+  @override
+  String figBuyersWithArea(int count) {
+    return '$count saved an area';
+  }
+
+  @override
+  String get analyticsTrust => 'Ratings and problems';
+
+  @override
+  String get figSpaceStars => 'Spaces’ stars from farmers';
+
+  @override
+  String get figFarmerStars => 'Farmers’ stars from hosts';
+
+  @override
+  String get figReportsOpen => 'Problem reports open';
+
+  @override
+  String figReportsDetail(int opened, int resolved) {
+    return '$opened reported · $resolved resolved in this period';
+  }
 }

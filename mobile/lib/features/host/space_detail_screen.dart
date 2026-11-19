@@ -10,6 +10,7 @@ import '../../core/widgets/photo_tile.dart';
 import '../../core/widgets/responsive.dart';
 import '../../core/widgets/feedback.dart';
 import '../../l10n/app_localizations.dart';
+import 'blocked_dates.dart';
 import 'host_home.dart';
 import 'space_form_screen.dart';
 
@@ -122,6 +123,7 @@ class _SpaceDetailScreenState extends ConsumerState<SpaceDetailScreen> {
                       ],
                     ),
                   ),
+                  BlockedDatesSection(space: s),
                   FormSection(
                     title: '${l10n.spacePhotos} · ${s.photos.length}',
                     child: Column(
