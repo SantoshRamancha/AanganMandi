@@ -2171,4 +2171,119 @@ class AppLocalizationsTe extends AppLocalizations {
   String figReportsDetail(int opened, int resolved) {
     return 'ఈ వ్యవధిలో $opened రిపోర్ట్ అయ్యాయి · $resolved పరిష్కరించబడ్డాయి';
   }
+
+  @override
+  String get blockDays => 'కొన్ని రోజులు బ్లాక్ చేయండి';
+
+  @override
+  String get blockRangeTitle => 'మొదటి, చివరి రోజు ఎంచుకోండి';
+
+  @override
+  String blockRangeQ(String from, String to) {
+    return '$from నుండి $to వరకు మూసివేయాలా?';
+  }
+
+  @override
+  String get blockRangeBody =>
+      'మీ స్థలం సాధారణంగా తెరిచి ఉండే రోజులు మాత్రమే బ్లాక్ అవుతాయి. ఆ రోజుల కోసం వేచి ఉన్న అభ్యర్థనలు తిరస్కరించబడతాయి, రైతులకు తెలియజేయబడుతుంది. నిర్ధారించిన రైతు ఉన్న రోజులు తెరిచే ఉంటాయి: ముందుగా ఆ బుకింగ్‌లను రద్దు చేయండి.';
+
+  @override
+  String daysBlockedToast(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count రోజులు బ్లాక్ చేయబడ్డాయి',
+      one: '1 రోజు బ్లాక్ చేయబడింది',
+      zero: 'ఏ రోజూ బ్లాక్ కాలేదు',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String requestsDeclined(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count అభ్యర్థనలు తిరస్కరించబడ్డాయి',
+      one: '1 అభ్యర్థన తిరస్కరించబడింది',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bookedDaysTitle => 'కొన్ని రోజులు ఇంకా తెరిచే ఉన్నాయి';
+
+  @override
+  String bookedDaysBody(String days) {
+    return '$days న ఒక రైతు నిర్ధారించబడ్డారు, కాబట్టి ఆ రోజులు బ్లాక్ కాలేదు. మీరు ఆతిథ్యం ఇవ్వలేకపోతే ముందుగా ఆ బుకింగ్‌లను రద్దు చేయండి.';
+  }
+
+  @override
+  String get oneYear => '1 సంవత్సరం';
+
+  @override
+  String get myEarnings => 'నా సంపాదన';
+
+  @override
+  String get myEarningsSubtitle => 'మీ స్థలాలకు వచ్చిన రైతుల నుండి ఫీజు';
+
+  @override
+  String get myStalls => 'నా స్టాల్‌లు';
+
+  @override
+  String get myStallsSubtitle => 'మీ అమ్మకపు రోజులు, మీరు చెల్లించిన ఫీజు, ఏమి అమ్ముడైంది';
+
+  @override
+  String earningsCardLine(int held, String amount) {
+    String _temp0 = intl.Intl.pluralLogic(
+      held,
+      locale: localeName,
+      other: '$held స్టాల్‌ల నుండి ₹$amount',
+      one: '1 స్టాల్ నుండి ₹$amount',
+    );
+    return '$_temp0 (గత 30 రోజులు)';
+  }
+
+  @override
+  String stallsCardLine(int held, String amount) {
+    String _temp0 = intl.Intl.pluralLogic(held, locale: localeName, other: '$held స్టాల్‌లు', one: '1 స్టాల్');
+    return '$_temp0, ఫీజు ₹$amount (గత 30 రోజులు)';
+  }
+
+  @override
+  String get figFeesEarned => 'వచ్చిన ఫీజు';
+
+  @override
+  String get figFeesPaid => 'చెల్లించిన ఫీజు';
+
+  @override
+  String get figComingUp => 'రాబోయే స్టాల్‌లు';
+
+  @override
+  String figExpected(String amount) {
+    return '₹$amount రావచ్చు';
+  }
+
+  @override
+  String figRequestsAnswered(int accepted, int declined) {
+    return '$accepted అంగీకరించారు · $declined తిరస్కరించారు';
+  }
+
+  @override
+  String get figMyRating => 'మీ రేటింగ్';
+
+  @override
+  String get figSellingDays => 'ప్లాన్ చేసిన అమ్మకపు రోజులు';
+
+  @override
+  String get bySpace => 'స్థలం వారీగా';
+
+  @override
+  String get soldMost => 'మీరు ఎక్కువగా అమ్మినవి';
+
+  @override
+  String get soldWhere => 'మీరు ఎక్కువగా అమ్మిన చోట్లు';
+
+  @override
+  String get summaryNote => 'రైతు చెక్-ఇన్ చేసిన స్టాల్‌ల ఫీజు మాత్రమే లెక్కించబడుతుంది. రేటింగ్‌లు మొత్తం కాలానికి.';
 }

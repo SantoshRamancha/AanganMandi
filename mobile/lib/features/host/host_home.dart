@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/api/api_client.dart';
 import '../../core/api/app_api.dart';
 import '../../core/api/models.dart';
+import '../../core/api/summary_api.dart';
 import '../../core/api/trip_api.dart';
 import '../../core/api/trip_models.dart' show HostBooking;
 import '../../core/labels.dart';
@@ -14,6 +15,7 @@ import '../../core/widgets/dashboard.dart';
 import '../../core/widgets/responsive.dart';
 import '../../l10n/app_localizations.dart';
 import '../home/home_screen.dart';
+import '../summary/summary_screens.dart';
 import '../trips/trip_widgets.dart';
 import 'share_stall_sheet.dart';
 
@@ -55,6 +57,7 @@ class HostHome extends ConsumerWidget {
         return RefreshIndicator(
           onRefresh: () {
             ref.invalidate(hostBookingsProvider);
+            ref.invalidate(hostSummaryProvider);
             return ref.refresh(mySpacesProvider.future);
           },
           child: ListView(
@@ -119,6 +122,8 @@ class HostHome extends ConsumerWidget {
                             title: Text(l10n.noBookingYet),
                           ),
                         ),
+                      SectionHeader(l10n.myEarnings),
+                      const EarningsCard(),
                       SectionHeader(
                         l10n.mySpaces,
                         action: TextButton.icon(

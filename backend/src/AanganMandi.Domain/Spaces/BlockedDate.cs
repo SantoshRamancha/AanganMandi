@@ -33,4 +33,20 @@ public static class BlockedDateRules
         if (note?.Trim().Length > MaxNote) return ApiError.Of("block_note_long", ("max", MaxNote));
         return null;
     }
+
+    /// <summary>
+    /// Null when the days from <paramref name="from"/> to <paramref name="to"/> can be blocked together (travel, a
+    /// family function over a few days), else why not. The same limits as one day.
+    /// </summary>
+    public static ApiError? CheckRange(DateOnly from, DateOnly to, DateOnly today, string? note)
+    {
+        if (to < from) return new("block_range_order");
+        return Check(from, today, note) ?? Check(to, today, null);
+    }
+
+    /// <summary>Every day from <paramref name="from"/> to <paramref name="to"/>.</summary>
+    public static IEnumerable<DateOnly> Days(DateOnly from, DateOnly to)
+    {
+        for (var d = from; d <= to; d = d.AddDays(1)) yield return d;
+    }
 }

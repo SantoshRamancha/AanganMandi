@@ -55,6 +55,7 @@ public static class DependencyInjection
         services.AddScoped<Services.RatingService>();
         services.AddScoped<Services.BlockedDateService>();
         services.AddScoped<Services.AnalyticsService>();
+        services.AddScoped<Services.SummaryService>();
 
         // Error alerts: Serilog hands Error/Fatal events to the sink; the hosted service emails them (Alerts section).
         services.Configure<Logging.ErrorAlertOptions>(config.GetSection("Alerts"));

@@ -4004,6 +4004,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{opened} reported · {resolved} resolved in this period'**
   String figReportsDetail(int opened, int resolved);
+
+  /// No description provided for @blockDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Block several days'**
+  String get blockDays;
+
+  /// No description provided for @blockRangeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the first and last day'**
+  String get blockRangeTitle;
+
+  /// No description provided for @blockRangeQ.
+  ///
+  /// In en, this message translates to:
+  /// **'Close from {from} to {to}?'**
+  String blockRangeQ(String from, String to);
+
+  /// No description provided for @blockRangeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the days your space is normally open are blocked. Waiting requests for them will be declined and the farmers told. Days with a confirmed farmer stay open: cancel those bookings first.'**
+  String get blockRangeBody;
+
+  /// No description provided for @daysBlockedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No days blocked} =1{1 day blocked} other{{count} days blocked}}'**
+  String daysBlockedToast(int count);
+
+  /// No description provided for @requestsDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 request declined} other{{count} requests declined}}'**
+  String requestsDeclined(int count);
+
+  /// No description provided for @bookedDaysTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Some days are still open'**
+  String get bookedDaysTitle;
+
+  /// No description provided for @bookedDaysBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A farmer is confirmed on {days}, so those days were not blocked. Cancel those bookings first if you cannot host them.'**
+  String bookedDaysBody(String days);
+
+  /// No description provided for @oneYear.
+  ///
+  /// In en, this message translates to:
+  /// **'1 year'**
+  String get oneYear;
+
+  /// No description provided for @myEarnings.
+  ///
+  /// In en, this message translates to:
+  /// **'My earnings'**
+  String get myEarnings;
+
+  /// No description provided for @myEarningsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Fees from farmers who came to your spaces'**
+  String get myEarningsSubtitle;
+
+  /// No description provided for @myStalls.
+  ///
+  /// In en, this message translates to:
+  /// **'My stalls'**
+  String get myStalls;
+
+  /// No description provided for @myStallsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your selling days, the fees you paid and what sold'**
+  String get myStallsSubtitle;
+
+  /// No description provided for @earningsCardLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{held, plural, =1{₹{amount} from 1 stall} other{₹{amount} from {held} stalls}} in the last 30 days'**
+  String earningsCardLine(int held, String amount);
+
+  /// No description provided for @stallsCardLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{held, plural, =1{1 stall held} other{{held} stalls held}}, ₹{amount} in fees, in the last 30 days'**
+  String stallsCardLine(int held, String amount);
+
+  /// No description provided for @figFeesEarned.
+  ///
+  /// In en, this message translates to:
+  /// **'Fees earned'**
+  String get figFeesEarned;
+
+  /// No description provided for @figFeesPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Fees paid'**
+  String get figFeesPaid;
+
+  /// No description provided for @figComingUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Stalls coming up'**
+  String get figComingUp;
+
+  /// No description provided for @figExpected.
+  ///
+  /// In en, this message translates to:
+  /// **'₹{amount} expected'**
+  String figExpected(String amount);
+
+  /// No description provided for @figRequestsAnswered.
+  ///
+  /// In en, this message translates to:
+  /// **'{accepted} accepted · {declined} declined'**
+  String figRequestsAnswered(int accepted, int declined);
+
+  /// No description provided for @figMyRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Your rating'**
+  String get figMyRating;
+
+  /// No description provided for @figSellingDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Selling days planned'**
+  String get figSellingDays;
+
+  /// No description provided for @bySpace.
+  ///
+  /// In en, this message translates to:
+  /// **'By space'**
+  String get bySpace;
+
+  /// No description provided for @soldMost.
+  ///
+  /// In en, this message translates to:
+  /// **'What you sold most'**
+  String get soldMost;
+
+  /// No description provided for @soldWhere.
+  ///
+  /// In en, this message translates to:
+  /// **'Where you sold most'**
+  String get soldWhere;
+
+  /// No description provided for @summaryNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Fees count only stalls where the farmer checked in. Ratings are for all time.'**
+  String get summaryNote;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

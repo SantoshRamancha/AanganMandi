@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/api/api_client.dart';
 import '../../core/api/app_api.dart';
 import '../../core/api/models.dart';
+import '../../core/api/summary_api.dart';
 import '../../core/api/trip_api.dart';
 import '../../core/api/trip_models.dart';
 import '../../core/labels.dart';
@@ -15,6 +16,7 @@ import '../../core/widgets/responsive.dart';
 import '../../core/widgets/feedback.dart';
 import '../../l10n/app_localizations.dart';
 import '../home/home_screen.dart';
+import '../summary/summary_screens.dart';
 import '../trips/trip_widgets.dart';
 import '../trips/trips_section.dart';
 
@@ -46,6 +48,7 @@ class FarmerHome extends ConsumerWidget {
         return RefreshIndicator(
           onRefresh: () {
             ref.invalidate(tripsProvider);
+            ref.invalidate(farmerSummaryProvider);
             return ref.refresh(farmerProvider.future);
           },
           child: ListView(
@@ -138,6 +141,8 @@ class _VerifiedDashboard extends ConsumerWidget {
                 StatTile(value: s.completed, label: l10n.statCompletedTrips, icon: Icons.task_alt),
               ],
             ),
+            const SizedBox(height: 12),
+            const MyStallsCard(),
             SectionHeader(l10n.nextTrip),
             if (next != null) _NextTripCard(trip: next) else _NoTripCard(onPlan: onPlan),
             if (list.isNotEmpty) ...[

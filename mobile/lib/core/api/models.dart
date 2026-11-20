@@ -143,3 +143,15 @@ class BlockedDate {
   final DateTime date;
   final String? note;
 }
+
+/// Blocking several days: the days now closed, the open days left alone because a farmer is confirmed, and how
+/// many waiting requests were declined.
+class BlockRangeResult {
+  BlockRangeResult.fromJson(Map<String, dynamic> j)
+    : blocked = [for (final d in j['blocked'] as List) DateTime.parse(d as String)],
+      booked = [for (final d in j['booked'] as List) DateTime.parse(d as String)],
+      declinedRequests = j['declinedRequests'] as int;
+
+  final List<DateTime> blocked, booked;
+  final int declinedRequests;
+}

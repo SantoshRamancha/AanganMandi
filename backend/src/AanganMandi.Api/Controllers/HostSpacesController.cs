@@ -36,6 +36,12 @@ public class HostSpacesController(SpaceService spaces, RatingService ratings, Bl
     public record BlockRequest(DateOnly Date, string? Note);
     /// <summary>A day the host closed the space. DeclinedRequests: waiting requests for it declined by blocking.</summary>
     public record BlockedDateDto(DateOnly Date, string? Note, int DeclinedRequests = 0);
+    public record BlockRangeRequest(DateOnly From, DateOnly To, string? Note);
+    /// <summary>
+    /// Blocked: the open days now closed. Booked: open days left alone because a farmer is confirmed.
+    /// DeclinedRequests: waiting requests for the blocked days.
+    /// </summary>
+    public record BlockRangeDto(DateOnly[] Blocked, DateOnly[] Booked, int DeclinedRequests);
 
     private const long UploadLimit = SpaceService.MaxUploadBytes + 64 * 1024;
 
@@ -120,6 +126,17 @@ public class HostSpacesController(SpaceService spaces, RatingService ratings, Bl
     {
         var (d, declined) = await blocked.BlockAsync(User.UserId(), id, req.Date, req.Note, ct);
         return new BlockedDateDto(d.Date, d.Note, declined);
+    }
+
+    /// <summary>
+    /// Closes the space from one day to another (up to 60 days ahead), on the weekdays it is open. Days with a
+    /// confirmed farmer are skipped and returned as Booked; waiting requests for the blocked days are declined.
+    /// </summary>
+    [HttpPost("{id:guid}/blocked-dates/range")]
+    public async Task<BlockRangeDto> BlockRange(Guid id, BlockRangeRequest req, CancellationToken ct)
+    {
+        var r = await blocked.BlockRangeAsync(User.UserId(), id, req.From, req.To, req.Note, ct);
+        return new BlockRangeDto([.. r.Blocked.Select(d => d.Date)], [.. r.Booked], r.DeclinedRequests);
     }
 
     /// <summary>Opens the day again.</summary>
