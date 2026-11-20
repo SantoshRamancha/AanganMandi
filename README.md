@@ -55,6 +55,9 @@ role in the database on every call, so a removed verifier loses access at once.
 | Rate after the stall: the farmer rates the space, the host rates the farmer (1–5 stars, optional comment, once, within 14 days); stars show on space cards and on the farmer's requests (see [Ratings and no-shows](#ratings-and-no-shows)) | verified farmer, host | app → My trips → the trip; Bookings → Past |
 | Farmer's record on every request: hosts' stars, stalls done, no-shows in the last 90 days; 3 no-shows block new requests | host sees, farmer is held to it | app → Bookings; My profile → Your ratings and record |
 | A farmer's selling record and recent no-shows; clear a wrong no-show | verifier (see), admin (clear) | app → Operations → a verified farmer |
+| Look for crops: choose up to 10 (from the list or typed in); the nearby list and the email alerts then show only farmers selling one of them, with the matching crop marked (see [Crop search, blocked days and analytics](#crop-search-blocked-days-and-analytics)) | buyer | app → buyer home → Looking for |
+| Block a day the space is normally open (family function, travel), with a note; that day's waiting requests are declined, farmers do not find the space for it; open it again with ✕ | host | app → a space → Days you are closed |
+| Analytics for the last 7, 30 or 90 days: requests and acceptance, stalls held, who came, no-shows, fees, day by day, top crops and areas, people, ratings, problem reports | admin | app → Operations → Analytics |
 
 Not built yet: in-app payment, produce browsing beyond the nearby list, maps, push notifications (alerts and booking news arrive by email, and in the app when it is opened).
 
@@ -182,7 +185,8 @@ booking and the host home. Once the slot is over without a check-in, the host ca
 table `BuyerAreas`; `DELETE` forgets it). Then:
 
 - the buyer home lists confirmed stalls inside that radius for the rest of today and tomorrow
-  (`GET /api/v1/buyers/me/nearby`), farmers who have checked in first as **Selling now**;
+  (`GET /api/v1/buyers/me/nearby`), farmers who have checked in first as **Selling now**; a buyer who chose crops sees
+  only farmers selling them (see [Crop search](#crop-search-blocked-days-and-analytics));
 - the exact address shows only while the farmer is there; before that, only the area and distance;
 - with email alerts on and an email in My profile, they get the evening digest (Hangfire job `nearby-day-before`, 12:30
   UTC = 18:00 India) and a "selling now" email when a farmer checks in. `NearbyAlerts` records each one, so a buyer never
@@ -337,8 +341,10 @@ the response records the app reads. The rules and state changes live in `Infrast
 | `FarmerVerificationService` | details, evidence and its photo, reset, submit (routes to a verifier) |
 | `ReviewService` | staff decisions on farmers and spaces, reassigning a farmer |
 | `ReportService` | file a problem report, resolve one |
-| `BuyerService` | the saved area, the nearby list |
+| `BuyerService` | the saved area and crops, the nearby list (filtered by crop) |
 | `RatingService` | ratings, a space's stars, a farmer's record, clearing a no-show |
+| `BlockedDateService` | a host's blocked days: list, block (declining that day's requests), open again |
+| `AnalyticsService` | the admin figures for a period (read only) |
 
 A service refuses with an `ApiException` and never sees `HttpContext`, so the same rule holds from any caller, and the
 integration tests exercise it through the real endpoints. Small account settings (email, language, role, consent) stay
@@ -362,6 +368,42 @@ in `UsersController`.
 
 Migration: `RatingsAndNoShows` (the `Ratings` table, one per booking and side; an index for counting no-shows).
 
+## Crop search, blocked days and analytics
+
+**Crop search (buyers).** `PUT /api/v1/buyers/me/crops { crops: ["TOMATO", "custom:Drumstick"] }` saves up to 10 crops
+the buyer is looking for (`[]` for any; it needs a saved area, else `buyer_area_required`). Codes are master crop codes or
+`custom:<name>` for a crop typed in by hand, checked like a farmer's (`crop_unknown`, `crops_too_many`).
+- `GET /api/v1/buyers/me/nearby` then lists only stalls selling one of them; `?crops=ONION&crops=TOMATO` searches other
+  crops without saving, `?crops=` lists everyone. Each stall has `matched`: the produce codes that matched, which the
+  app marks with a tick.
+- Matching (`CropMatch`, unit-tested): master crops by code; a typed-in crop matches the same name typed by the other side,
+  or a master crop with that name in English, Telugu or Hindi, ignoring case (a farmer's "custom:Tomato" is a Tomato).
+- The evening digest and the "selling now" email follow the same crops, so a buyer looking for onions only hears about
+  onions. Stored as `BuyerAreas.Crops`.
+
+**Blocked days (hosts).** Under `/api/v1/hosts/me/spaces/{id}/blocked-dates`: `GET` lists the days from today on,
+`POST { date, note? }` blocks one (today up to 60 days ahead, note up to 100 characters; blocking it again only changes the
+note), `DELETE .../{yyyy-MM-dd}` opens it again.
+- A day with a confirmed farmer cannot be blocked (`block_date_booked`): the host cancels that booking first, so the
+  farmer is told why. The day's waiting requests are declined with the note (or "The host is not available that day")
+  and the farmers get the usual email; the answer says how many (`declinedRequests`).
+- Farmers' space search leaves the space out for that day and a request for it is refused (`space_closed_that_day`).
+- Table `SpaceBlockedDates` (one row per space and day); deleting the space deletes its rows.
+
+**Analytics (admins).** `GET /api/v1/ops/analytics?days=7|30|90` (admins only; verifiers get 403), periods in India
+dates ending today. Figures only, no names or phone numbers:
+
+| Part | What it counts |
+|---|---|
+| `requests` | requests made in the period; accepted (including ones cancelled later), declined, cancelled, still waiting; acceptance rate = accepted ÷ answered |
+| `stalls` | confirmed stalls dated in the period; held (farmer checked in), no-shows, show rate = held ÷ stalls whose day is over, fees of held stalls |
+| `daily` | each day: requests made, stalls, stalls held (a bar chart in the app) |
+| `topCrops`, `topAreas` | the 8 crops and localities with most confirmed stalls |
+| `people` | users (and new ones in the period), farmers verified and waiting, hosts, buyers (and those with an area), spaces live and waiting |
+| `ratings`, `reports` | ratings given and both averages; problem reports opened and resolved in the period, open now |
+
+Migration: `BuyerCropsAndBlockedDates` (`BuyerAreas.Crops`, the `SpaceBlockedDates` table).
+
 ## Tests and CI
 
 ```bash
@@ -377,7 +419,8 @@ The integration tests start the whole API in memory (`WebApplicationFactory`: re
 flow, controllers, services, EF Core) against a new database `AanganMandi_IT_<random>` built from the migrations and
 dropped at the end, so the dev database is never touched. Files go to a temp folder, emails to the log, and the
 background jobs are off (`BackgroundJobs:Enabled=false`). They cover sign-in and refusals in each language, role checks,
-farmer verification to approval, booking and confirming a space, problem reports, ratings and the no-show limit.
+farmer verification to approval, booking and confirming a space, problem reports, ratings and the no-show limit, crop
+search, blocked days, and the analytics (and that only admins see them).
 SQL Server comes from `AANGAN_TEST_SQL` (a connection string without a database); without it, the local default
 instance with Windows sign-in is used.
 

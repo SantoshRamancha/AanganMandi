@@ -66,15 +66,18 @@ public class TripService(AppDbContext db, INotifier notifier)
     }
 
     /// <summary>
-    /// Live spaces with a free slot for the trip: open on its weekday, big enough for its vehicle, nobody confirmed
-    /// for that day, and not the farmer's own; cheapest first. <paramref name="area"/> matches locality or title.
+    /// Live spaces with a free slot for the trip: open on its weekday and not blocked by the host that day, big enough
+    /// for its vehicle, nobody confirmed for that day, and not the farmer's own; cheapest first. <paramref name="area"/>
+    /// matches locality or title.
     /// </summary>
     public async Task<List<Space>> FindSpacesAsync(Guid farmerId, Guid tripId, string? area, CancellationToken ct)
     {
         var trip = await GetAsync(farmerId, tripId, ct);
         var taken = db.Bookings.Where(b => b.Date == trip.Date && b.Status == BookingStatus.Accepted).Select(b => b.SpaceId);
+        var blocked = db.SpaceBlockedDates.Where(d => d.Date == trip.Date).Select(d => d.SpaceId);
         var query = db.Spaces.Include(s => s.Photos)
-            .Where(s => s.Status == SpaceStatus.Live && s.HostUserId != farmerId && !taken.Contains(s.Id));
+            .Where(s => s.Status == SpaceStatus.Live && s.HostUserId != farmerId && !taken.Contains(s.Id)
+                && !blocked.Contains(s.Id));
         if (!string.IsNullOrWhiteSpace(area))
         {
             var a = area.Trim();
@@ -108,7 +111,9 @@ public class TripService(AppDbContext db, INotifier notifier)
 
         var space = await db.Spaces.Include(s => s.Photos).SingleOrDefaultAsync(s => s.Id == spaceId, ct);
         if (space is null || space.Status != SpaceStatus.Live || space.HostUserId == farmerId) throw ApiException.NotFound();
-        if (!TripRules.OpenOn(space.AvailableDays, trip.Date)) throw ApiException.Conflict("space_closed_that_day");
+        if (!TripRules.OpenOn(space.AvailableDays, trip.Date)
+            || await db.SpaceBlockedDates.AnyAsync(d => d.SpaceId == space.Id && d.Date == trip.Date, ct))
+            throw ApiException.Conflict("space_closed_that_day");
         if (!TripRules.VehicleFits(space.MaxVehicle, trip.Vehicle)) throw ApiException.Conflict("vehicle_too_big");
         if (await db.Bookings.AnyAsync(b => b.SpaceId == space.Id && b.Date == trip.Date && b.Status == BookingStatus.Accepted, ct))
             throw ApiException.Conflict("space_taken");

@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../photo_compress.dart';
 import 'api_client.dart';
+import 'api_dates.dart';
 import 'models.dart';
 
 /// The photo's real type from its first bytes: jpeg, png or webp, or null for anything else. The picker's own label
@@ -115,6 +116,21 @@ class HostApi {
       ((await _dio.delete('/hosts/me/spaces/$spaceId/photos/$photoId')).data as Map)['withdrawn'] as bool;
 
   Future<void> submit(String spaceId) => _dio.post('/hosts/me/spaces/$spaceId/submit');
+
+  /// Days from today on that the host closed the space, earliest first.
+  Future<List<BlockedDate>> blockedDates(String spaceId) async => [
+    for (final j in (await _dio.get('/hosts/me/spaces/$spaceId/blocked-dates')).data as List)
+      BlockedDate.fromJson(j as Map<String, dynamic>),
+  ];
+
+  /// Closes the space for [date]; returns how many waiting requests for that day were declined.
+  Future<int> blockDate(String spaceId, DateTime date, String? note) async =>
+      ((await _dio.post('/hosts/me/spaces/$spaceId/blocked-dates', data: {'date': apiDate(date), 'note': note})).data
+              as Map)['declinedRequests']
+          as int;
+
+  Future<void> unblockDate(String spaceId, DateTime date) =>
+      _dio.delete('/hosts/me/spaces/$spaceId/blocked-dates/${apiDate(date)}');
 
   /// Deletes the space with its photos and proof; returns how many upcoming bookings were cancelled.
   Future<int> deleteSpace(String spaceId) async =>

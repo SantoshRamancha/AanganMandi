@@ -10,6 +10,7 @@ import '../../core/widgets/responsive.dart';
 import '../../core/widgets/feedback.dart';
 import '../../l10n/app_localizations.dart';
 import '../trips/trip_widgets.dart';
+import 'crop_filter.dart';
 
 /// Buyer home: save where you live and how far you will go, then see verified farmers selling inside that area
 /// today and tomorrow (selling now first). The exact place shows only once the farmer has arrived.
@@ -114,6 +115,7 @@ class BuyerHome extends ConsumerWidget {
                         margin: const EdgeInsets.only(top: 12),
                         child: ListTile(leading: const Icon(Icons.mail_outline), title: Text(l10n.addEmailForAlerts)),
                       ),
+                    CropFilter(area: area),
                     const SizedBox(height: 12),
                     ...stalls.when(
                       loading: () => [
@@ -128,7 +130,7 @@ class BuyerHome extends ConsumerWidget {
                               Padding(
                                 padding: const EdgeInsets.symmetric(vertical: 32),
                                 child: Text(
-                                  l10n.nearbyEmpty,
+                                  area.crops.isEmpty ? l10n.nearbyEmpty : l10n.nearbyEmptyForCrops,
                                   textAlign: TextAlign.center,
                                   style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
                                 ),
@@ -209,7 +211,7 @@ class StallCard extends StatelessWidget {
             const SizedBox(height: 2),
             Text('${s.spaceTitle} · ${s.locality}', style: TextStyle(color: scheme.onSurfaceVariant)),
             const SizedBox(height: 8),
-            ProduceChips(s.produce),
+            ProduceChips(s.produce, highlight: s.matched),
             const SizedBox(height: 8),
             if (s.sellingNow && s.address != null) ...[
               IconFact(Icons.place_outlined, s.address!, bold: true),

@@ -179,7 +179,7 @@ public sealed class EmailNotifier(AppDbContext db, IEmailQueue queue, IOptions<N
             new(MailText.Farmer, $"{farmerName} · {farmer.Phone}"),
         ], ct: ct);
 
-        var buyers = await BuyersNearAsync(space, b, NearbyAlertKind.SellingNow, ct);
+        var buyers = await BuyersNearAsync(space, b, trip.Produce, NearbyAlertKind.SellingNow, ct);
         foreach (var (buyer, meters) in buyers)
         {
             var lang = Lang(buyer);
@@ -300,7 +300,7 @@ public sealed class EmailNotifier(AppDbContext db, IEmailQueue queue, IOptions<N
         // Buyer → the stalls inside their area they have not heard about yet.
         var perBuyer = new Dictionary<Guid, (User Buyer, List<(int Stall, double Meters)> Stalls)>();
         foreach (var (stall, i) in stalls.Select((x, i) => (x, i)))
-            foreach (var (buyer, meters) in await BuyersNearAsync(stall.s, stall.b, NearbyAlertKind.DayBefore, ct))
+            foreach (var (buyer, meters) in await BuyersNearAsync(stall.s, stall.b, stall.t.Produce, NearbyAlertKind.DayBefore, ct))
             {
                 if (!perBuyer.TryGetValue(buyer.Id, out var entry)) perBuyer[buyer.Id] = entry = (buyer, []);
                 entry.Stalls.Add((i, meters));
@@ -325,9 +325,11 @@ public sealed class EmailNotifier(AppDbContext db, IEmailQueue queue, IOptions<N
 
     /// <summary>
     /// Buyers (with the Buyer role and an email) whose saved area covers the space, with alerts on, who have not had
-    /// this kind of alert for this booking. Never the booking's own farmer or host. Distances in metres (geography).
+    /// this kind of alert for this booking. Never the booking's own farmer or host. A buyer looking for particular crops
+    /// hears only about stalls selling one of them. Distances in metres (geography).
     /// </summary>
-    private async Task<List<(User Buyer, double Meters)>> BuyersNearAsync(Space space, Booking b, NearbyAlertKind kind, CancellationToken ct)
+    private async Task<List<(User Buyer, double Meters)>> BuyersNearAsync(Space space, Booking b, List<TripProduce> produce,
+        NearbyAlertKind kind, CancellationToken ct)
     {
         var point = space.Location;
         var rows = await (
@@ -337,8 +339,12 @@ public sealed class EmailNotifier(AppDbContext db, IEmailQueue queue, IOptions<N
                 && db.UserRoles.Any(r => r.UserId == u.Id && r.Role == Role.Buyer)
                 && a.Location.Distance(point) <= a.RadiusKm * 1000
                 && !db.NearbyAlerts.Any(n => n.BuyerUserId == u.Id && n.BookingId == b.Id && n.Kind == kind)
-            select new { u, Meters = a.Location.Distance(point) }).ToListAsync(ct);
-        return rows.Select(r => (r.u, r.Meters)).ToList();
+            select new { u, a.Crops, Meters = a.Location.Distance(point) }).ToListAsync(ct);
+        var names = rows.Any(r => r.Crops != null) ? await Services.BuyerService.CropNamesAsync(db, ct) : new();
+        var codes = produce.Select(p => p.CropCode).ToList();
+        return rows
+            .Where(r => r.Crops is null || CropMatch.Matching(codes, CropMatch.Split(r.Crops), names).Count > 0)
+            .Select(r => (r.u, r.Meters)).ToList();
     }
 
     /// <summary>"1.2 km from you" in the reader's language.</summary>

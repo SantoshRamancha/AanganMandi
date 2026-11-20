@@ -1963,4 +1963,205 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get noShowClearedToast => 'न आना हटा दिया गया';
+
+  @override
+  String get lookingFor => 'आप क्या ढूँढ रहे हैं';
+
+  @override
+  String get chooseCrops => 'फ़सलें चुनें';
+
+  @override
+  String get changeCrops => 'बदलें';
+
+  @override
+  String get allCropsHint => 'सभी फ़सलें। सिर्फ़ उन्हें बेचने वाले किसान देखने के लिए फ़सलें चुनें।';
+
+  @override
+  String get cropFilterHint => 'सिर्फ़ ये बेचने वाले किसान दिखेंगे, और ईमेल अलर्ट भी इन्हीं के लिए आएँगे।';
+
+  @override
+  String get showAllCrops => 'सभी फ़सलें दिखाएँ';
+
+  @override
+  String get whatCropsQ => 'आप कौन-सी फ़सलें ढूँढ रहे हैं?';
+
+  @override
+  String chooseAtMostCrops(int count) {
+    return 'ज़्यादा से ज़्यादा $count फ़सलें चुनें';
+  }
+
+  @override
+  String showTheseCrops(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'ये $count फ़सलों वाले किसान दिखाएँ',
+      one: 'यह फ़सल वाले किसान दिखाएँ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get nearbyEmptyForCrops =>
+      'आज या कल पास में कोई किसान ये फ़सलें नहीं बेच रहा। और फ़सलें चुनें, या सभी दिखाएँ।';
+
+  @override
+  String get blockedDays => 'जिन दिनों आप बंद हैं';
+
+  @override
+  String get blockedDaysHint =>
+      'किसी ऐसे दिन जगह बंद करें जब वह आम तौर पर खुली रहती है, जैसे घर में कोई समारोह। उस दिन किसानों को यह नहीं दिखेगी।';
+
+  @override
+  String get noBlockedDays => 'कोई दिन ब्लॉक नहीं';
+
+  @override
+  String get blockDay => 'एक दिन ब्लॉक करें';
+
+  @override
+  String get unblockDay => 'यह दिन फिर खोलें';
+
+  @override
+  String get blockDayTitle => 'बंद करने का दिन चुनें';
+
+  @override
+  String blockDayQ(String day) {
+    return '$day को बंद करें?';
+  }
+
+  @override
+  String get blockDayBody =>
+      'इस दिन के बाकी अनुरोध अस्वीकार हो जाएँगे और किसानों को बताया जाएगा। जिस दिन कोई किसान पक्का है, उसे ब्लॉक नहीं कर सकते: पहले वह बुकिंग रद्द करें।';
+
+  @override
+  String get blockNoteHint => 'किसानों के लिए नोट (वैकल्पिक)';
+
+  @override
+  String dayBlockedToast(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'दिन ब्लॉक किया गया, $count अनुरोध अस्वीकार हुए',
+      one: 'दिन ब्लॉक किया गया, 1 अनुरोध अस्वीकार हुआ',
+      zero: 'दिन ब्लॉक किया गया',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dayOpenedToast => 'दिन फिर खुल गया';
+
+  @override
+  String get noDaysToBlock => 'अगले 60 दिनों में ब्लॉक करने के लिए कोई खुला दिन नहीं बचा।';
+
+  @override
+  String get opsTabAnalytics => 'विश्लेषण';
+
+  @override
+  String get analyticsTitle => 'विश्लेषण';
+
+  @override
+  String get analyticsSubtitle => 'आंगन मंडी में बिक्री कैसी चल रही है';
+
+  @override
+  String lastDays(int days) {
+    return '$days दिन';
+  }
+
+  @override
+  String get analyticsSelling => 'बिक्री';
+
+  @override
+  String get figRequests => 'अनुरोध';
+
+  @override
+  String figRequestsDetail(int accepted, int declined, int waiting) {
+    return '$accepted स्वीकार · $declined अस्वीकार · $waiting बाकी';
+  }
+
+  @override
+  String get figAcceptance => 'स्वीकार हुए अनुरोध';
+
+  @override
+  String get figStallsHeld => 'लगे / पक्के स्टॉल';
+
+  @override
+  String get figShowRate => 'आए किसान';
+
+  @override
+  String get figNoShows => 'न आना';
+
+  @override
+  String get figHostFees => 'मेज़बानों की फ़ीस (लगे स्टॉल)';
+
+  @override
+  String get analyticsDaily => 'दिन-ब-दिन';
+
+  @override
+  String get figHeld => 'लगे स्टॉल';
+
+  @override
+  String get analyticsNoActivity => 'इस अवधि में अभी कुछ नहीं';
+
+  @override
+  String get analyticsTop => 'सबसे ज़्यादा स्टॉल';
+
+  @override
+  String get topCrops => 'फ़सलें';
+
+  @override
+  String get topAreas => 'इलाक़े';
+
+  @override
+  String stallCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count स्टॉल', one: '1 स्टॉल');
+    return '$_temp0';
+  }
+
+  @override
+  String get analyticsPeople => 'लोग और जगहें';
+
+  @override
+  String get figUsers => 'उपयोगकर्ता';
+
+  @override
+  String figNewInPeriod(int count) {
+    return 'इस अवधि में $count नए';
+  }
+
+  @override
+  String get figVerifiedFarmers => 'सत्यापित किसान';
+
+  @override
+  String figWaiting(int count) {
+    return '$count समीक्षा के इंतज़ार में';
+  }
+
+  @override
+  String get figHosts => 'मेज़बान';
+
+  @override
+  String get figBuyers => 'ख़रीदार';
+
+  @override
+  String figBuyersWithArea(int count) {
+    return '$count ने इलाक़ा सेव किया';
+  }
+
+  @override
+  String get analyticsTrust => 'रेटिंग और समस्याएँ';
+
+  @override
+  String get figSpaceStars => 'किसानों से जगहों के सितारे';
+
+  @override
+  String get figFarmerStars => 'मेज़बानों से किसानों के सितारे';
+
+  @override
+  String get figReportsOpen => 'खुली समस्या रिपोर्ट';
+
+  @override
+  String figReportsDetail(int opened, int resolved) {
+    return 'इस अवधि में $opened रिपोर्ट · $resolved हल';
+  }
 }

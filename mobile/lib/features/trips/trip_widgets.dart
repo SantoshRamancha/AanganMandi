@@ -97,8 +97,11 @@ class BookingStatusChip extends StatelessWidget {
 
 /// The crops on a trip, with quantity and price when given, in the app language.
 class ProduceChips extends ConsumerWidget {
-  const ProduceChips(this.produce, {super.key});
+  const ProduceChips(this.produce, {super.key, this.highlight = const {}});
   final List<ProduceItem> produce;
+
+  /// Crop codes to show stronger, e.g. the crops a buyer is looking for.
+  final Set<String> highlight;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -113,7 +116,8 @@ class ProduceChips extends ConsumerWidget {
         for (final p in produce)
           Chip(
             visualDensity: VisualDensity.compact,
-            avatar: const Icon(Icons.eco_outlined, size: 18),
+            avatar: Icon(highlight.contains(p.cropCode) ? Icons.check_circle : Icons.eco_outlined, size: 18),
+            backgroundColor: highlight.contains(p.cropCode) ? Theme.of(context).colorScheme.primaryContainer : null,
             label: Text(
               [
                 cropName(p.cropCode, crops, lang),

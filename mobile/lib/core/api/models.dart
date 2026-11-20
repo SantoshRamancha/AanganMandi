@@ -133,3 +133,13 @@ class Profile {
   final bool termsAccepted;
   final String termsVersion;
 }
+
+/// A day the host closed their space although it is normally open that weekday.
+class BlockedDate {
+  BlockedDate.fromJson(Map<String, dynamic> j)
+    : date = DateTime.parse(j['date'] as String),
+      note = j['note'] as String?;
+
+  final DateTime date;
+  final String? note;
+}

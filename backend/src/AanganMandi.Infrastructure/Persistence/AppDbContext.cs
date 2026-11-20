@@ -97,6 +97,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<VerificationDocument> VerificationDocuments => Set<VerificationDocument>();
     public DbSet<Space> Spaces => Set<Space>();
     public DbSet<SpacePhoto> SpacePhotos => Set<SpacePhoto>();
+    public DbSet<SpaceBlockedDate> SpaceBlockedDates => Set<SpaceBlockedDate>();
     public DbSet<Trip> Trips => Set<Trip>();
     public DbSet<TripProduce> TripProduce => Set<TripProduce>();
     public DbSet<Booking> Bookings => Set<Booking>();
@@ -215,8 +216,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasOne<Space>().WithMany().HasForeignKey(x => x.SpaceId).OnDelete(DeleteBehavior.NoAction);
             e.HasQueryFilter(x => !x.IsDeleted);
         });
+        b.Entity<SpaceBlockedDate>(e =>
+        {
+            e.HasIndex(d => new { d.SpaceId, d.Date }).IsUnique();
+            e.Property(d => d.Note).HasMaxLength(BlockedDateRules.MaxNote);
+            e.HasOne<Space>().WithMany().HasForeignKey(d => d.SpaceId).OnDelete(DeleteBehavior.Cascade);
+            e.HasQueryFilter(d => !d.IsDeleted);
+        });
         b.Entity<BuyerArea>(e =>
         {
+            e.Property(a => a.Crops).HasMaxLength(700);
             e.HasIndex(a => a.UserId).IsUnique();
             e.Property(a => a.Location).HasColumnType("geography");
             e.HasOne<User>().WithMany().HasForeignKey(a => a.UserId).OnDelete(DeleteBehavior.Cascade);

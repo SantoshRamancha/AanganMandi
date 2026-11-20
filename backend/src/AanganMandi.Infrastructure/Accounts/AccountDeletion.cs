@@ -28,6 +28,7 @@ public static class SpaceRemoval
 
         var files = space.Photos.Select(p => p.FilePath).ToList();
         db.SpacePhotos.RemoveRange(space.Photos);
+        db.SpaceBlockedDates.RemoveRange(await db.SpaceBlockedDates.Where(d => d.SpaceId == space.Id).ToListAsync(ct));
         space.IsDeleted = true;
         space.UpdatedAt = DateTime.UtcNow;
         return (files, cancelled);

@@ -139,6 +139,12 @@ public static class ErrorText
         ["rating_already_given"] = new("You have already rated this stall", "మీరు ఈ స్టాల్‌కు ఇప్పటికే రేటింగ్ ఇచ్చారు", "आप इस स्टॉल को पहले ही रेटिंग दे चुके हैं"),
         ["too_many_no_shows"] = new("You missed {{count}} booked stalls in the last {{days}} days, so you cannot request new slots for now. If a no-show was wrong, report a problem", "గత {{days}} రోజుల్లో మీరు {{count}} బుక్ చేసిన స్టాల్‌లకు రాలేదు, కాబట్టి ప్రస్తుతం కొత్త స్లాట్‌లు అడగలేరు. రాలేదని తప్పుగా నమోదైతే, సమస్యను రిపోర్ట్ చేయండి", "पिछले {{days}} दिनों में आप {{count}} बुक किए स्टॉल पर नहीं आए, इसलिए अभी नए स्लॉट नहीं माँग सकते। अगर न आना ग़लत दर्ज हुआ है, तो समस्या की रिपोर्ट करें"),
         ["no_show_not_marked"] = new("This booking is not marked as a no-show", "ఈ బుకింగ్‌కు రాలేదని నమోదు కాలేదు", "इस बुकिंग में न आना दर्ज नहीं है"),
+        ["buyer_area_required"] = new("Save your area first", "ముందుగా మీ ప్రాంతాన్ని సేవ్ చేయండి", "पहले अपना इलाक़ा सेव करें"),
+        ["block_date_past"] = new("You cannot block a day that has passed", "గడిచిన రోజును బ్లాక్ చేయలేరు", "बीता हुआ दिन ब्लॉक नहीं कर सकते"),
+        ["block_date_too_far"] = new("You can block days up to {{days}} days ahead", "{{days}} రోజుల ముందు వరకు మాత్రమే బ్లాక్ చేయగలరు", "आप {{days}} दिन आगे तक के दिन ब्लॉक कर सकते हैं"),
+        ["block_note_long"] = new("Keep the note under {{max}} characters", "నోట్‌ను {{max}} అక్షరాల లోపు ఉంచండి", "नोट {{max}} अक्षरों से कम रखें"),
+        ["block_date_booked"] = new("A farmer is confirmed for that day. Cancel that booking first, so the farmer is told why", "ఆ రోజు ఒక రైతు నిర్ధారించబడ్డారు. రైతుకు కారణం తెలిసేలా ముందుగా ఆ బుకింగ్‌ను రద్దు చేయండి", "उस दिन एक किसान पक्का है। पहले वह बुकिंग रद्द करें, ताकि किसान को कारण पता चले"),
+        ["analytics_period"] = new("Choose a period of {{days}} days", "{{days}} రోజుల వ్యవధిని ఎంచుకోండి", "{{days}} दिनों की अवधि चुनें"),
 
         // Consent ---------------------------------------------------------------------------------------------
         ["consent_version_outdated"] = new("Please read and accept the latest terms and privacy policy", "దయచేసి తాజా నిబంధనలు, గోప్యతా విధానం చదివి అంగీకరించండి", "कृपया नई शर्तें और गोपनीयता नीति पढ़कर स्वीकार करें"),

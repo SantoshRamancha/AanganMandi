@@ -15,7 +15,7 @@ namespace AanganMandi.Api.Controllers;
 [ApiController]
 [Authorize(Roles = "Host")]
 [Route("api/v1/hosts/me/spaces")]
-public class HostSpacesController(SpaceService spaces, RatingService ratings) : ControllerBase
+public class HostSpacesController(SpaceService spaces, RatingService ratings, BlockedDateService blocked) : ControllerBase
 {
     public record SpaceRequest(string Title, SpaceType Type, string Address, string Locality,
         double Latitude, double Longitude, int AreaSqFt, string MaxStallSize, VehicleType MaxVehicle,
@@ -33,6 +33,9 @@ public class HostSpacesController(SpaceService spaces, RatingService ratings) : 
     public record DocumentChange(bool Withdrawn);
     /// <summary>How many upcoming bookings deleting the space cancelled.</summary>
     public record SpaceDeleted(int CancelledBookings);
+    public record BlockRequest(DateOnly Date, string? Note);
+    /// <summary>A day the host closed the space. DeclinedRequests: waiting requests for it declined by blocking.</summary>
+    public record BlockedDateDto(DateOnly Date, string? Note, int DeclinedRequests = 0);
 
     private const long UploadLimit = SpaceService.MaxUploadBytes + 64 * 1024;
 
@@ -102,6 +105,30 @@ public class HostSpacesController(SpaceService spaces, RatingService ratings) : 
     /// </summary>
     [HttpDelete("{id:guid}")]
     public async Task<SpaceDeleted> Delete(Guid id, CancellationToken ct) => new(await spaces.DeleteAsync(User.UserId(), id, ct));
+
+    /// <summary>The days from today on that the host closed the space, earliest first.</summary>
+    [HttpGet("{id:guid}/blocked-dates")]
+    public async Task<IEnumerable<BlockedDateDto>> BlockedDates(Guid id, CancellationToken ct) =>
+        (await blocked.ListAsync(User.UserId(), id, ct)).Select(d => new BlockedDateDto(d.Date, d.Note));
+
+    /// <summary>
+    /// Closes the space for one day (up to 60 days ahead). Refused when a farmer is confirmed that day; waiting requests
+    /// for it are declined with the note (or "The host is not available that day") and the farmers are told.
+    /// </summary>
+    [HttpPost("{id:guid}/blocked-dates")]
+    public async Task<BlockedDateDto> Block(Guid id, BlockRequest req, CancellationToken ct)
+    {
+        var (d, declined) = await blocked.BlockAsync(User.UserId(), id, req.Date, req.Note, ct);
+        return new BlockedDateDto(d.Date, d.Note, declined);
+    }
+
+    /// <summary>Opens the day again.</summary>
+    [HttpDelete("{id:guid}/blocked-dates/{date}")]
+    public async Task<IActionResult> Unblock(Guid id, DateOnly date, CancellationToken ct)
+    {
+        await blocked.UnblockAsync(User.UserId(), id, date, ct);
+        return NoContent();
+    }
 
     [HttpPost("{id:guid}/submit")]
     public async Task<IActionResult> Submit(Guid id, CancellationToken ct)

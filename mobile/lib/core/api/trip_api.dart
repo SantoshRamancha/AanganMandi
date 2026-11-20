@@ -68,6 +68,10 @@ class BuyerApi {
   Future<BuyerSettings> saveArea(BuyerArea area) async =>
       BuyerSettings.fromJson((await _dio.put('/buyers/me/area', data: area.toJson())).data as Map<String, dynamic>);
 
+  /// The crops the buyer is looking for (empty for any); the nearby list and the alerts follow them.
+  Future<BuyerSettings> saveCrops(List<String> crops) async =>
+      BuyerSettings.fromJson((await _dio.put('/buyers/me/crops', data: {'crops': crops})).data as Map<String, dynamic>);
+
   Future<void> deleteArea() => _dio.delete('/buyers/me/area');
 
   Future<List<NearbyStall>> nearby() async => [
