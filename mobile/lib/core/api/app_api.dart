@@ -129,6 +129,16 @@ class HostApi {
               as Map)['declinedRequests']
           as int;
 
+  /// Closes the space from [from] to [to] on the days it is open; days with a confirmed farmer are left open.
+  Future<BlockRangeResult> blockRange(String spaceId, DateTime from, DateTime to, String? note) async =>
+      BlockRangeResult.fromJson(
+        (await _dio.post(
+              '/hosts/me/spaces/$spaceId/blocked-dates/range',
+              data: {'from': apiDate(from), 'to': apiDate(to), 'note': note},
+            )).data
+            as Map<String, dynamic>,
+      );
+
   Future<void> unblockDate(String spaceId, DateTime date) =>
       _dio.delete('/hosts/me/spaces/$spaceId/blocked-dates/${apiDate(date)}');
 

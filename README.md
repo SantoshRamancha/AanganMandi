@@ -57,6 +57,9 @@ role in the database on every call, so a removed verifier loses access at once.
 | A farmer's selling record and recent no-shows; clear a wrong no-show | verifier (see), admin (clear) | app → Operations → a verified farmer |
 | Look for crops: choose up to 10 (from the list or typed in); the nearby list and the email alerts then show only farmers selling one of them, with the matching crop marked (see [Crop search, blocked days and analytics](#crop-search-blocked-days-and-analytics)) | buyer | app → buyer home → Looking for |
 | Block a day the space is normally open (family function, travel), with a note; that day's waiting requests are declined, farmers do not find the space for it; open it again with ✕ | host | app → a space → Days you are closed |
+| Block several days at once (first to last day): only the days the space is open are blocked, days with a confirmed farmer stay open and are listed | host | app → a space → Days you are closed → Block several days |
+| My earnings for the last 30, 90 or 365 days: fees from stalls held, stalls held, no-shows, stalls coming up and fees expected, requests answered, rating, fees per space (see [Several days and summaries](#several-days-and-summaries)) | host | app → host home → My earnings |
+| My stalls for the last 30, 90 or 365 days: selling days, stalls held, no-shows, fees paid, stalls coming up, rating, what sold most and where | farmer | app → farmer home → My stalls |
 | Analytics for the last 7, 30 or 90 days: requests and acceptance, stalls held, who came, no-shows, fees, day by day, top crops and areas, people, ratings, problem reports | admin | app → Operations → Analytics |
 
 Not built yet: in-app payment, produce browsing beyond the nearby list, maps, push notifications (alerts and booking news arrive by email, and in the app when it is opened).
@@ -343,8 +346,9 @@ the response records the app reads. The rules and state changes live in `Infrast
 | `ReportService` | file a problem report, resolve one |
 | `BuyerService` | the saved area and crops, the nearby list (filtered by crop) |
 | `RatingService` | ratings, a space's stars, a farmer's record, clearing a no-show |
-| `BlockedDateService` | a host's blocked days: list, block (declining that day's requests), open again |
+| `BlockedDateService` | a host's blocked days: list, block one or several (declining those days' requests), open again |
 | `AnalyticsService` | the admin figures for a period (read only) |
+| `SummaryService` | a host's earnings and a farmer's stalls for a period (read only) |
 
 A service refuses with an `ApiException` and never sees `HttpContext`, so the same rule holds from any caller, and the
 integration tests exercise it through the real endpoints. Small account settings (email, language, role, consent) stay
@@ -404,6 +408,35 @@ dates ending today. Figures only, no names or phone numbers:
 
 Migration: `BuyerCropsAndBlockedDates` (`BuyerAreas.Crops`, the `SpaceBlockedDates` table).
 
+## Several days and summaries
+
+**Blocking several days (hosts).** `POST /api/v1/hosts/me/spaces/{id}/blocked-dates/range { from, to, note? }` blocks
+every day from `from` to `to` that the space is normally open (its weekdays), with the same limits as one day (today up
+to 60 days ahead, note up to 100 characters).
+- Days with a confirmed farmer are not blocked and come back as `booked`, so the host can cancel those bookings first;
+  the app lists them. The answer: `blocked` (the days now closed), `booked`, `declinedRequests`.
+- Waiting requests for the blocked days are declined with the note and the farmers get the usual email.
+- Refused: last day before the first (`block_range_order`), past or too far (`block_date_past`, `block_date_too_far`),
+  none of the days open (`block_range_closed`). Blocking days already blocked only changes their note.
+
+**Summaries (hosts and farmers).** `GET /api/v1/hosts/me/summary?days=30|90|365` (hosts) and
+`GET /api/v1/farmers/me/summary?days=30|90|365` (farmers); other periods are refused (`summary_period`). Periods are India
+dates ending today; each person sees only their own figures. The home screens show the last 30 days in one line.
+
+| Figure | What it counts |
+|---|---|
+| `held`, `noShows` | confirmed stalls dated in the period where the farmer checked in, or was marked as not coming |
+| `feesEarned` (host), `feesPaid` (farmer) | the fees of the held stalls only (free spaces count ₹0) |
+| `upcoming`, `feesExpected` (host) | confirmed stalls from today on, not held or marked yet (not limited to the period) |
+| `requests`, `accepted`, `declined` (host) | requests received in the period and how the host answered |
+| `spaces` (host) | each space (and deleted ones that had stalls): stalls held and fees |
+| `trips` (farmer) | selling days planned in the period, not cancelled |
+| `crops`, `places` (farmer) | the 5 crops and spaces with most held stalls |
+| `rating`, `ratingCount` | the other side's stars, all time |
+
+No migration: both are worked out from the bookings, trips and ratings already stored. The counting rules
+(`SummaryRules`) are unit-tested.
+
 ## Tests and CI
 
 ```bash
@@ -420,7 +453,8 @@ flow, controllers, services, EF Core) against a new database `AanganMandi_IT_<ra
 dropped at the end, so the dev database is never touched. Files go to a temp folder, emails to the log, and the
 background jobs are off (`BackgroundJobs:Enabled=false`). They cover sign-in and refusals in each language, role checks,
 farmer verification to approval, booking and confirming a space, problem reports, ratings and the no-show limit, crop
-search, blocked days, and the analytics (and that only admins see them).
+search, blocked days (one and several), the analytics (and that only admins see them), and the host and farmer
+summaries.
 SQL Server comes from `AANGAN_TEST_SQL` (a connection string without a database); without it, the local default
 instance with Windows sign-in is used.
 

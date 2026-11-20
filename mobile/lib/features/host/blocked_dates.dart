@@ -69,9 +69,10 @@ class _BlockedDatesSectionState extends ConsumerState<BlockedDatesSection> {
       helpText: l10n.blockDayTitle,
     );
     if (date == null || !mounted) return;
+    final day = DateFormat.yMMMEd(Localizations.localeOf(context).toString()).format(date);
     final note = await showDialog<String>(
       context: context,
-      builder: (_) => _NoteDialog(date: date),
+      builder: (_) => _NoteDialog(title: l10n.blockDayQ(day), body: l10n.blockDayBody, confirm: l10n.blockDay),
     );
     if (note == null || !mounted) return;
     final api = ref.read(hostApiProvider);
@@ -79,6 +80,49 @@ class _BlockedDatesSectionState extends ConsumerState<BlockedDatesSection> {
       final declined = await api.blockDate(widget.space.id, date, note.isEmpty ? null : note);
       ref.invalidate(hostBookingsProvider);
       if (mounted) showSuccess(context, l10n.dayBlockedToast(declined));
+    });
+  }
+
+  /// Blocks the open days from a first to a last day, then says which days stayed open for a confirmed farmer.
+  Future<void> _blockRange() async {
+    final l10n = AppLocalizations.of(context);
+    final locale = Localizations.localeOf(context).toString();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final range = await showDateRangePicker(
+      context: context,
+      firstDate: today,
+      lastDate: today.add(const Duration(days: maxBlockDaysAhead)),
+      helpText: l10n.blockRangeTitle,
+    );
+    if (range == null || !mounted) return;
+    String fmt(DateTime d) => DateFormat.yMMMEd(locale).format(d);
+    final note = await showDialog<String>(
+      context: context,
+      builder: (_) => _NoteDialog(
+        title: l10n.blockRangeQ(fmt(range.start), fmt(range.end)),
+        body: l10n.blockRangeBody,
+        confirm: l10n.blockDays,
+      ),
+    );
+    if (note == null || !mounted) return;
+    final api = ref.read(hostApiProvider);
+    await _run(() async {
+      final r = await api.blockRange(widget.space.id, range.start, range.end, note.isEmpty ? null : note);
+      ref.invalidate(hostBookingsProvider);
+      if (!mounted) return;
+      final declined = r.declinedRequests == 0 ? '' : ' · ${l10n.requestsDeclined(r.declinedRequests)}';
+      showSuccess(context, '${l10n.daysBlockedToast(r.blocked.length)}$declined');
+      if (r.booked.isNotEmpty) {
+        await showDialog<void>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(l10n.bookedDaysTitle),
+            content: Text(l10n.bookedDaysBody(r.booked.map(DateFormat.MMMEd(locale).format).join(', '))),
+            actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.ok))],
+          ),
+        );
+      }
     });
   }
 
@@ -126,13 +170,21 @@ class _BlockedDatesSectionState extends ConsumerState<BlockedDatesSection> {
                 ),
               ),
           const SizedBox(height: 8),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: OutlinedButton.icon(
-              icon: const Icon(Icons.event_busy),
-              label: Text(l10n.blockDay),
-              onPressed: _busy || !dates.hasValue ? null : () => _block(list),
-            ),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              OutlinedButton.icon(
+                icon: const Icon(Icons.event_busy),
+                label: Text(l10n.blockDay),
+                onPressed: _busy || !dates.hasValue ? null : () => _block(list),
+              ),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.date_range),
+                label: Text(l10n.blockDays),
+                onPressed: _busy || !dates.hasValue ? null : _blockRange,
+              ),
+            ],
           ),
         ],
       ),
@@ -142,8 +194,8 @@ class _BlockedDatesSectionState extends ConsumerState<BlockedDatesSection> {
 
 /// Asks for an optional note; returns it ('' for none), or null when cancelled. Owns its controller.
 class _NoteDialog extends StatefulWidget {
-  const _NoteDialog({required this.date});
-  final DateTime date;
+  const _NoteDialog({required this.title, required this.body, required this.confirm});
+  final String title, body, confirm;
 
   @override
   State<_NoteDialog> createState() => _NoteDialogState();
@@ -161,14 +213,13 @@ class _NoteDialogState extends State<_NoteDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final day = DateFormat.yMMMEd(Localizations.localeOf(context).toString()).format(widget.date);
     return AlertDialog(
-      title: Text(l10n.blockDayQ(day)),
+      title: Text(widget.title),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(l10n.blockDayBody),
+          Text(widget.body),
           const SizedBox(height: 12),
           TextField(
             controller: _note,
@@ -179,7 +230,7 @@ class _NoteDialogState extends State<_NoteDialog> {
       ),
       actions: [
         TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.cancel)),
-        FilledButton(onPressed: () => Navigator.pop(context, _note.text.trim()), child: Text(l10n.blockDay)),
+        FilledButton(onPressed: () => Navigator.pop(context, _note.text.trim()), child: Text(widget.confirm)),
       ],
     );
   }

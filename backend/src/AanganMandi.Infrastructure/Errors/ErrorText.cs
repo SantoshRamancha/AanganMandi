@@ -144,6 +144,9 @@ public static class ErrorText
         ["block_date_too_far"] = new("You can block days up to {{days}} days ahead", "{{days}} రోజుల ముందు వరకు మాత్రమే బ్లాక్ చేయగలరు", "आप {{days}} दिन आगे तक के दिन ब्लॉक कर सकते हैं"),
         ["block_note_long"] = new("Keep the note under {{max}} characters", "నోట్‌ను {{max}} అక్షరాల లోపు ఉంచండి", "नोट {{max}} अक्षरों से कम रखें"),
         ["block_date_booked"] = new("A farmer is confirmed for that day. Cancel that booking first, so the farmer is told why", "ఆ రోజు ఒక రైతు నిర్ధారించబడ్డారు. రైతుకు కారణం తెలిసేలా ముందుగా ఆ బుకింగ్‌ను రద్దు చేయండి", "उस दिन एक किसान पक्का है। पहले वह बुकिंग रद्द करें, ताकि किसान को कारण पता चले"),
+        ["block_range_order"] = new("The last day must be on or after the first day", "చివరి రోజు మొదటి రోజు లేదా ఆ తర్వాత ఉండాలి", "आख़िरी दिन पहले दिन या उसके बाद का होना चाहिए"),
+        ["block_range_closed"] = new("Your space is not open on any of those days", "ఆ రోజుల్లో ఏ రోజూ మీ స్థలం తెరిచి ఉండదు", "उन दिनों में से किसी भी दिन आपकी जगह खुली नहीं है"),
+        ["summary_period"] = new("Choose a period of {{days}} days", "{{days}} రోజుల వ్యవధిని ఎంచుకోండి", "{{days}} दिनों की अवधि चुनें"),
         ["analytics_period"] = new("Choose a period of {{days}} days", "{{days}} రోజుల వ్యవధిని ఎంచుకోండి", "{{days}} दिनों की अवधि चुनें"),
 
         // Consent ---------------------------------------------------------------------------------------------

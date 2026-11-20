@@ -14,6 +14,7 @@ import '../../features/ops/farmer_review_screen.dart';
 import '../../features/ops/space_review_screen.dart';
 import '../../features/profile/profile_screen.dart';
 import '../../features/onboarding/consent_screen.dart';
+import '../../features/summary/summary_screens.dart';
 import '../../features/support/report_problem.dart';
 import '../../features/trips/space_search_screen.dart';
 import '../../features/trips/trip_detail_screen.dart';
@@ -66,6 +67,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, state) =>
             HostBookingsScreen(initialTab: int.tryParse(state.uri.queryParameters['tab'] ?? '') ?? 0),
       ),
+      GoRoute(path: '/host/earnings', builder: (_, _) => const EarningsScreen()),
+      GoRoute(path: '/farmer/stalls', builder: (_, _) => const MyStallsScreen()),
       GoRoute(path: '/host/spaces/new', builder: (_, _) => const SpaceFormScreen()),
       GoRoute(
         path: '/host/spaces/:id',
